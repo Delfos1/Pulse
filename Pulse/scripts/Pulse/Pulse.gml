@@ -16,62 +16,9 @@ enum PULSE_RANDOM
 }
 
 
-global.pulse =
-{
-	systems		: [],
-	part_types	: [],
-}
 
-function pulse_system(__name) constructor
-{
-	_name	=	string(__name);
-	_system	=	part_system_create();
-	show_debug_message("PULSE SUCCESS: Created system by the name {0}",__name);
-}
 
-function pulse_particle(__name) constructor
-{
-	
-	_name			=	string(__name);
-	_part_type		=	part_type_create();
-	_size			=	__PULSE_DEFAULT_PART_SIZE
-	_life			=	__PULSE_DEFAULT_PART_LIFE
-	_color			=	__PULSE_DEFAULT_PART_COLOR
-	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
-	_blend			=	__PULSE_DEFAULT_PART_BLEND
-	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	_shape			=	__PULSE_DEFAULT_PART_SHAPE
-	_sprite			=	undefined
-	_orient			=	__PULSE_DEFAULT_PART_ORIENT
-	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
-	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	
-	static reset	=	function()
-	{
-		part_type_size(_part_type,_size[0],_size[1],_size[2],_size[3])
-		part_type_life(_part_type,_life[0],_life[1])
-		part_type_color3(_part_type,_color[0],_color[1],_color[2])
-		part_type_alpha3(_part_type,_alpha[0],_alpha[1],_alpha[2])
-		part_type_blend(_part_type,_blend)
-		part_type_speed(_part_type,_speed[0],_speed[1],_speed[2],_speed[3])
-		if _sprite == undefined 
-		{
-			part_type_shape(_part_type,_shape)
-		}
-		else
-		{
-			part_type_sprite(_part_type,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
-		}
-		part_type_orientation(_part_type,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
-		part_type_gravity(_part_type,_gravity[0],_gravity[1])
-		part_type_direction(_part_type,_direction[0],_direction[1],_direction[2],_direction[3])
-	
-	}
-	reset()
-	show_debug_message("PULSE SUCCESS: Created particle by the name {0}",__name);
-}
-
-function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=0) constructor
+function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
 {
 	#region Error catching
 	if !is_string(__part_system){
@@ -144,6 +91,8 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	_radius_internal	=	0
 	_angle_start		=	0
 	_angle_end			=	360
+	_scalex				=	1
+	_scaley				=	1
 	_speed_start		=	undefined
 	_life				=	undefined
 	_mode				=	__PULSE_DEFAULT_EMITTER_MODE
@@ -151,49 +100,35 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	_direction_mode		=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
 	_force_to_center	=	false
 	_force_to_edge		=	false
-	_add_to_shape		=	270
+	_rot		=	270
 	
-		
-	static  speed_start	=	function(__speed_min,__speed_max)
-	{
-		if !is_real(__speed_min)	or !is_real(__speed_max){		show_debug_message("PULSE ERROR: Provided invalid input type (not a number)"); exit}
-
-		_speed_start	=	[__speed_min,__speed_max];
-		part_type_speed(_part_type,__speed_min,__speed_max,0,0)
-	}
 	
 	//Pulse properties settings
 	
-	static	shape		=	function(__ac_curve,__ac_channel)
+	static	shape		=	function(__ac_curve,__ac_channel,_channel="a")
 	{
-		if animcurve_exists(__ac_curve)
+		try
 		{
-			_ac_channel_a		=	animcurve_get_channel(__ac_curve,__ac_channel)
+			switch (_channel)
+			{
+				case "a":
+					_ac_channel_a		=	animcurve_get_channel(__ac_curve,__ac_channel)
+					break;
+				case "b":
+					_ac_channel_b		=	animcurve_get_channel(__ac_curve,__ac_channel)
+					break;
+			}
 		}
-		else
+		catch(_error)
 		{
-			show_debug_message("PULSE ERROR: Provided invalid Animation Curve")
+				show_debug_message("PULSE ERROR: Provided invalid Animation Curve")
 		}
 	}
 	
 	static	tween_shape	=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
 	{
-		if animcurve_exists(__ac_curve_a)
-		{
-			_ac_channel_a		=	animcurve_get_channel(__ac_curve_a,__ac_channel_a)
-		}
-		else
-		{
-			show_debug_message("PULSE ERROR: Provided invalid Animation Curve")
-		}
-		if animcurve_exists(__ac_curve_b)
-		{
-			_ac_channel_b		=	animcurve_get_channel(__ac_curve_b,__ac_channel_b)
-		}
-		else
-		{
-			show_debug_message("PULSE ERROR: Provided invalid Animation Curve")
-		}
+		shape(__ac_curve_a,__ac_channel_a,"a");
+		shape(__ac_curve_b,__ac_channel_b,"b");
 
 		_ac_tween =	0;
 	}
@@ -231,10 +166,17 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		_mode				=	__mode
 	}
 
+	static	transform	=	function(__scalex=_scalex,__scaley=_scaley,__rot=_rot)
+	{
+		_scalex			=	__scalex
+		_scaley			=	__scaley
+		_rot			=	__rot
+	}
+	
 	//Emit/Burst function 
 	static	pulse		=	function(_amount,x,y)
 	{
-		if  _add_to_shape>=360	_add_to_shape=0
+		if  _rot>=360	_rot=0
 
 		repeat(_amount)
 			{
@@ -265,7 +207,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				
 				if _ac_channel_a !=undefined
 				{
-					dir_curve = _add_to_shape+dir;
+					dir_curve = _rot+dir;
 					if dir_curve>360 dir_curve-=360;
 					
 					if _ac_channel_b !=undefined
@@ -314,8 +256,8 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 
 				#endregion
 				
-				var _xx		=	x	+ lengthdir_x(length,dir);
-				var _yy		=	y	+ lengthdir_y(length,dir);
+				var _xx		=	x	+ (lengthdir_x(length,dir)*_scalex);
+				var _yy		=	y	+ (lengthdir_y(length,dir)*_scaley);
 			
 				switch(_mode)
 				{

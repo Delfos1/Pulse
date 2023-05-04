@@ -1,3 +1,11 @@
+enum __PULSE_COLOR_MODE
+{
+	COLOR,
+	RGB,
+	MIX,
+	HSV
+}
+
 // Default naming
 #macro __PULSE_DEFAULT_SYS_NAME			"_system"
 
@@ -7,9 +15,13 @@
 
 #macro __PULSE_DEFAULT_PART_SIZE		[.1,.2,0,0]
 
+#macro __PULSE_DEFAULT_PART_SCALE		[1,1]
+
 #macro __PULSE_DEFAULT_PART_LIFE		[30,30]
 
 #macro __PULSE_DEFAULT_PART_COLOR		[c_white,c_aqua,c_navy]
+
+#macro __PULSE_DEFAULT_PART_COLOR_MODE	__PULSE_COLOR_MODE.COLOR
 
 #macro __PULSE_DEFAULT_PART_ALPHA		[1,1,0]
 

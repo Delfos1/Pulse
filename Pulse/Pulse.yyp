@@ -31,7 +31,7 @@
   "isEcma": false,
   "LibraryEmitters": [],
   "MetaData": {
-    "IDEVersion": "2023.2.1.75",
+    "IDEVersion": "2023.4.0.84",
   },
   "resources": [
     {"id":{"name":"Pulse_Default_config","path":"scripts/Pulse_Default_config/Pulse_Default_config.yy",},},
@@ -39,6 +39,7 @@
     {"id":{"name":"Pulse_handlers","path":"scripts/Pulse_handlers/Pulse_handlers.yy",},},
     {"id":{"name":"Font1","path":"fonts/Font1/Font1.yy",},},
     {"id":{"name":"Scr_Gaussian","path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},},
+    {"id":{"name":"Pulse_Particles","path":"scripts/Pulse_Particles/Pulse_Particles.yy",},},
     {"id":{"name":"ac_Shape","path":"animcurves/ac_Shape/ac_Shape.yy",},},
     {"id":{"name":"s_part_fire","path":"sprites/s_part_fire/s_part_fire.yy",},},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},},

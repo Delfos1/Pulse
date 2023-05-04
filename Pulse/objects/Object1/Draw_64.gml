@@ -1,4 +1,4 @@
-var num = part_particles_count(system)
+var num = part_particles_count(global.pulse.systems[0]._system)
 
 draw_set_font(Font1)
 draw_text(50,50,string(num))

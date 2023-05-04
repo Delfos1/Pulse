@@ -1,1 +1,1 @@
-sys.pulse(300,x,y)
+pulse_clone_particle("fire","ice")
