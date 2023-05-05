@@ -19,9 +19,10 @@
   "ResourceOrderSettings": [
     {"name":"Pulse_Default_config","order":2,"path":"scripts/Pulse_Default_config/Pulse_Default_config.yy",},
     {"name":"Pulse_handlers","order":4,"path":"scripts/Pulse_handlers/Pulse_handlers.yy",},
+    {"name":"Sprite2","order":1,"path":"sprites/Sprite2/Sprite2.yy",},
     {"name":"Scr_Gaussian","order":3,"path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},
     {"name":"Pulse_Particles","order":5,"path":"scripts/Pulse_Particles/Pulse_Particles.yy",},
-    {"name":"Object1","order":16,"path":"objects/Object1/Object1.yy",},
+    {"name":"Test_Me","order":16,"path":"objects/Test_Me/Test_Me.yy",},
     {"name":"Pulse","order":1,"path":"scripts/Pulse/Pulse.yy",},
   ],
 }

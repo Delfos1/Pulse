@@ -70,7 +70,7 @@ function pulse_particle_get_ID(__name)
 		}
 	}
 	
-	return array[i]._part_type
+	return array[i]
 }
 
 

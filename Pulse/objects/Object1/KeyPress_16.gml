@@ -1,1 +1,0 @@
-pulse_clone_particle("fire","ice")

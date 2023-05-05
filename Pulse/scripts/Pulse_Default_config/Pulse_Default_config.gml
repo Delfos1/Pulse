@@ -27,7 +27,7 @@ enum __PULSE_COLOR_MODE
 
 #macro __PULSE_DEFAULT_PART_BLEND		false
 
-#macro __PULSE_DEFAULT_PART_SPEED		[0,0,0,0]
+#macro __PULSE_DEFAULT_PART_SPEED		[2,3,0,0]
 
 #macro __PULSE_DEFAULT_PART_SHAPE		pt_shape_disk
 
