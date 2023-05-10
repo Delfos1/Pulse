@@ -24,7 +24,7 @@ global.pulse.part_types[0].life(30,50)
 var wave = pulse_particle_get_ID("white_wave")
 
 // Pulse particles store (almost) all properties that a regular particle may have
-// You can access the actual particle_type ID by accessing ._part_type
+// You can access the actual particle_type ID by accessing ._ind
 // Using the pulse methods to change properties also saves these properties within the struct
 // You can change the properties by using the default GM particle functions and 
 // use Pulse's method .reset() to bring it back to the stored properties.

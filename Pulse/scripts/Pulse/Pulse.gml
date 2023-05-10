@@ -40,10 +40,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	{
 		if __part_system==__PULSE_DEFAULT_SYS_NAME
 		{
-			var l= array_length(global.pulse.systems)
-			__part_system	=	string_concat(__part_system,"_",l)
 			array_push(global.pulse.systems,new pulse_system(__part_system))
-			__part_system = global.pulse.systems[l]._system
+			var _struct = array_last(global.pulse.systems)
+			__part_system = _struct._system
 		}
 		else
 		{
@@ -65,10 +64,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	{
 		if __part_type		==__PULSE_DEFAULT_PART_NAME
 		{
-			var l= array_length(global.pulse.part_types)
-			__part_type		=	string_concat(__part_type,"_",l)
-			array_push(global.pulse.part_types,new pulse_particle(__part_type))
-			__part_type = global.pulse.part_types[l]._part_type
+				array_push(global.pulse.part_types,new pulse_particle(__part_type))
+				var _struct = array_last(global.pulse.part_types);	
+				__part_type = _struct._ind
 		}
 		else
 		{
@@ -77,7 +75,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 			{
 				array_push(global.pulse.part_types,new pulse_particle(__part_type))
 				var _struct = array_last(global.pulse.part_types)
-				__part_type = _struct._part_type
+				__part_type = _struct._ind
 			}
 			else
 			{
@@ -89,7 +87,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	x					=	0
 	y					=	0
 	_part_system		=	__part_system
-	_part_type			=	__part_type
+	_ind			=	__part_type
 	_ac_channel_a		=	undefined
 	_ac_channel_b		=	undefined
 	_ac_tween			=	undefined
@@ -337,7 +335,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					{
 						//If direction is outwards from center, the direction of the particle is the random direction
 						
-						part_type_direction(_part_type,dir,dir,0,0)
+						part_type_direction(_ind,dir,dir,0,0)
 						break;
 					}
 					case PULSE_MODE.INWARD : // INWARD emits from the outside in, setting particle direction and speed particle to end their life before they go past the center point
@@ -368,9 +366,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 							_speed	=	length/__life
 						}
 
-						part_type_life(_part_type,__life,__life);
-						part_type_speed(_part_type,_speed,_speed,0,0)
-						part_type_direction(_part_type,dir,dir,0,0)
+						part_type_life(_ind,__life,__life);
+						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_direction(_ind,dir,dir,0,0)
 						
 						break;
 					}
@@ -397,9 +395,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 							_speed	=	length/__life
 						}
 						
-						part_type_life(_part_type,__life,__life);
-						part_type_speed(_part_type,_speed,_speed,0,0)
-						part_type_direction(_part_type,dir,dir,0,0)
+						part_type_life(_ind,__life,__life);
+						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_direction(_ind,dir,dir,0,0)
 						var _xx		=	x;
 						var _yy		=	y;
 						
@@ -430,9 +428,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 							_speed	=	(length-length_in)/__life
 						}
 						
-						part_type_life(_part_type,__life,__life);
-						part_type_speed(_part_type,_speed,_speed,0,0)
-						part_type_direction(_part_type,dir,dir,0,0)
+						part_type_life(_ind,__life,__life);
+						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_direction(_ind,dir,dir,0,0)
 						var _xx		=	x	+ lengthdir_x(length_in,dir);
 						var _yy		=	y	+ lengthdir_y(length_in,dir);
 						
@@ -441,7 +439,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				//If _mode is set as none, particle is kept as is, so nothing changes.
 				}
 				
-			part_particles_create(_part_system, _xx,_yy,_part_type, 1);
+			part_particles_create(_part_system, _xx,_yy,_ind, 1);
 			}
 	}
 }

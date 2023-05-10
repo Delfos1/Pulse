@@ -38,6 +38,7 @@
     {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
     {"id":{"name":"Pulse_handlers","path":"scripts/Pulse_handlers/Pulse_handlers.yy",},},
     {"id":{"name":"Font1","path":"fonts/Font1/Font1.yy",},},
+    {"id":{"name":"ParticleSystem1","path":"particles/ParticleSystem1/ParticleSystem1.yy",},},
     {"id":{"name":"Sprite2","path":"sprites/Sprite2/Sprite2.yy",},},
     {"id":{"name":"Scr_Gaussian","path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},},
     {"id":{"name":"Pulse_Particles","path":"scripts/Pulse_Particles/Pulse_Particles.yy",},},
