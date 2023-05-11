@@ -1,30 +1,73 @@
-enum PULSE_MODE
+function	pulse_add_path(_pulse,_path)
 {
-	OUTWARD=0,
-	INWARD=1,
-	SHAPE_FROM_POINT=2,
-	SHAPE_FROM_SHAPE=3,
-	NONE=4
+
+	if path_get_closed(_path) exit;
+
+	if path_get_kind(_path) //SMOOTH
+	{
+		var x0,y0,x1,y1,dir,norm,i,j,l,points;	
+		
+		points = power(path_get_number(_path)-1,path_get_precision(_path))
+		
+		var callback = function()
+		{
+			var _direction = array_create(2)
+		}
+		
+		var path_array=array_create_ext(points-1,callback)
+		
+		i=0;
+		l=0;
+		j= 1/points;
+		do
+		{
+			x0= path_get_x(_path,i)
+			y0= path_get_y(_path,i)
+			x1= path_get_x(_path,i+j)
+			y1= path_get_y(_path,i+j)
+			dir = point_direction(x0,y0,x1,y1)
+
+			norm = ((dir+90)>=360) ? dir-270 : dir+90;
+
+			path_array[l]=[dir,norm];
+			i+=j
+			l++
+		}until (i==1+j)
+	
+	
+	}
+	else					//STRAIGHT
+	{
+		var x0,y0,x1,y1,dir,norm,i,points;	
+		
+		points = path_get_number(_path)
+		
+		var callback = function()
+		{
+			var _direction = array_create(2)
+		}
+		
+		var path_array=array_create_ext(points-1,callback)
+		
+		i=0;
+		repeat(points-1)
+		{
+			x0= path_get_point_x(_path,i)
+			y0= path_get_point_y(_path,i)
+			x1= path_get_point_x(_path,i+1)
+			y1= path_get_point_y(_path,i+1)
+			dir = point_direction(x0,y0,x1,y1)
+
+			norm = ((dir+90)>=360) ? dir-270 : dir+90;
+
+			path_array[i]=[dir,norm];
+			i++
+		}
+	}
+	_pulse._path	=	path_array;
 }
-enum PULSE_SHAPE
-{
-	POINT=10,
-	SHAPE=11,
-	A_TO_B=12,
-}
 
-
-enum PULSE_RANDOM
-{
-	RANDOM=20,
-	GAUSSIAN=21,
-	NONE=22
-}
-
-
-
-
-function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
+function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
 {
 	#region Error catching
 	if !is_string(__part_system){
@@ -84,6 +127,15 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		}
 	}
 	
+	if path_get_kind(__path) //SMOOTH
+	{
+	points = power(path_get_number(__path)-1,path_get_precision(__path))
+	}
+	else
+	{
+		
+	}
+	_path				=	__path
 	x					=	0
 	y					=	0
 	_part_system		=	__part_system
@@ -193,100 +245,46 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	//Emit/Burst function 
 	static	pulse		=	function(_amount,x,y)
 	{
-		var rev,dir,dir_curve,eval,eval_a,eval_b,length,_xx,_yy;
+		var rev,dir,dir_curve,eval,eval_a,eval_b,length,_xx,_yy,x0,y0,x1,y1,norm,_dir,i,j;
 		dir = _angle_start
 		rev	= 1
+		eval = 1
 		// KEEP ROTATION TRANSFORM WITHIN 360 ANGLE
 		if  _rot>=360	_rot-=360
 
 		repeat(_amount)
 			{
 				
+				#region PATH
+				
+				//If there is an animation curve channel assigned, evaluate it.
+				
+				i		= random_range(0,1);
+				j		= 1/points
+				x0		= path_get_x(_path,i)
+				y0		= path_get_y(_path,i)
+				x1		= path_get_x(_path,i+j)
+				y1		= path_get_y(_path,i+j)
+				_dir	= point_direction(x0,y0,x1,y1)
+
+				norm	= ((_dir+90)>=360) ? _dir-270 : _dir+90;
+
+				
+				#endregion
 
 				#region ASSIGN DIRECTION (angle)
 				//Chooses a direction at random and then plots a random length in that direction.
 				//Then adds that coordinate to the origin coordinate.
 
-				if _angle_start==_angle_end
-				{
-					dir			=	_angle_end;
-				}
-				else if _direction_mode == PULSE_RANDOM.RANDOM
-				{
-					//Use random to distribute the direction
-					
-					dir			=	random_range(_angle_start,_angle_end);
-				}
-				else if _direction_mode == PULSE_RANDOM.GAUSSIAN
-				{
-					//Use gaussian to distribute the direction along the mean
-					//This doesnt work great
-					
-					var main=	(_angle_start+_angle_end)/2
-					dir			=	gauss(main,main/3);
-				}
-				else if  _direction_mode == PULSE_RANDOM.NONE
-				{
-					//Distribute the direction evenly by particle amount and number of revolutions
-					var _range = _angle_end-_angle_start
-					dir += (_range/(_amount/_revolutions))
-					
-					if dir >=_angle_end
-					{
-						dir=_angle_start
-					}
-				}
+				dir=norm
+				//DIRECTION OF PATH
+				//NORMAL
+				//NORMAL BOTHSIDES
+				//TWEEN ALONG DIRECTION
 
 				#endregion
 								
-				#region SHAPE (animation curve)
 				
-				//If there is an animation curve channel assigned, evaluate it.
-				
-				eval		=	1;
-				if _ac_channel_a !=undefined
-				{
-					dir_curve = _rot+dir;
-					if dir_curve>360 dir_curve-=360;
-					
-					if _ac_channel_b !=undefined
-					{
-						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
-						eval_b	=	animcurve_channel_evaluate(_ac_channel_b,dir_curve*0.0028);
-						eval	=	lerp(eval_a,eval_b,abs(_ac_tween))
-					}
-					else
-					{
-						// IF THERE IS NO SHAPE B ASSIGNED
-						
-						if (_mode==PULSE_MODE.SHAPE_FROM_SHAPE)
-						{
-							_mode=PULSE_MODE.SHAPE_FROM_POINT
-							show_debug_message("PULSE ERROR: Missing Shape B. Reverting mode to Shape from Point")
-						}
-						if _distribution_mode == PULSE_SHAPE.A_TO_B
-						{
-							_distribution_mode = PULSE_RANDOM.RANDOM
-							show_debug_message("PULSE ERROR: Missing Shape B. Reverting Random Mode to Random")
-						}
-						eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
-					}
-					
-				}
-				else if (_mode==PULSE_MODE.SHAPE_FROM_POINT or _mode==PULSE_MODE.SHAPE_FROM_SHAPE) && _ac_channel_b ==undefined
-				{
-					//IF THERE IS NO SHAPE A ASSIGNED
-					
-					_mode=PULSE_MODE.OUTWARD
-					show_debug_message("PULSE ERROR: Missing Shape A. Reverting mode to Outward")
-				}
-				else if	_ac_channel_b !=undefined
-				{
-					show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
-					eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
-				}
-				
-				#endregion
 				
 				#region ASSIGN LENGTH (radius)
 				
@@ -325,9 +323,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				}
 				#endregion
 				
-				// Set coordinate position relative to origin point
-				var _xx		=	x	+ (lengthdir_x(length,dir)*_scalex);
-				var _yy		=	y	+ (lengthdir_y(length,dir)*_scaley);
+				// Set coordinate position relative to random point
+				var _xx		=	x0	//+ (lengthdir_x(length,dir)*_scalex);
+				var _yy		=	y0	//+ (lengthdir_y(length,dir)*_scaley);
 			
 				switch(_mode)
 				{
@@ -343,7 +341,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						//Direction is inwards, the opposite of the prev. assigned direction
 						//It is necessary to also calculate the distance to the center to change speed/_life
 				
-						dir			=	point_direction(_xx,_yy,x,y)
+						dir			=	point_direction(_xx,_yy,x0,y0)
 						
 						if _speed_start == undefined
 						{
@@ -443,3 +441,4 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 			}
 	}
 }
+

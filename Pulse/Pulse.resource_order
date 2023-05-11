@@ -21,8 +21,10 @@
     {"name":"Pulse_handlers","order":4,"path":"scripts/Pulse_handlers/Pulse_handlers.yy",},
     {"name":"Sprite2","order":1,"path":"sprites/Sprite2/Sprite2.yy",},
     {"name":"Scr_Gaussian","order":3,"path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},
+    {"name":"Pulse_Paths","order":6,"path":"scripts/Pulse_Paths/Pulse_Paths.yy",},
     {"name":"Pulse_Particles","order":5,"path":"scripts/Pulse_Particles/Pulse_Particles.yy",},
     {"name":"Test_Me","order":16,"path":"objects/Test_Me/Test_Me.yy",},
+    {"name":"Test_Me2","order":17,"path":"objects/Test_Me2/Test_Me2.yy",},
     {"name":"Pulse","order":1,"path":"scripts/Pulse/Pulse.yy",},
   ],
 }
