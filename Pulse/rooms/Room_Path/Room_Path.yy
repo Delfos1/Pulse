@@ -1,19 +1,19 @@
 {
   "resourceType": "GMRoom",
   "resourceVersion": "1.0",
-  "name": "Room1",
+  "name": "Room_Path",
   "creationCodeFile": "",
   "inheritCode": false,
   "inheritCreationOrder": false,
   "inheritLayers": false,
   "instanceCreationOrder": [
-    {"name":"inst_42E27502","path":"rooms/Room1/Room1.yy",},
+    {"name":"inst_42E27502_1","path":"rooms/Room_Path/Room_Path.yy",},
   ],
   "isDnd": false,
   "layers": [
     {"resourceType":"GMRPathLayer","resourceVersion":"1.0","name":"Path_1","colour":4278190335,"depth":0,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"layers":[],"pathId":{"name":"Path1","path":"paths/Path1/Path1.yy",},"properties":[],"userdefinedDepth":false,"visible":true,},
     {"resourceType":"GMRInstanceLayer","resourceVersion":"1.0","name":"Instances","depth":100,"effectEnabled":true,"effectType":"_effect_glow","gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[
-        {"resourceType":"GMRInstance","resourceVersion":"1.0","name":"inst_42E27502","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"objectId":{"name":"Test_Me2","path":"objects/Test_Me2/Test_Me2.yy",},"properties":[],"rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":643.0,"y":369.0,},
+        {"resourceType":"GMRInstance","resourceVersion":"1.0","name":"inst_42E27502_1","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"objectId":{"name":"Test_Me_paths","path":"objects/Test_Me_paths/Test_Me_paths.yy",},"properties":[],"rotation":0.0,"scaleX":1.1875,"scaleY":1.0,"x":640.0,"y":369.0,},
       ],"layers":[],"properties":[
         {"name":"g_GlowRadius","type":0,"value":"401",},
         {"name":"g_GlowQuality","type":0,"value":"5",},

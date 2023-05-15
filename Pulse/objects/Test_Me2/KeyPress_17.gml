@@ -1,1 +1,0 @@
-pulse_add_path(sys,Path1)

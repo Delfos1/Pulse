@@ -158,12 +158,13 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 	_revolutions		=	1
 	_force_to_center	=	false
 	_force_to_edge		=	false
+	_direction_range	=	[0,0]
 
 	
 	
 	//Pulse properties settings
 	
-	static	shape		=	function(__ac_curve,__ac_channel,_channel="a")
+	static	shape			=	function(__ac_curve,__ac_channel,_channel="a")
 	{
 		try
 		{
@@ -183,7 +184,7 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 		}
 	}
 	
-	static	tween_shape	=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
+	static	tween_shape		=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
 	{
 		shape(__ac_curve_a,__ac_channel_a,"a");
 		shape(__ac_curve_b,__ac_channel_b,"b");
@@ -191,20 +192,25 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 		_ac_tween =	0;
 	}
 	
-	static	angle		=	function(__angle_start,__angle_end)
+	static	angle			=	function(__angle_start,__angle_end)
 	{
 		if !is_real(__angle_start)	or !is_real(__angle_end){		show_debug_message("PULSE ERROR: Provided invalid input type (not a number)"); exit}
 		_angle_start		=	__angle_start;
 		_angle_end			=	__angle_end;
 	}
+	
+	static direction_range	=	function(__dir_start, __dir_end)
+	{
+		_direction_range	=[__dir_start, __dir_end]
+	}
 
-	static	radius		=	function(__radius_internal,__radius_external)
+	static	radius			=	function(__radius_internal,__radius_external)
 	{
 		_radius_internal	=	__radius_internal;
 		_radius_external	=	__radius_external;
 	}
 	
-	static	inward		=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_center=false)
+	static	inward			=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_center=false)
 	{
 				
 		_speed_start		=	[__speed_min,__speed_max];
@@ -259,15 +265,15 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 				
 				//If there is an animation curve channel assigned, evaluate it.
 				
-				i		= random_range(0,1);
+				i		= random_range(_angle_start,_angle_end);
 				j		= 1/points
 				x0		= path_get_x(_path,i)
 				y0		= path_get_y(_path,i)
 				x1		= path_get_x(_path,i+j)
 				y1		= path_get_y(_path,i+j)
-				_dir	= point_direction(x0,y0,x1,y1)
+				dir		= point_direction(x0,y0,x1,y1)
 
-				norm	= ((_dir+90)>=360) ? _dir-270 : _dir+90;
+				norm	= ((dir+90)>=360) ? dir-270 : dir+90;
 
 				
 				#endregion
@@ -276,7 +282,8 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 				//Chooses a direction at random and then plots a random length in that direction.
 				//Then adds that coordinate to the origin coordinate.
 
-				dir=norm
+				dir =	norm + random_range(_direction_range[0],_direction_range[1])
+				dir =  dir>=360 ? dir-360 : dir;
 				//DIRECTION OF PATH
 				//NORMAL
 				//NORMAL BOTHSIDES
@@ -324,8 +331,8 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 				#endregion
 				
 				// Set coordinate position relative to random point
-				var _xx		=	x0	//+ (lengthdir_x(length,dir)*_scalex);
-				var _yy		=	y0	//+ (lengthdir_y(length,dir)*_scaley);
+				var _xx		=	x0	+ (lengthdir_x(length,dir)*_scalex);
+				var _yy		=	y0	+ (lengthdir_y(length,dir)*_scaley);
 			
 				switch(_mode)
 				{
