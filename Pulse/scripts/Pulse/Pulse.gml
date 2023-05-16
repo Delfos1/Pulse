@@ -12,8 +12,6 @@ enum PULSE_SHAPE
 	SHAPE=11,
 	A_TO_B=12,
 }
-
-
 enum PULSE_RANDOM
 {
 	RANDOM=20,
@@ -152,19 +150,19 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		_radius_external	=	__radius_external;
 	}
 	
-	static	inward		=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_center=false)
+	static	inward		=	function(__speed_min,__speed_max,__acc,__life_min,__life_max,__force_to_center=false)
 	{
 				
-		_speed_start		=	[__speed_min,__speed_max];
+		_speed_start		=	[__speed_min,__speed_max,__acc,0];
 		_life				=	[__life_min,__life_max]
 		_force_to_center	=	__force_to_center;
 		_mode				=	PULSE_MODE.INWARD
 	}
 	
-	static	outward_shape	=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_edge=false,__mode=PULSE_MODE.SHAPE_FROM_POINT)
+	static	outward_shape	=	function(__speed_min,__speed_max,__acc,__life_min,__life_max,__force_to_edge=false,__mode=PULSE_MODE.SHAPE_FROM_POINT)
 	{
 			
-		_speed_start		=	[__speed_min,__speed_max];
+		_speed_start		=	[__speed_min,__speed_max,__acc,0];
 		_life				=	[__life_min,__life_max]
 		_force_to_edge		=	__force_to_edge;
 		_mode				=	__mode
@@ -356,18 +354,19 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						
 						var _speed	=	random_range(_speed_start[0],_speed_start[1])
 						var __life	=	random_range(_life[0],_life[1])
+						var _accel	=	_speed_start[2]
 
-						var displacement = _speed*__life
+						var displacement = (_speed*__life)+(_accel*__life)
 						
 						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin point.
 						
 						if ((displacement < length) && _force_to_center) or (displacement > length)
 						{
-							_speed	=	length/__life
+							_speed	=	(length-(_accel*__life))/__life
 						}
 
 						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_speed(_ind,_speed,_speed,_accel,0)
 						part_type_direction(_ind,dir,dir,0,0)
 						
 						break;
@@ -385,18 +384,19 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						
 						var _speed	=	random_range(_speed_start[0],_speed_start[1])
 						var __life	=	random_range(_life[0],_life[1])
+						var _accel	=	_speed_start[2]
 
-						var displacement = _speed*__life
+						var displacement = (_speed*__life)+(_accel*__life)
 						
 						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin.
 						
 						if ((displacement < length) && _force_to_edge) or (displacement > length)
 						{
-							_speed	=	length/__life
+							_speed	=	(length-(_accel*__life))/__life
 						}
 						
 						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_speed(_ind,_speed,_speed,_accel,0)
 						part_type_direction(_ind,dir,dir,0,0)
 						var _xx		=	x;
 						var _yy		=	y;
@@ -418,18 +418,19 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						var length_in	=	eval_a*_radius_internal;
 						var _speed		=	random_range(_speed_start[0],_speed_start[1])
 						var __life		=	random_range(_life[0],_life[1])
+						var _accel	=	_speed_start[2]
 
-						var displacement = _speed*__life
+						var displacement = (_speed*__life)+(_accel*__life)
 						
 						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin.
 						
 						if ((displacement < length-length_in) && _force_to_edge) or (displacement > length-length_in)
 						{
-							_speed	=	(length-length_in)/__life
+							_speed	=	(length-(_accel*__life))/__life
 						}
 						
 						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
+						part_type_speed(_ind,_speed,_speed,_accel,0)
 						part_type_direction(_ind,dir,dir,0,0)
 						var _xx		=	x	+ lengthdir_x(length_in,dir);
 						var _yy		=	y	+ lengthdir_y(length_in,dir);

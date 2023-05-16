@@ -29,6 +29,7 @@ function pulse_make_particle(_name=__PULSE_DEFAULT_PART_NAME,_return_index=true)
 			return _struct
 		}
 }
+
 function pulse_particle(__name) constructor
 {
 	if __name		==__PULSE_DEFAULT_PART_NAME
