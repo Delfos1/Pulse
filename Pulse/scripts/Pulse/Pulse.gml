@@ -1,24 +1,26 @@
 enum PULSE_MODE
 {
-	OUTWARD=0,
-	INWARD=1,
-	SHAPE_FROM_POINT=2,
-	SHAPE_FROM_SHAPE=3,
-	NONE=4
+	OUTWARD				=	0,
+	INWARD				=	1,
+	SHAPE_FROM_POINT	=	2,
+	SHAPE_FROM_SHAPE	=	3,
+	NONE				=	4
 }
 enum PULSE_SHAPE
 {
-	POINT=10,
-	SHAPE=11,
-	A_TO_B=12,
+	POINT				=	10,
+	SHAPE				=	11,
+	A_TO_B				=	12,
+	PATH				=	13
 }
 
 
 enum PULSE_RANDOM
 {
-	RANDOM=20,
-	GAUSSIAN=21,
-	NONE=22
+	RANDOM				=	20,
+	GAUSSIAN			=	21,
+	EVEN				=	22,
+	NONE				=	23,
 }
 
 
@@ -26,92 +28,65 @@ enum PULSE_RANDOM
 
 function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
 {
-	#region Error catching
-	if !is_string(__part_system){
-	if !part_system_exists(__part_system)						{	show_debug_message("PULSE ERROR: Provided invalid particle system") ;exit}
-	}
-	if !is_string(__part_type){
-	if !part_type_exists(__part_type)  							{	show_debug_message("PULSE ERROR: Provided invalid particle type") ;exit}
-	}
-	if !is_real(__radius_external) && __radius_external!=0		{	show_debug_message("PULSE ERROR: Provided invalid input type (not a number)") ;exit}
-	#endregion
 	
-	if is_string(__part_system)
+	if  struct_exists(global.pulse.systems,__part_system)
 	{
-		if __part_system==__PULSE_DEFAULT_SYS_NAME
-		{
-			array_push(global.pulse.systems,new pulse_system(__part_system))
-			var _struct = array_last(global.pulse.systems)
-			__part_system = _struct._system
-		}
-		else
-		{
-			var get = pulse_system_get_ID(__part_system)
-			if get == -1
-			{
-				array_push(global.pulse.systems,new pulse_system(__part_system))
-				var _struct = array_last(global.pulse.systems)
-				__part_system = _struct._system
-			}
-			else
-			{
-				__part_system = get
-			}
-		}
+		_part_system = global.pulse.systems[$__part_system];
 	}
-	
-	if is_string(__part_type)
+	else
 	{
-		if __part_type		==__PULSE_DEFAULT_PART_NAME
-		{
-				array_push(global.pulse.part_types,new pulse_particle(__part_type))
-				var _struct = array_last(global.pulse.part_types);	
-				__part_type = _struct._ind
-		}
-		else
-		{
-			var get = pulse_system_get_ID(__part_type)
-			if get == -1
-			{
-				array_push(global.pulse.part_types,new pulse_particle(__part_type))
-				var _struct = array_last(global.pulse.part_types)
-				__part_type = _struct._ind
-			}
-			else
-			{
-				__part_type = get
-			}
-		}
+		_part_system = pulse_make_system(__part_system);
 	}
+
+	if  struct_exists(global.pulse.part_types,__part_type)
+	{
+		_part_type = global.pulse.part_types[$__part_type];
+	}
+	else
+	{
+		_part_type = pulse_make_particle(__part_type);
+	}
+
+	_part_system		=	_part_system.index
+	_index				=	_part_type._index
 	
-	x					=	0
-	y					=	0
-	_part_system		=	__part_system
-	_ind				=	__part_type
+	//emitter form
+	_path_a				=	undefined
+	_path_b				=	undefined
+	_path_res			=	10
 	_ac_channel_a		=	undefined
 	_ac_channel_b		=	undefined
 	_ac_tween			=	undefined
 	_radius_external	=	abs(__radius_external)	
 	_radius_internal	=	0
-	_angle_start		=	0
-	_angle_end			=	360
+	_mask_start			=	0
+	_mask_end			=	1
+	
+	//emitter properties
+	x					=	0
+	y					=	0
 	_scalex				=	1
 	_scaley				=	1
 	_rot				=	270
-	_speed_start		=	undefined
-	_life				=	undefined
 	_mode				=	__PULSE_DEFAULT_EMITTER_MODE
-	_distribution_mode	=	__PULSE_DEFAULT_EMITTER_DISTRIBUTION
-	_direction_mode		=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
+	_dist_along_normal	=	__PULSE_DEFAULT_EMITTER_DISTRIBUTION
+	_dist_along_form	=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
 	_revolutions		=	1
 	_force_to_center	=	false
-	_force_to_edge		=	false
+	_force_to_edge		=	false	
+	
+	
+	
+	_direction_range	=	[0,0]
+	_speed_start		=	_part_type._speed
+	_life				=	_part_type._life
+
 
 	
 	
 	//Pulse properties settings
 	
-	static	shape		=	function(__ac_curve,__ac_channel,_channel="a")
+	static	stencil			=	function(__ac_curve,__ac_channel,_channel="a")
 	{
 		try
 		{
@@ -131,28 +106,32 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		}
 	}
 	
-	static	tween_shape	=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
+	static	tween_stencil	=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
 	{
-		shape(__ac_curve_a,__ac_channel_a,"a");
-		shape(__ac_curve_b,__ac_channel_b,"b");
+		stencil(__ac_curve_a,__ac_channel_a,"a");
+		stencil(__ac_curve_b,__ac_channel_b,"b");
 
 		_ac_tween =	0;
 	}
 	
-	static	angle		=	function(__angle_start,__angle_end)
+	static	mask			=	function(__mask_start,__mask_end)
 	{
-		if !is_real(__angle_start)	or !is_real(__angle_end){		show_debug_message("PULSE ERROR: Provided invalid input type (not a number)"); exit}
-		_angle_start		=	__angle_start;
-		_angle_end			=	__angle_end;
+		if !is_real(__mask_start)	or !is_real(__mask_end){		show_debug_message("PULSE ERROR: Provided invalid input type (not a number)"); exit}
+		_mask_start		=	__mask_start;
+		_mask_end			=	__mask_end;
 	}
 
-	static	radius		=	function(__radius_internal,__radius_external)
+	static	radius			=	function(__radius_internal,__radius_external)
 	{
 		_radius_internal	=	__radius_internal;
 		_radius_external	=	__radius_external;
 	}
 	
+<<<<<<< Updated upstream
 	static	inward		=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_center=false)
+=======
+	static	inward			=	function(__speed_min,__speed_max,__acc,__life_min,__life_max,__force_to_center=false)
+>>>>>>> Stashed changes
 	{
 				
 		_speed_start		=	[__speed_min,__speed_max];
@@ -174,27 +153,66 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	{
 		if _angle
 		{
-			_direction_mode		= PULSE_RANDOM.NONE
+			_dist_along_form		= PULSE_RANDOM.EVEN
 		}
 		if _length
 		{
-			_distribution_mode	= PULSE_RANDOM.NONE	
+			_dist_along_normal		= PULSE_RANDOM.EVEN	
 		}
 		_revolutions = __revolutions
 	}
 
-	static	transform	=	function(__scalex=_scalex,__scaley=_scaley,__rot=_rot)
+	static	transform		=	function(__scalex=_scalex,__scaley=_scaley,__rot=_rot)
 	{
 		_scalex			=	__scalex
 		_scaley			=	__scaley
 		_rot			=	__rot
 	}
 	
+	static	draw_debug		=	function(x,y)
+	{
+		// draw radiuses
+		var ext_x =  _radius_external*_scalex
+		var int_x =  _radius_internal*_scalex
+		var ext_y =  _radius_external*_scaley
+		var int_y =  _radius_internal*_scaley
+		draw_ellipse(x-ext_x,y-ext_y,x+ext_x,y+ext_y,true)
+		draw_ellipse(x-int_x,y-int_y,x+int_x,y+int_y,true)
+		
+		//draw origin
+		draw_line_width_color(x-10,y,x+10,y,1,c_green,c_green)
+		draw_line_width_color(x,y-10,x,y+10,1,c_green,c_green)
+		
+		//draw angle
+		/*
+		
+		var _anstart_x = x+lengthdir_x(ext_x,_angle_start)
+		var _anstart_y = y+lengthdir_y(ext_y,_angle_start)
+		var _anend_x = x+lengthdir_x(ext_x,_angle_end)
+		var _anend_y = y+lengthdir_y(ext_y,_angle_end)
+		draw_line_width_color(x,y,_anstart_x,_anstart_y,1,c_green,c_green)
+		draw_line_width_color(x,y,_anend_x,_anend_y,1,c_green,c_green)
+		*/
+		// draw direction
+		if _mode == PULSE_MODE.INWARD
+		{
+			draw_arrow(x+(ext_x/2),y,x,y,10)
+		}
+		else
+		{
+			draw_arrow(x,y,x+(ext_x/2),y,10)
+		}
+	}
+	
+	
 	//Emit/Burst function 
 	static	pulse		=	function(_amount,x,y)
 	{
-		var rev,dir,dir_curve,eval,eval_a,eval_b,length,_xx,_yy;
-		dir = _angle_start
+		var rev,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,point,transv;
+		var _speed_start	= _part_type._speed
+		var _life			=	_part_type._life
+		
+		point = _mask_start
 		rev	= 1
 		// KEEP ROTATION TRANSFORM WITHIN 360 ANGLE
 		if  _rot>=360	_rot-=360
@@ -202,57 +220,99 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		repeat(_amount)
 			{
 				
+				#region ASSIGN POINT 
+				//Chooses a point at random along the form (number between 0 and 1)
 
-				#region ASSIGN DIRECTION (angle)
-				//Chooses a direction at random and then plots a random length in that direction.
-				//Then adds that coordinate to the origin coordinate.
-
-				if _angle_start==_angle_end
+				if _mask_start==_mask_end
 				{
-					dir			=	_angle_end;
+					point			=	_mask_end;
 				}
-				else if _direction_mode == PULSE_RANDOM.RANDOM
+				else if _dist_along_form	== PULSE_RANDOM.RANDOM
 				{
-					//Use random to distribute the direction
+					//Use random to distribute along 
 					
-					dir			=	random_range(_angle_start,_angle_end);
+					point			=	random_range(_mask_start,_mask_end);
 				}
-				else if _direction_mode == PULSE_RANDOM.GAUSSIAN
+				else if _dist_along_form	== PULSE_RANDOM.GAUSSIAN
 				{
-					//Use gaussian to distribute the direction along the mean
+					//Use gaussian to distribute the pointection along the mean
 					//This doesnt work great
 					
-					var main=	(_angle_start+_angle_end)/2
-					dir			=	gauss(main,main/3);
+					var main=	(_mask_start+_mask_end)/2
+					point			=	gauss(main,main/3);
 				}
-				else if  _direction_mode == PULSE_RANDOM.NONE
+				else if _dist_along_form	== PULSE_RANDOM.EVEN
 				{
-					//Distribute the direction evenly by particle amount and number of revolutions
-					var _range = _angle_end-_angle_start
-					dir += (_range/(_amount/_revolutions))
+					//Distribute the point evenly by particle amount and number of revolutions
+					var _range = _mask_end-_mask_start
+					point += (_range/_revolutions)
 					
-					if dir >=_angle_end
+					if point >=_mask_end
 					{
-						dir=_angle_start
+						point=_mask_start
 					}
 				}
 
 				#endregion
-								
-				#region SHAPE (animation curve)
+				
+				#region FORM (origin and normal)
+				
+				//If there is a path assigned, evaluate it.
+				if		_path_a != undefined 
+				{
+					point		= random_range(_mask_start,_mask_end);
+					j			= 1/_path_res
+					x_origin	= path_get_x(_path_a,point)
+					y_origin	= path_get_y(_path_a,point)
+					x1			= path_get_x(_path_a,point+j)
+					y1			= path_get_y(_path_a,point+j)
+					transv		= point_direction(x_origin,y_origin,x1,y1)
+
+					normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+				}
+				//Otherwise pick the center of the emitter and convert point into a normal from center
+				else
+				{
+					x_origin	=	x
+					y_origin	=	y
+					normal		=	point*360
+				}
+				
+				#endregion
+
+				#region DIRECTION (angle)
+				//Adds a random range to the normal
+				
+				if _direction_range[0]!=_direction_range[1]
+				{
+					dir =	normal + random_range(_direction_range[0],_direction_range[1])
+				}
+				else
+				{
+					dir =	normal + _direction_range[0]
+				}
+
+				dir =  dir>=360 ? dir-360 : dir;
+
+				#endregion
+
+				#region STENCIL (animation curve)
 				
 				//If there is an animation curve channel assigned, evaluate it.
 				
 				eval		=	1;
+				eval_a		=	1;
+				eval_b		=	1;
+				
 				if _ac_channel_a !=undefined
 				{
-					dir_curve = _rot+dir;
-					if dir_curve>360 dir_curve-=360;
+					dir_stencil = _rot+normal;
+					dir_stencil=  dir_stencil>=360 ? dir_stencil-360 : dir_stencil
 					
 					if _ac_channel_b !=undefined
 					{
-						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
-						eval_b	=	animcurve_channel_evaluate(_ac_channel_b,dir_curve*0.0028);
+						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil*0.0028);
+						eval_b	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil*0.0028);
 						eval	=	lerp(eval_a,eval_b,abs(_ac_tween))
 					}
 					else
@@ -264,12 +324,12 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 							_mode=PULSE_MODE.SHAPE_FROM_POINT
 							show_debug_message("PULSE ERROR: Missing Shape B. Reverting mode to Shape from Point")
 						}
-						if _distribution_mode == PULSE_SHAPE.A_TO_B
+						if _dist_along_normal == PULSE_SHAPE.A_TO_B
 						{
-							_distribution_mode = PULSE_RANDOM.RANDOM
+							_dist_along_normal = PULSE_RANDOM.RANDOM
 							show_debug_message("PULSE ERROR: Missing Shape B. Reverting Random Mode to Random")
 						}
-						eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
+						eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil*0.0028);
 					}
 					
 				}
@@ -283,7 +343,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				else if	_ac_channel_b !=undefined
 				{
 					show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
-					eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_curve*0.0028);
+					eval	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil*0.0028);
 				}
 				
 				#endregion
@@ -296,26 +356,26 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					
 					length		=	eval*_radius_external;
 				}
-				else if _distribution_mode == PULSE_RANDOM.RANDOM
+				else if _dist_along_normal == PULSE_RANDOM.RANDOM
 				{
 					//Distribute along the radius by randomizing, then adjusting by shape evaluation
 					
 					length		=	eval*random_range(_radius_internal,_radius_external);
 				}
-				else if _distribution_mode == PULSE_RANDOM.GAUSSIAN
+				else if _dist_along_normal == PULSE_RANDOM.GAUSSIAN
 				{
 					//Distribute along the radius by gaussian random, then adjusting by shape evaluation
 					//This doesnt work great
 					
 					length		=	eval*gauss(_radius_internal,_radius_external-_radius_internal)//,_radius_internal,_radius_external);
 				}
-				else if _distribution_mode == PULSE_SHAPE.A_TO_B
+				else if _dist_along_normal == PULSE_SHAPE.A_TO_B
 				{
 					//Distribute along the radius by randomizing, evaluating by each shape individually
 					
 					length		=	random_range(eval_a*_radius_internal,eval_b*_radius_external)
 				}
-				else if _distribution_mode == PULSE_RANDOM.NONE
+				else if _dist_along_normal == PULSE_RANDOM.EVEN
 				{
 					//Distribute evenly
 					
@@ -324,20 +384,23 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					if rev>_revolutions rev=1
 				}
 				#endregion
-				
-				// Set coordinate position relative to origin point
-				var _xx		=	x	+ (lengthdir_x(length,dir)*_scalex);
-				var _yy		=	y	+ (lengthdir_y(length,dir)*_scaley);
 			
-				switch(_mode)
-				{
-					case PULSE_MODE.OUTWARD : // OUTWARD emits from the inside out, setting the particle direction only
+			
+				var _speed		=	random_range(_speed_start[0],_speed_start[1])
+				var __life		=	random_range(_life[0],_life[1])
+				var _accel		=	_speed_start[2]
+			
+			
+				if abs(dir-normal)<=75			//NORMAL AWAY FROM CENTER
+				{		
+			
+					var displacement = (_speed*__life)+(_accel*__life)
+							
+					if ((displacement < length) && _force_to_edge) or (displacement > length)
 					{
-						//If direction is outwards from center, the direction of the particle is the random direction
-						
-						part_type_direction(_ind,dir,dir,0,0)
-						break;
+						_speed	=	(length-(_accel*__life))/__life
 					}
+<<<<<<< Updated upstream
 					case PULSE_MODE.INWARD : // INWARD emits from the outside in, setting particle direction and speed particle to end their life before they go past the center point
 					{
 						//Direction is inwards, the opposite of the prev. assigned direction
@@ -437,9 +500,37 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						break;
 					}
 				//If _mode is set as none, particle is kept as is, so nothing changes.
+=======
+>>>>>>> Stashed changes
 				}
 				
-			part_particles_create(_part_system, _xx,_yy,_ind, 1);
+				else if abs(angle_difference(dir,normal))<=105		//TRANSVERSAL
+				{
+						part_type_direction(_index,dir,dir,0,0)
+				}
+				
+				else												//NORMAL TOWARDS CENTER
+				{										
+					var displacement = (_speed*__life)+(_accel*__life)
+						
+						
+					if ((displacement < length) && _force_to_center) or (displacement > length)
+					{
+						_speed	=	(length-(_accel*__life))/__life
+					}
+
+
+				}
+				
+				
+				part_type_life(_index,__life,__life);
+				part_type_speed(_index,_speed,_speed,_accel,0)
+				part_type_direction(_index,dir,dir,0,0)
+				x_origin	+= (lengthdir_x(length,normal)*_scalex);
+				y_origin	+= (lengthdir_y(length,normal)*_scaley);
+				
+				part_particles_create(_part_system, x_origin,y_origin,_index, 1);
+				_part_type.reset()
 			}
 	}
 }

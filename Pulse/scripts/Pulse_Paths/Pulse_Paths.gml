@@ -1,84 +1,5 @@
-function	pulse_add_path(_pulse,_path)
-{
-
-	if path_get_closed(_path) exit;
-
-	if path_get_kind(_path) //SMOOTH
-	{
-		var x0,y0,x1,y1,dir,norm,i,j,l,points;	
-		
-		points = power(path_get_number(_path)-1,path_get_precision(_path))
-		
-		var callback = function()
-		{
-			var _direction = array_create(2)
-		}
-		
-		var path_array=array_create_ext(points-1,callback)
-		
-		i=0;
-		l=0;
-		j= 1/points;
-		do
-		{
-			x0= path_get_x(_path,i)
-			y0= path_get_y(_path,i)
-			x1= path_get_x(_path,i+j)
-			y1= path_get_y(_path,i+j)
-			dir = point_direction(x0,y0,x1,y1)
-
-			norm = ((dir+90)>=360) ? dir-270 : dir+90;
-
-			path_array[l]=[dir,norm];
-			i+=j
-			l++
-		}until (i==1+j)
-	
-	
-	}
-	else					//STRAIGHT
-	{
-		var x0,y0,x1,y1,dir,norm,i,points;	
-		
-		points = path_get_number(_path)
-		
-		var callback = function()
-		{
-			var _direction = array_create(2)
-		}
-		
-		var path_array=array_create_ext(points-1,callback)
-		
-		i=0;
-		repeat(points-1)
-		{
-			x0= path_get_point_x(_path,i)
-			y0= path_get_point_y(_path,i)
-			x1= path_get_point_x(_path,i+1)
-			y1= path_get_point_y(_path,i+1)
-			dir = point_direction(x0,y0,x1,y1)
-
-			norm = ((dir+90)>=360) ? dir-270 : dir+90;
-
-			path_array[i]=[dir,norm];
-			i++
-		}
-	}
-	_pulse._path	=	path_array;
-}
-
 function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
 {
-	#region Error catching
-	if !is_string(__part_system){
-	if !part_system_exists(__part_system)						{	show_debug_message("PULSE ERROR: Provided invalid particle system") ;exit}
-	}
-	if !is_string(__part_type){
-	if !part_type_exists(__part_type)  							{	show_debug_message("PULSE ERROR: Provided invalid particle type") ;exit}
-	}
-	if !is_real(__radius_external) && __radius_external!=0		{	show_debug_message("PULSE ERROR: Provided invalid input type (not a number)") ;exit}
-	#endregion
-	
 	if is_string(__part_system)
 	{
 		if __part_system==__PULSE_DEFAULT_SYS_NAME
@@ -92,13 +13,13 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 			var get = pulse_system_get_ID(__part_system)
 			if get == -1
 			{
-				array_push(global.pulse.systems,new pulse_system(__part_system))
-				var _struct = array_last(global.pulse.systems)
-				__part_system = _struct._system
+				array_push(global.pulse.systems,new pulse_system(__part_system));
+				var _struct = array_last(global.pulse.systems);
+				__part_system = _struct._system;
 			}
 			else
 			{
-				__part_system = get
+				__part_system = get;
 			}
 		}
 	}
@@ -109,7 +30,7 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 		{
 				array_push(global.pulse.part_types,new pulse_particle(__part_type))
 				var _struct = array_last(global.pulse.part_types);	
-				__part_type = _struct._ind
+				__part_type = _struct._index
 		}
 		else
 		{
@@ -118,7 +39,7 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 			{
 				array_push(global.pulse.part_types,new pulse_particle(__part_type))
 				var _struct = array_last(global.pulse.part_types)
-				__part_type = _struct._ind
+				__part_type = _struct._index
 			}
 			else
 			{
@@ -133,13 +54,13 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 	}
 	else
 	{
-		
+		points = 1
 	}
 	_path				=	__path
 	x					=	0
 	y					=	0
 	_part_system		=	__part_system
-	_ind				=	__part_type
+	_index				=	__part_type
 	_ac_channel_a		=	undefined
 	_ac_channel_b		=	undefined
 	_ac_tween			=	undefined
@@ -153,12 +74,13 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 	_speed_start		=	undefined
 	_life				=	undefined
 	_mode				=	__PULSE_DEFAULT_EMITTER_MODE
-	_distribution_mode	=	__PULSE_DEFAULT_EMITTER_DISTRIBUTION
-	_direction_mode		=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
+	_dist_along_normal	=	__PULSE_DEFAULT_EMITTER_DISTRIBUTION
+	_dist_along_form		=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
 	_revolutions		=	1
 	_force_to_center	=	false
 	_force_to_edge		=	false
 	_direction_range	=	[0,0]
+	_resolution			=	10
 
 	
 	
@@ -232,11 +154,11 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 	{
 		if _angle
 		{
-			_direction_mode		= PULSE_RANDOM.NONE
+			_dist_along_form		= PULSE_RANDOM.NONE
 		}
 		if _length
 		{
-			_distribution_mode	= PULSE_RANDOM.NONE	
+			_dist_along_normal	= PULSE_RANDOM.NONE	
 		}
 		_revolutions = __revolutions
 	}
@@ -257,39 +179,15 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 		eval = 1
 		// KEEP ROTATION TRANSFORM WITHIN 360 ANGLE
 		if  _rot>=360	_rot-=360
-
+		
+		points = _resolution
+		
 		repeat(_amount)
 			{
 				
-				#region PATH
 				
-				//If there is an animation curve channel assigned, evaluate it.
-				
-				i		= random_range(_angle_start,_angle_end);
-				j		= 1/points
-				x0		= path_get_x(_path,i)
-				y0		= path_get_y(_path,i)
-				x1		= path_get_x(_path,i+j)
-				y1		= path_get_y(_path,i+j)
-				dir		= point_direction(x0,y0,x1,y1)
 
-				norm	= ((dir+90)>=360) ? dir-270 : dir+90;
 
-				
-				#endregion
-
-				#region ASSIGN DIRECTION (angle)
-				//Chooses a direction at random and then plots a random length in that direction.
-				//Then adds that coordinate to the origin coordinate.
-
-				dir =	norm + random_range(_direction_range[0],_direction_range[1])
-				dir =  dir>=360 ? dir-360 : dir;
-				//DIRECTION OF PATH
-				//NORMAL
-				//NORMAL BOTHSIDES
-				//TWEEN ALONG DIRECTION
-
-				#endregion
 								
 				
 				
@@ -301,26 +199,26 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 					
 					length		=	eval*_radius_external;
 				}
-				else if _distribution_mode == PULSE_RANDOM.RANDOM
+				else if _dist_along_normal == PULSE_RANDOM.RANDOM
 				{
 					//Distribute along the radius by randomizing, then adjusting by shape evaluation
 					
 					length		=	eval*random_range(_radius_internal,_radius_external);
 				}
-				else if _distribution_mode == PULSE_RANDOM.GAUSSIAN
+				else if _dist_along_normal == PULSE_RANDOM.GAUSSIAN
 				{
 					//Distribute along the radius by gaussian random, then adjusting by shape evaluation
 					//This doesnt work great
 					
 					length		=	eval*gauss(_radius_internal,_radius_external-_radius_internal)//,_radius_internal,_radius_external);
 				}
-				else if _distribution_mode == PULSE_SHAPE.A_TO_B
+				else if _dist_along_normal == PULSE_SHAPE.A_TO_B
 				{
 					//Distribute along the radius by randomizing, evaluating by each shape individually
 					
 					length		=	random_range(eval_a*_radius_internal,eval_b*_radius_external)
 				}
-				else if _distribution_mode == PULSE_RANDOM.NONE
+				else if _dist_along_normal == PULSE_RANDOM.NONE
 				{
 					//Distribute evenly
 					
@@ -340,7 +238,7 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 					{
 						//If direction is outwards from center, the direction of the particle is the random direction
 						
-						part_type_direction(_ind,dir,dir,0,0)
+						part_type_direction(_index,dir,dir,0,0)
 						break;
 					}
 					case PULSE_MODE.INWARD : // INWARD emits from the outside in, setting particle direction and speed particle to end their life before they go past the center point
@@ -371,9 +269,9 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 							_speed	=	length/__life
 						}
 
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
+						part_type_life(_index,__life,__life);
+						part_type_speed(_index,_speed,_speed,0,0)
+						part_type_direction(_index,dir,dir,0,0)
 						
 						break;
 					}
@@ -400,9 +298,9 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 							_speed	=	length/__life
 						}
 						
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
+						part_type_life(_index,__life,__life);
+						part_type_speed(_index,_speed,_speed,0,0)
+						part_type_direction(_index,dir,dir,0,0)
 						var _xx		=	x;
 						var _yy		=	y;
 						
@@ -433,9 +331,9 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 							_speed	=	(length-length_in)/__life
 						}
 						
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
+						part_type_life(_index,__life,__life);
+						part_type_speed(_index,_speed,_speed,0,0)
+						part_type_direction(_index,dir,dir,0,0)
 						var _xx		=	x	+ lengthdir_x(length_in,dir);
 						var _yy		=	y	+ lengthdir_y(length_in,dir);
 						
@@ -444,8 +342,76 @@ function part_pulse_path_emitter(__path,__part_system=__PULSE_DEFAULT_SYS_NAME,_
 				//If _mode is set as none, particle is kept as is, so nothing changes.
 				}
 				
-			part_particles_create(_part_system, _xx,_yy,_ind, 1);
+			part_particles_create(_part_system, _xx,_yy,_index, 1);
 			}
 	}
 }
 
+function	pulse_add_path(_pulse,_path)
+{
+
+	if path_get_closed(_path) exit;
+
+	if path_get_kind(_path) //SMOOTH
+	{
+		var x0,y0,x1,y1,dir,norm,i,j,l,points;	
+		
+		points = power(path_get_number(_path)-1,path_get_precision(_path))
+		
+		var callback = function()
+		{
+			var _direction = array_create(2)
+		}
+		
+		var path_array=array_create_ext(points-1,callback)
+		
+		i=0;
+		l=0;
+		j= 1/points;
+		do
+		{
+			x0= path_get_x(_path,i)
+			y0= path_get_y(_path,i)
+			x1= path_get_x(_path,i+j)
+			y1= path_get_y(_path,i+j)
+			dir = point_direction(x0,y0,x1,y1)
+
+			norm = ((dir+90)>=360) ? dir-270 : dir+90;
+
+			path_array[l]=[dir,norm];
+			i+=j
+			l++
+		}until (i==1+j)
+	
+	
+	}
+	else					//STRAIGHT
+	{
+		var x0,y0,x1,y1,dir,norm,i,points;	
+		
+		points = path_get_number(_path)
+		
+		var callback = function()
+		{
+			var _direction = array_create(2)
+		}
+		
+		var path_array=array_create_ext(points-1,callback)
+		
+		i=0;
+		repeat(points-1)
+		{
+			x0= path_get_point_x(_path,i)
+			y0= path_get_point_y(_path,i)
+			x1= path_get_point_x(_path,i+1)
+			y1= path_get_point_y(_path,i+1)
+			dir = point_direction(x0,y0,x1,y1)
+
+			norm = ((dir+90)>=360) ? dir-270 : dir+90;
+
+			path_array[i]=[dir,norm];
+			i++
+		}
+	}
+	_pulse._path	=	path_array;
+}

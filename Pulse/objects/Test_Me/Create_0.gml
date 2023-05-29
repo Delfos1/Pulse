@@ -1,13 +1,15 @@
-debug = true
+debug = false
 show_debug_overlay(debug)
 
+
+pulse_make_particle("particle")
 
 // Welcome to Pulse!
 // Create a new pulse emitter by typing new part_pulse_emitter
 // You can supply 3 arguments: particle system, particle type and emitter size
 // If you don't supply any, Pulse will create them for you.
 
-sys= new part_pulse_emitter()
+sys= new part_pulse_emitter("sys_1","particle")
 
 // You can also provide a string. Pulse will create the new particle/system and assign it your given name.
 // If you have already created them with those names, it will re use the existing ones
@@ -17,14 +19,14 @@ shockwave=  new part_pulse_emitter("sys_2","white_wave")
 // Particle/System ID s get allocated in global.pulse._systems and global.pulse.part_types respectively.
 // If unnamed they get a default name assigned. You can change default values in the Dafault_config script.
 // They can be accessed by their array number.
-global.pulse.part_types[0].speed_start(0.6,3,-0.05)
-global.pulse.part_types[0].life(30,50)
+global.pulse.part_types.particle.speed_start(0.6,3,-0.05)
+global.pulse.part_types.particle.life(30,50)
 
 //Or by searching the string name
-var wave = pulse_particle_get_ID("white_wave")
+var wave = global.pulse.part_types.white_wave
 
 // Pulse particles store (almost) all properties that a regular particle may have
-// You can access the actual particle_type ID by accessing ._ind
+// You can access the actual particle_type ID by accessing ._index
 // Using the pulse methods to change properties also saves these properties within the struct
 // You can change the properties by using the default GM particle functions and 
 // use Pulse's method .reset() to bring it back to the stored properties.
@@ -60,9 +62,11 @@ wave.scale(2,.3)
 			
 */				
 
-sys.radius(80,220)
-sys.even_distrib(true,false,5)
-
-shockwave.shape(ac_Shape,"Splash")
+sys.radius(50,220)
+//sys.mask(.15,.35)
+//sys.even_distrib(true,false,5)
+sys._part_type.color(c_yellow,c_lime)
+shockwave.stencil(ac_Shape,"Splash")
 shockwave.radius(20,60)
-
+sys.even_distrib(false,true,3)
+sys._part_type.speed_start(0.01,0.01)

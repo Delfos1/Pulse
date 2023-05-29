@@ -26,8 +26,8 @@
   "managed": true,
   "overriddenProperties": [],
   "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+    "name": "Objects",
+    "path": "folders/Objects.yy",
   },
   "parentObjectId": null,
   "persistent": false,
