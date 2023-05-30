@@ -1,2 +1,2 @@
 on=!on
-smoke._angle_end=0
+smoke._mask_end=0

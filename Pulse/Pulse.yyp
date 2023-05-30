@@ -48,7 +48,6 @@
     {"id":{"name":"Scr_Gaussian","path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},},
     {"id":{"name":"Path1","path":"paths/Path1/Path1.yy",},},
     {"id":{"name":"s_Wall","path":"sprites/s_Wall/s_Wall.yy",},},
-    {"id":{"name":"Pulse_Paths","path":"scripts/Pulse_Paths/Pulse_Paths.yy",},},
     {"id":{"name":"Pulse_Particles","path":"scripts/Pulse_Particles/Pulse_Particles.yy",},},
     {"id":{"name":"Sprite3","path":"sprites/Sprite3/Sprite3.yy",},},
     {"id":{"name":"ac_Shape","path":"animcurves/ac_Shape/ac_Shape.yy",},},
@@ -61,8 +60,8 @@
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room_01_Start","path":"rooms/Room_01_Start/Room_01_Start.yy",},},
-    {"roomId":{"name":"Room_Path_SmartSmoke","path":"rooms/Room_Path_SmartSmoke/Room_Path_SmartSmoke.yy",},},
     {"roomId":{"name":"Room_Path","path":"rooms/Room_Path/Room_Path.yy",},},
+    {"roomId":{"name":"Room_Path_SmartSmoke","path":"rooms/Room_Path_SmartSmoke/Room_Path_SmartSmoke.yy",},},
   ],
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},

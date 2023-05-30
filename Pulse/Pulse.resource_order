@@ -27,7 +27,6 @@
     {"name":"Sprite2","order":1,"path":"sprites/Sprite2/Sprite2.yy",},
     {"name":"Scr_Gaussian","order":3,"path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},
     {"name":"s_Wall","order":16,"path":"sprites/s_Wall/s_Wall.yy",},
-    {"name":"Pulse_Paths","order":6,"path":"scripts/Pulse_Paths/Pulse_Paths.yy",},
     {"name":"Pulse_Particles","order":5,"path":"scripts/Pulse_Particles/Pulse_Particles.yy",},
     {"name":"Sprite3","order":17,"path":"sprites/Sprite3/Sprite3.yy",},
     {"name":"oWall","order":3,"path":"objects/oWall/oWall.yy",},

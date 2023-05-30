@@ -1,9 +1,9 @@
 if !debug exit
 
-var num = part_particles_count(global.pulse.systems[0]._system)
+
 
 draw_set_font(Font1)
-draw_text(50,50,string(num))
+
 draw_text(50,100,"Mouse Wheel UP/DN to change emitter scale")
 draw_text(50,150,"Arrows to change angle of emitter relative to normal")
 draw_text(50,200,"1 will cahnge emitter to 'attractor' mode")

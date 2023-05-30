@@ -1,4 +1,4 @@
-debug	 = true
+debug	 = false
 on		 = false
 _x = x
 show_debug_overlay(debug)
@@ -6,18 +6,18 @@ show_debug_overlay(debug)
 
 pulse_convert_particles(PS_Fire)
 
-var _fire = pulse_particle_get_ID("Fire")
+
 
 path=path_add()
 
 var smoke_pt = pulse_make_particle("smoke",false)
 
-fire = new part_pulse_emitter("fire",_fire,8)
+fire = new part_pulse_emitter("fire","Fire",8)
 
-smoke= new part_pulse_path_emitter(path,"smoke","Fire",1)
+smoke= new part_pulse_emitter("smoke","smoke",1)
 
-fire._dist_along_form=PULSE_MODE.NONE
-fire.angle(90,90)
+smoke._path_a=path
+
 
 smoke_pt.shape(pt_shape_cloud)
 smoke_pt.size(.2,.4,.001)
@@ -28,8 +28,8 @@ smoke_pt.speed_start(1,1,0)
 smoke.direction_range(-90,-90)
 
 smoke.radius(0,10)
-smoke.angle(0,0.001)
-smoke._index=smoke_pt._index
+smoke.mask(0,0.001)
+
 
 
 alarm[0]=2

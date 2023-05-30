@@ -3,10 +3,10 @@
 if !debug exit
 
 draw_path(path,x,y,true)
-var num = part_particles_count(global.pulse.systems[0]._system)
+
 
 draw_set_font(Font1)
-draw_text(50,50,string(num))
+
 
 var size = path_get_number(path)
 var i = 0

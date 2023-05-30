@@ -53,7 +53,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	//emitter form
 	_path_a				=	undefined
 	_path_b				=	undefined
-	_path_res			=	10
+	_path_res			=	-1
 	_ac_channel_a		=	undefined
 	_ac_channel_b		=	undefined
 	_ac_tween			=	undefined
@@ -127,28 +127,12 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		_radius_external	=	__radius_external;
 	}
 	
-<<<<<<< Updated upstream
-	static	inward		=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_center=false)
-=======
-	static	inward			=	function(__speed_min,__speed_max,__acc,__life_min,__life_max,__force_to_center=false)
->>>>>>> Stashed changes
+	static	direction_range	=	function(_direction_min,_direction_max)
 	{
-				
-		_speed_start		=	[__speed_min,__speed_max];
-		_life				=	[__life_min,__life_max]
-		_force_to_center	=	__force_to_center;
-		_mode				=	PULSE_MODE.INWARD
+		_direction_range	=	[_direction_min,_direction_max]
+
 	}
 	
-	static	outward_shape	=	function(__speed_min,__speed_max,__life_min,__life_max,__force_to_edge=false,__mode=PULSE_MODE.SHAPE_FROM_POINT)
-	{
-			
-		_speed_start		=	[__speed_min,__speed_max];
-		_life				=	[__life_min,__life_max]
-		_force_to_edge		=	__force_to_edge;
-		_mode				=	__mode
-	}
-
 	static	even_distrib	=	function(_angle=true,_length=true,__revolutions=1)
 	{
 		if _angle
@@ -186,10 +170,10 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		//draw angle
 		/*
 		
-		var _anstart_x = x+lengthdir_x(ext_x,_angle_start)
-		var _anstart_y = y+lengthdir_y(ext_y,_angle_start)
-		var _anend_x = x+lengthdir_x(ext_x,_angle_end)
-		var _anend_y = y+lengthdir_y(ext_y,_angle_end)
+		var _anstart_x = x+lengthdir_x(ext_x,_mask_start)
+		var _anstart_y = y+lengthdir_y(ext_y,_mask_start)
+		var _anend_x = x+lengthdir_x(ext_x,_mask_end)
+		var _anend_y = y+lengthdir_y(ext_y,_mask_end)
 		draw_line_width_color(x,y,_anstart_x,_anstart_y,1,c_green,c_green)
 		draw_line_width_color(x,y,_anend_x,_anend_y,1,c_green,c_green)
 		*/
@@ -208,8 +192,21 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	//Emit/Burst function 
 	static	pulse		=	function(_amount,x,y)
 	{
+		if _path_res ==-1 && _path_a!= undefined
+		{
+			_path_res = power(path_get_number(_path_a)-1,path_get_precision(_path_a))
+			
+			if path_get_kind(_path_a) //SMOOTH
+			{
+				//
+			}
+			else
+			{
+				//_path_res = 1
+			}
+		}
 		var rev,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,point,transv;
-		var _speed_start	= _part_type._speed
+		var _speed_start	=	_part_type._speed
 		var _life			=	_part_type._life
 		
 		point = _mask_start
@@ -389,126 +386,24 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				var _speed		=	random_range(_speed_start[0],_speed_start[1])
 				var __life		=	random_range(_life[0],_life[1])
 				var _accel		=	_speed_start[2]
-			
+	
 			
 				if abs(dir-normal)<=75			//NORMAL AWAY FROM CENTER
 				{		
-			
 					var displacement = (_speed*__life)+(_accel*__life)
 							
 					if ((displacement < length) && _force_to_edge) or (displacement > length)
 					{
 						_speed	=	(length-(_accel*__life))/__life
 					}
-<<<<<<< Updated upstream
-					case PULSE_MODE.INWARD : // INWARD emits from the outside in, setting particle direction and speed particle to end their life before they go past the center point
-					{
-						//Direction is inwards, the opposite of the prev. assigned direction
-						//It is necessary to also calculate the distance to the center to change speed/_life
-				
-						dir			=	point_direction(_xx,_yy,x,y)
-						
-						if _speed_start == undefined
-						{
-							_speed_start =__PULSE_DEFAULT_PART_SPEED
-						}
-						if _life == undefined
-						{
-							_life = __PULSE_DEFAULT_PART_LIFE
-						}
-						
-						var _speed	=	random_range(_speed_start[0],_speed_start[1])
-						var __life	=	random_range(_life[0],_life[1])
 
-						var displacement = _speed*__life
-						
-						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin point.
-						
-						if ((displacement < length) && _force_to_center) or (displacement > length)
-						{
-							_speed	=	length/__life
-						}
-
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
-						
-						break;
-					}
-					case PULSE_MODE.SHAPE_FROM_POINT : // OUTWARD mode that restricts the speed of the particles to conform to a shape. The opposite of INWARD
-					{
-						if _speed_start == undefined
-						{
-							_speed_start =__PULSE_DEFAULT_PART_SPEED
-						}
-						if _life == undefined
-						{
-							_life = __PULSE_DEFAULT_PART_LIFE
-						}
-						
-						var _speed	=	random_range(_speed_start[0],_speed_start[1])
-						var __life	=	random_range(_life[0],_life[1])
-
-						var displacement = _speed*__life
-						
-						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin.
-						
-						if ((displacement < length) && _force_to_edge) or (displacement > length)
-						{
-							_speed	=	length/__life
-						}
-						
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
-						var _xx		=	x;
-						var _yy		=	y;
-						
-						break;
-					}
-					case PULSE_MODE.SHAPE_FROM_SHAPE :	// OUTWARD mode that restricts the speed of the particles to conform to a shape for both inner and outer radius
-					{
-
-						if _speed_start == undefined
-						{
-							_speed_start =__PULSE_DEFAULT_PART_SPEED
-						}
-						if _life == undefined
-						{
-							_life = __PULSE_DEFAULT_PART_LIFE
-						}
-						
-						var length_in	=	eval_a*_radius_internal;
-						var _speed		=	random_range(_speed_start[0],_speed_start[1])
-						var __life		=	random_range(_life[0],_life[1])
-
-						var displacement = _speed*__life
-						
-						// If the displacement over the particle _life is greater than the length to the origin, slow down particle to die at origin.
-						
-						if ((displacement < length-length_in) && _force_to_edge) or (displacement > length-length_in)
-						{
-							_speed	=	(length-length_in)/__life
-						}
-						
-						part_type_life(_ind,__life,__life);
-						part_type_speed(_ind,_speed,_speed,0,0)
-						part_type_direction(_ind,dir,dir,0,0)
-						var _xx		=	x	+ lengthdir_x(length_in,dir);
-						var _yy		=	y	+ lengthdir_y(length_in,dir);
-						
-						break;
-					}
-				//If _mode is set as none, particle is kept as is, so nothing changes.
-=======
->>>>>>> Stashed changes
 				}
-				
+	
 				else if abs(angle_difference(dir,normal))<=105		//TRANSVERSAL
 				{
 						part_type_direction(_index,dir,dir,0,0)
 				}
-				
+			
 				else												//NORMAL TOWARDS CENTER
 				{										
 					var displacement = (_speed*__life)+(_accel*__life)
@@ -518,10 +413,8 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					{
 						_speed	=	(length-(_accel*__life))/__life
 					}
-
-
 				}
-				
+			
 				
 				part_type_life(_index,__life,__life);
 				part_type_speed(_index,_speed,_speed,_accel,0)

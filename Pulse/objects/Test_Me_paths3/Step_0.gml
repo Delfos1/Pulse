@@ -3,5 +3,5 @@
 fire.pulse(1,x,y)
 smoke.pulse(1,x,y)
 
-if smoke._angle_end<.6 smoke._angle_end+=0.002
+if smoke._mask_end<.6 smoke._mask_end+=0.002
 

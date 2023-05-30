@@ -10,31 +10,7 @@ function __pulse_system(_layer= -1,_persistent=false) constructor
 	{
 		index	=	part_system_create();
 	}
-<<<<<<< Updated upstream
-	_name	=	string(__name);
-	_system	=	part_system_create();
-	show_debug_message("PULSE SUCCESS: Created system by the name {0}",__name);
-}
-
-function pulse_make_particle(_name=__PULSE_DEFAULT_PART_NAME,_return_index=true)
-{
-		array_push(global.pulse.part_types,new pulse_particle(_name))
-		var _struct = array_last(global.pulse.part_types)
-		if _return_index
-		{
-			return _struct._ind
-		}
-		else
-		{
-			return _struct
-		}
-}
-function pulse_particle(__name) constructor
-{
-	if __name		==__PULSE_DEFAULT_PART_NAME
-=======
 	else
->>>>>>> Stashed changes
 	{
 		index	=	part_system_create_layer(_layer,_persistent);
 	}
@@ -79,11 +55,11 @@ function pulse_particle(__name) constructor
 	
 	static set_position	= function(_x,_y)
 	{
-			x				=	0;
-			y				=	0;
-			part_system_position(index,x,y);
+		x				=	_x;
+		y				=	_y;
+		part_system_position(index,x,y);
 	}
-	
+
 }
 
 function __pulse_particle() constructor
