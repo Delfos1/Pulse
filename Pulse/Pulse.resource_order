@@ -2,6 +2,7 @@
   "FolderOrderSettings": [
     {"name":"Animation Curves","order":12,"path":"folders/Animation Curves.yy",},
     {"name":"Extensions","order":14,"path":"folders/Extensions.yy",},
+    {"name":"TurboGML","order":1,"path":"folders/Extensions/KazanGames/TurboGML.yy",},
     {"name":"Fonts","order":7,"path":"folders/Fonts.yy",},
     {"name":"Notes","order":13,"path":"folders/Notes.yy",},
     {"name":"Objects","order":9,"path":"folders/Objects.yy",},
@@ -17,6 +18,7 @@
     {"name":"Timelines","order":8,"path":"folders/Timelines.yy",},
   ],
   "ResourceOrderSettings": [
+    {"name":"Object6","order":19,"path":"objects/Object6/Object6.yy",},
     {"name":"Test_Me_paths3","order":2,"path":"objects/Test_Me_paths3/Test_Me_paths3.yy",},
     {"name":"PS_Fire","order":1,"path":"particles/PS_Fire/PS_Fire.yy",},
     {"name":"Pulse_Default_config","order":2,"path":"scripts/Pulse_Default_config/Pulse_Default_config.yy",},
@@ -33,5 +35,6 @@
     {"name":"Test_Me_paths","order":1,"path":"objects/Test_Me_paths/Test_Me_paths.yy",},
     {"name":"s_cross","order":18,"path":"sprites/s_cross/s_cross.yy",},
     {"name":"Pulse","order":1,"path":"scripts/Pulse/Pulse.yy",},
+    {"name":"Path2","order":3,"path":"paths/Path2/Path2.yy",},
   ],
 }

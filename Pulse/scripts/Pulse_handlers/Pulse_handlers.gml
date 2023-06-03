@@ -4,20 +4,29 @@ function pulse_destroy_all()
 	sys		= struct_get_names(global.pulse.systems)
 	part	= struct_get_names(global.pulse.part_types)
 
-	for(i=0;i==array_length(sys);i++)
+	if array_length(sys)>0
 	{
-	part_system_destroy(global.pulse.systems[$sys[i]].index)
+		for(i=0;i==array_length(sys);i++)
+		{
+		part_system_destroy(global.pulse.systems[$sys[i]].index)
+		}
+		global.pulse.systems={}
+		
+		__pulse_show_debug_message("PULSE SUCCESS: Systems destroyed");
 	}
-	global.pulse.systems={}
 	
-	
-	for(i=0;i==array_length(global.pulse.part_types);i++)
+	if array_length(part)>0
 	{
-	part_type_destroy(global.pulse.part_types[$part[i]]._index)
+		for(i=0;i==array_length(global.pulse.part_types);i++)
+		{
+		part_type_destroy(global.pulse.part_types[$part[i]]._index)
+		}
+		global.pulse.part_types={}
+		
+		__pulse_show_debug_message("PULSE SUCCESS: Particles destroyed");
 	}
-	global.pulse.part_types={}
 	
-	show_debug_message("PULSE SUCCESS: Systems and Particles destroyed");
+	
 }	
 
 
@@ -26,7 +35,7 @@ function pulse_clone_system(__name,__new_name)
 {
 	if  !struct_exists(global.pulse.systems,__name)
 	{
-		show_debug_message("PULSE ERROR: Couldn't find a particle by the name {0}",__name);
+		__pulse_show_debug_message($"PULSE ERROR: Couldn't find a particle by the name {__name}");
 		exit;
 	}
 		
@@ -39,7 +48,7 @@ function pulse_clone_system(__name,__new_name)
 	global.pulse.systems[$__new_name].index	=	part_type_create();
 	global.pulse.systems[$__new_name].reset()
 
-	show_debug_message("PULSE SUCCESS: Particle {0} cloned and named {1}",__name,__new_name);
+	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
 	
 	return global.pulse.systems[$__new_name]
 }
@@ -49,7 +58,7 @@ function pulse_clone_particle(__name,__new_name)
 
 	if  !struct_exists(global.pulse.part_types,__name)
 	{
-		show_debug_message("PULSE ERROR: Couldn't find a particle by the name {0}",__name);
+		__pulse_show_debug_message($"PULSE ERROR: Couldn't find a particle by the name {__name}");
 		exit;
 	}
 		
@@ -62,7 +71,14 @@ function pulse_clone_particle(__name,__new_name)
 	global.pulse.part_types[$__new_name]._index	=	part_type_create();
 	global.pulse.part_types[$__new_name].reset()
 
-	show_debug_message("PULSE SUCCESS: Particle {0} cloned and named {1}",__name,__new_name);
+	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
 	
 	return global.pulse.part_types[$__new_name]
+}
+
+function __pulse_show_debug_message(_message)
+{
+	if __PULSE_SHOW_DEBUG == false exit;
+	
+	show_debug_message(_message);
 }

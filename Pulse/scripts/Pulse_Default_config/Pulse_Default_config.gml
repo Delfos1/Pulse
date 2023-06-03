@@ -6,6 +6,9 @@ enum __PULSE_COLOR_MODE
 	HSV
 }
 
+
+#macro __PULSE_SHOW_DEBUG				true
+
 // Default naming
 #macro __PULSE_DEFAULT_SYS_NAME			"_system"
 

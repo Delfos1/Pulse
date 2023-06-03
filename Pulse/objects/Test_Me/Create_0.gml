@@ -1,26 +1,27 @@
-debug = false
+debug = true
 show_debug_overlay(debug)
+
 
 
 pulse_make_particle("particle")
 
 // Welcome to Pulse!
-// Create a new pulse emitter by typing new part_pulse_emitter
+// Create a new pulse emitter by typing new pulse_emitter
 // You can supply 3 arguments: particle system, particle type and emitter size
 // If you don't supply any, Pulse will create them for you.
 
-sys= new part_pulse_emitter("sys_1","particle")
+sys= new pulse_emitter("sys_1","particle")
 
 // You can also provide a string. Pulse will create the new particle/system and assign it your given name.
 // If you have already created them with those names, it will re use the existing ones
 
-shockwave=  new part_pulse_emitter("sys_2","white_wave")
+shockwave=  new pulse_emitter("sys_2","white_wave")
 
 // Particle/System ID s get allocated in global.pulse._systems and global.pulse.part_types respectively.
 // If unnamed they get a default name assigned. You can change default values in the Dafault_config script.
 // They can be accessed by their array number.
-global.pulse.part_types.particle.speed_start(0.6,3,-0.05)
-global.pulse.part_types.particle.life(30,50)
+global.pulse.part_types.particle.set_speed_start(0.6,3,-0.05)
+global.pulse.part_types.particle.set_life(40,40)
 
 //Or by searching the string name
 var wave = global.pulse.part_types.white_wave
@@ -31,14 +32,14 @@ var wave = global.pulse.part_types.white_wave
 // You can change the properties by using the default GM particle functions and 
 // use Pulse's method .reset() to bring it back to the stored properties.
 
-wave.color(c_white)
-wave.alpha(.5,.2,0)
-wave.life(30,35)
-wave.blend(true)
-wave.speed_start(15,15,-.2)
-wave.shape(pt_shape_sphere)
-wave.size(.5,.5,-.01,0)
-wave.scale(2,.3)
+wave.set_color(c_white)
+wave.set_alpha(.5,.2,0)
+wave.set_life(30,35)
+wave.set_blend(true)
+wave.set_speed_start(15,15,-.2)
+wave.set_shape(pt_shape_sphere)
+wave.set_size(.5,.5,-.01,0)
+wave.set_scale(2,.3)
 
 /* Pulse emitters also have properties and methods of their own, somewhat mimmicking and expanding on GM emitters
  Properties :	ANGLE (start and end, by default 0 and 360)
@@ -65,8 +66,9 @@ wave.scale(2,.3)
 sys.radius(50,220)
 //sys.mask(.15,.35)
 //sys.even_distrib(true,false,5)
-sys._part_type.color(c_yellow,c_lime)
+sys._part_type.set_color(c_yellow,c_lime)
 shockwave.stencil(ac_Shape,"Splash")
 shockwave.radius(20,60)
 sys.even_distrib(false,true,3)
-sys._part_type.speed_start(0.51,1)
+sys._part_type.set_speed_start(0.51,1)
+buffer = sys.pulse(7000,x,y,true)

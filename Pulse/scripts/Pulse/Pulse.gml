@@ -13,8 +13,6 @@ enum PULSE_SHAPE
 	A_TO_B				=	12,
 	PATH				=	13
 }
-
-
 enum PULSE_RANDOM
 {
 	RANDOM				=	20,
@@ -26,7 +24,7 @@ enum PULSE_RANDOM
 
 
 
-function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
+function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,__radius_external=50) constructor
 {
 	
 	if  struct_exists(global.pulse.systems,__part_system)
@@ -72,7 +70,6 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	_dist_along_normal	=	__PULSE_DEFAULT_EMITTER_DISTRIBUTION
 	_dist_along_form	=	__PULSE_DEFAULT_EMITTER_DIRECTION_DIST
 	_revolutions		=	1
-	_force_to_center	=	false
 	_force_to_edge		=	false	
 	
 	
@@ -88,8 +85,7 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	
 	static	stencil			=	function(__ac_curve,__ac_channel,_channel="a")
 	{
-		try
-		{
+
 			switch (_channel)
 			{
 				case "a":
@@ -99,11 +95,6 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					_ac_channel_b		=	animcurve_get_channel(__ac_curve,__ac_channel)
 					break;
 			}
-		}
-		catch(_error)
-		{
-				show_debug_message("PULSE ERROR: Provided invalid Animation Curve")
-		}
 	}
 	
 	static	tween_stencil	=	function(__ac_curve_a,__ac_channel_a,__ac_curve_b,__ac_channel_b)
@@ -116,9 +107,8 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	
 	static	mask			=	function(__mask_start,__mask_end)
 	{
-		if !is_real(__mask_start)	or !is_real(__mask_end){		show_debug_message("PULSE ERROR: Provided invalid input type (not a number)"); exit}
-		_mask_start		=	__mask_start;
-		_mask_end			=	__mask_end;
+		_mask_start			=	clamp(__mask_start,0,1);
+		_mask_end			=	clamp(__mask_end,0,1);
 	}
 
 	static	radius			=	function(__radius_internal,__radius_external)
@@ -190,8 +180,9 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 	
 	
 	//Emit/Burst function 
-	static	pulse		=	function(_amount,x,y)
+	static	pulse		=	function(_amount,x,y,_cache=false)
 	{
+		if _cache var cache = array_create(_amount,0)
 		if _path_res ==-1 && _path_a!= undefined
 		{
 			_path_res = power(path_get_number(_path_a)-1,path_get_precision(_path_a))
@@ -209,13 +200,18 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 		var _speed_start	=	_part_type._speed
 		var _life			=	_part_type._life
 		
+		_mask_start = clamp_wrap(_mask_start,0,1)
+		_mask_end = clamp_wrap(_mask_end,0,1)
+		
 		point = _mask_start
 		rev	= 1
+		i	=	0
 		// KEEP ROTATION TRANSFORM WITHIN 360 ANGLE
 		if  _rot>=360	_rot-=360
 
 		repeat(_amount)
 			{
+				var to_edge = false
 				
 				#region ASSIGN POINT 
 				//Chooses a point at random along the form (number between 0 and 1)
@@ -263,7 +259,10 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					y_origin	= path_get_y(_path_a,point)
 					x1			= path_get_x(_path_a,point+j)
 					y1			= path_get_y(_path_a,point+j)
+					var x2		= path_get_x(_path_a,point+(j*2))
+					var y2		= path_get_y(_path_a,point+(j*2))
 					transv		= point_direction(x_origin,y_origin,x1,y1)
+					var arch	= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
 
 					normal		= ((transv+90)>=360) ? transv-270 : transv+90;
 				}
@@ -303,13 +302,13 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				
 				if _ac_channel_a !=undefined
 				{
-					dir_stencil = _rot+normal;
-					dir_stencil=  dir_stencil>=360 ? dir_stencil-360 : dir_stencil
+					dir_stencil = (_rot/360)+point;
+					dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
 					
 					if _ac_channel_b !=undefined
 					{
-						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil*0.0028);
-						eval_b	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil*0.0028);
+						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil);
+						eval_b	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil);
 						eval	=	lerp(eval_a,eval_b,abs(_ac_tween))
 					}
 					else
@@ -319,14 +318,15 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 						if (_mode==PULSE_MODE.SHAPE_FROM_SHAPE)
 						{
 							_mode=PULSE_MODE.SHAPE_FROM_POINT
-							show_debug_message("PULSE ERROR: Missing Shape B. Reverting mode to Shape from Point")
+							__pulse_show_debug_message("PULSE ERROR: Missing Shape B. Reverting mode to Shape from Point")
 						}
 						if _dist_along_normal == PULSE_SHAPE.A_TO_B
 						{
 							_dist_along_normal = PULSE_RANDOM.RANDOM
-							show_debug_message("PULSE ERROR: Missing Shape B. Reverting Random Mode to Random")
+							__pulse_show_debug_message("PULSE ERROR: Missing Shape B. Reverting Random Mode to Random")
 						}
-						eval	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil*0.0028);
+						eval_a	=	animcurve_channel_evaluate(_ac_channel_a,dir_stencil);
+						eval	=	eval_a
 					}
 					
 				}
@@ -335,12 +335,13 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 					//IF THERE IS NO SHAPE A ASSIGNED
 					
 					_mode=PULSE_MODE.OUTWARD
-					show_debug_message("PULSE ERROR: Missing Shape A. Reverting mode to Outward")
+					__pulse_show_debug_message("PULSE ERROR: Missing Shape A. Reverting mode to Outward")
 				}
 				else if	_ac_channel_b !=undefined
 				{
-					show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
-					eval	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil*0.0028);
+					__pulse_show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
+					eval_a	=	animcurve_channel_evaluate(_ac_channel_b,dir_stencil);
+					eval	=	eval_a
 				}
 				
 				#endregion
@@ -382,48 +383,91 @@ function part_pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=_
 				}
 				#endregion
 			
-			
+				// IF COHESION POINT EXISTS, APPLY
 				var _speed		=	random_range(_speed_start[0],_speed_start[1])
 				var __life		=	random_range(_life[0],_life[1])
-				var _accel		=	_speed_start[2]
-	
-			
+				var _accel		=	_speed_start[2]*__life
+				var displacement = (_speed*__life)+_accel
+				
+		
 				if abs(dir-normal)<=75			//NORMAL AWAY FROM CENTER
 				{		
-					var displacement = (_speed*__life)+(_accel*__life)
-							
-					if ((displacement < length) && _force_to_edge) or (displacement > length)
+					if _force_to_edge && (displacement > length)
 					{
-						_speed	=	(length-(_accel*__life))/__life
+						if _accel<(_speed*__life)
+						{
+							_speed	=	(length-_accel)/__life
+							to_edge	=	true
+						}
 					}
-
 				}
-	
 				else if abs(angle_difference(dir,normal))<=105		//TRANSVERSAL
 				{
-						part_type_direction(_index,dir,dir,0,0)
+					if _force_to_edge
+					{
+						var _edge		= sqrt(power(_radius_external,2)-power(length,2))
+					
+						if	displacement > _edge
+						{
+							_speed	=	(_edge-_accel)/__life
+							to_edge	=	true
+						}
+					}
 				}
-			
 				else												//NORMAL TOWARDS CENTER
 				{										
-					var displacement = (_speed*__life)+(_accel*__life)
-						
-						
-					if ((displacement < length) && _force_to_center) or (displacement > length)
+
+					if (displacement > length)
 					{
-						_speed	=	(length-(_accel*__life))/__life
+						_speed	=	(length-_accel)/__life
+						to_edge	=	true
 					}
 				}
 			
+
+				//APPLY LOCAL AND GLOBAL FORCES
 				
-				part_type_life(_index,__life,__life);
-				part_type_speed(_index,_speed,_speed,_accel,0)
-				part_type_direction(_index,dir,dir,0,0)
+				//CHECK FOR OCCLUDERS/COLLISIONS
+				
+				//DETERMINE DYNAMIC PARTICLES
+
+			
 				x_origin	+= (lengthdir_x(length,normal)*_scalex);
 				y_origin	+= (lengthdir_y(length,normal)*_scaley);
 				
-				part_particles_create(_part_system, x_origin,y_origin,_index, 1);
-				_part_type.reset()
+				var launch_struct ={
+					__life:__life,
+					_speed:_speed,
+					_accel:_accel,
+					x_origin:x_origin,
+					y_origin:y_origin,
+					dir:dir,
+					_part_system:_part_system,
+					_index:_index
+				}
+				
+				if _cache
+				{
+					cache[i]=launch_struct
+				}
+				else
+				{
+					_part_type.launch(launch_struct)
+				}
+				i++
 			}
+			if _cache return cache
+	}
+	
+	static pulse_from_cache = function(_amount,x,y,_cache)
+	{
+		var _launch_particle = function(_element,_index)
+		{
+				_part_type.launch(_element)
+		}
+		
+		array_foreach(_cache,_launch_particle,irandom(array_length(_cache)-1),_amount)
+		
+		
 	}
 }

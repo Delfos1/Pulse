@@ -1,11 +1,11 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "Script1",
+  "name": "__tgm_core",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {
-    "name": "Scripts",
-    "path": "folders/Scripts.yy",
+    "name": "TurboGML",
+    "path": "folders/Extensions/KazanGames/TurboGML.yy",
   },
 }
