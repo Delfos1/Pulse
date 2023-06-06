@@ -453,6 +453,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 				x_origin	+= (lengthdir_x(length,normal)*scalex);
 				y_origin	+= (lengthdir_y(length,normal)*scaley);
+
 						
 				var launch_struct ={
 					__life				:__life,

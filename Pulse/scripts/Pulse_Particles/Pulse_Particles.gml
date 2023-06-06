@@ -10,6 +10,7 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	{
 		index	=	part_system_create();
 	}
+
 	else
 	{
 		index	=	part_system_create_layer(_layer,_persistent);
@@ -36,6 +37,7 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	}
 	
 	static set_draw		= function(_bool)
+
 	{
 		draw	=	_bool;
 		part_system_automatic_draw(index,draw);
