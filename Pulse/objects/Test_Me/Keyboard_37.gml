@@ -1,1 +1,1 @@
-sys._angle_end-=1
+sys.mask_end-=.01

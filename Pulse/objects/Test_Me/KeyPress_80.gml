@@ -1,4 +1,4 @@
-sys.tween_shape(ac_Shape,"Letter_P",ac_Shape,"Letter_P")
-sys._rot=180
-sys.radius(0,220)
+sys.set_tween_stencil(ac_Shape,"Letter_P",ac_Shape,"Letter_P")
+sys.rotation=180
+sys.set_radius(0,220)
 shockwave.pulse(200,x,y)

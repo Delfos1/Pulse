@@ -1,45 +1,72 @@
 global.pulse =
 {
-	systems		: [],
-	part_types	: [],
+	systems		: {},
+	part_types	: {},
 }
 
-function pulse_system(__name) constructor
+function __pulse_system				(_layer= -1,_persistent=false) constructor
 {
-	if __name		==__PULSE_DEFAULT_SYS_NAME
+	if _layer == -1
 	{
-		var l		= array_length(global.pulse.systems)
-		__name		=	string_concat(__name,"_",l)
+		index	=	part_system_create();
 	}
-	_name	=	string(__name);
-	_system	=	part_system_create();
-	show_debug_message("PULSE SUCCESS: Created system by the name {0}",__name);
-}
 
-function pulse_make_particle(_name=__PULSE_DEFAULT_PART_NAME,_return_index=true)
-{
-		array_push(global.pulse.part_types,new pulse_particle(_name))
-		var _struct = array_last(global.pulse.part_types)
-		if _return_index
-		{
-			return _struct._ind
-		}
-		else
-		{
-			return _struct
-		}
-}
-
-function pulse_particle(__name) constructor
-{
-	if __name		==__PULSE_DEFAULT_PART_NAME
+	else
 	{
-		var l		=	array_length(global.pulse.part_types)
-		__name		=	string_concat(__name,"_",l)
+		index	=	part_system_create_layer(_layer,_persistent);
 	}
 	
-	_name			=	string(__name);
-	_ind			=	part_type_create();
+	draw			=	true;
+	draw_oldtonew	=	true
+	update			=	true;
+	depth			=	0;
+	layer			=	_layer;
+	x				=	0;
+	y				=	0;
+	
+	static set_depth	= function(_depth)
+	{
+		depth	=	_depth;
+		part_system_depth(index, depth);
+	}
+	
+	static set_update	= function(_bool)
+	{
+		update	=	_bool;
+		part_system_automatic_update(index,update);
+	}
+	
+	static set_draw		= function(_bool)
+
+	{
+		draw	=	_bool;
+		part_system_automatic_draw(index,draw);
+	}
+	
+	static set_layer	= function(_layer)
+	{
+		layer	=	_layer;
+		part_system_layer(index,layer);
+	}
+	
+	static set_draw		= function(_bool)
+	{
+		draw_oldtonew	=	_bool;
+		part_system_draw_order(index,draw_oldtonew);
+	}
+	
+	static set_position	= function(_x,_y)
+	{
+		x				=	_x;
+		y				=	_y;
+		part_system_position(index,x,y);
+	}
+
+}
+
+function __pulse_particle			() constructor
+{
+	_index			=	part_type_create();
 	_size			=	__PULSE_DEFAULT_PART_SIZE
 	_scale			=	__PULSE_DEFAULT_PART_SCALE
 	_life			=	__PULSE_DEFAULT_PART_LIFE
@@ -55,128 +82,345 @@ function pulse_particle(__name) constructor
 	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
 	_set_to_sprite	=	false
 	_death_type		=	undefined
-	_death_number	=	undefined
+	_death_number	=	1
 	_step_type		=	undefined
-	_step_number	=	undefined
+	_step_number	=	1
+	_dynamics		=	[]
 	
 	static reset	=	function()
 	{
-		part_type_scale(_ind,_scale[0],_scale[1]);
-		part_type_size(_ind,_size[0],_size[1],_size[2],_size[3])
-		part_type_life(_ind,_life[0],_life[1])
-		part_type_color3(_ind,_color[0],_color[1],_color[2])
-		part_type_alpha3(_ind,_alpha[0],_alpha[1],_alpha[2])
-		part_type_blend(_ind,_blend)
-		part_type_speed(_ind,_speed[0],_speed[1],_speed[2],_speed[3])
+		part_type_scale(_index,_scale[0],_scale[1]);
+		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
+		part_type_life(_index,_life[0],_life[1])
+		var color = array_length(_color)
+		if color==3
+		{
+			part_type_color3(_index,_color[0],_color[1],_color[2])
+		} else if color==2
+		{
+			part_type_color2(_index,_color[0],_color[1])
+		} else
+		{
+			part_type_color1(_index,_color[0])
+		}
+		var alpha = array_length(_alpha)
+		if alpha==3
+		{
+			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
+		} else if alpha==2
+		{
+			part_type_alpha2(_index,_alpha[0],_alpha[1])
+		} else
+		{
+			part_type_alpha1(_index,_alpha[0])
+		}
+				
+		part_type_blend(_index,_blend)
+		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
 		if !_set_to_sprite
 		{
-			part_type_shape(_ind,_shape)
+			part_type_shape(_index,_shape)
 		}
 		else
 		{
-			part_type_sprite(_ind,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+			part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
 		}
-		part_type_orientation(_ind,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
-		part_type_gravity(_ind,_gravity[0],_gravity[1])
-		part_type_direction(_ind,_direction[0],_direction[1],_direction[2],_direction[3])
+		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
+		part_type_gravity(_index,_gravity[0],_gravity[1])
+		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
+		
+		if _step_type != undefined part_type_step(_index,_step_number,_step_type)
+		if _death_type != undefined part_type_death(_index,_death_number,_death_type)
 	
 	}
 	reset()
-	show_debug_message("PULSE SUCCESS: Created particle by the name {0}",__name);
 	
-	static size			=	function(_min,_max,_incr=0,_wiggle=0)
+	#region //SET BASIC PROPERTIES
+	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_size	=[_min,_max,_incr,_wiggle]
-		part_type_size(_ind,_size[0],_size[1],_size[2],_size[3])
+		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
 	}
-	static scale		=	function(_scalex,_scaley)
+	static set_scale		=	function(scalex,_scaley)
 	{
-		_scale			= [_scalex,_scaley]
-		part_type_scale(_ind,_scale[0],_scale[1]);
+		_scale			= [scalex,_scaley]
+		part_type_scale(_index,_scale[0],_scale[1]);
 	}
-	static life			=	function(_min,_max)
+	static set_life			=	function(_min,_max)
 	{
 		_life	=[_min,_max]
-		part_type_life(_ind,_life[0],_life[1])
+		part_type_life(_index,_life[0],_life[1])
 	}
-	static color		=	function(color1,color2=-1,color3=-1)
+	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
 		if color3 != -1
 		{
 			_color=[color1,color2,color3]	
-			part_type_color3(_ind,_color[0],_color[1],_color[2])
+			part_type_color3(_index,_color[0],_color[1],_color[2])
 		}
 		else if color2 != -1
 		{
 			_color=[color1,color2]
-			part_type_color2(_ind,_color[0],_color[1])
+			part_type_color2(_index,_color[0],_color[1])
 		}
 		else
 		{
 			_color=[color1]
-			part_type_color1(_ind,_color[0])
+			part_type_color1(_index,_color[0])
 		}
 		_color_mode		= __PULSE_COLOR_MODE.COLOR
 	}
-	static alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
+	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
 	{
 		if alpha3 != -1
 		{
 			_alpha=[alpha1,alpha2,alpha3]	
-			part_type_alpha3(_ind,_alpha[0],_alpha[1],_alpha[2])
+			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
 		}
 		else if alpha2 != -1
 		{
 			_alpha=[alpha1,alpha2]
-			part_type_alpha2(_ind,_alpha[0],_alpha[1])
+			part_type_alpha2(_index,_alpha[0],_alpha[1])
 		}
 		else
 		{
 			_alpha=[alpha1]
-			part_type_alpha1(_ind,_alpha[0])
+			part_type_alpha1(_index,_alpha[0])
 		}
 	}
-	static blend		=	function(blend)
+	static set_blend		=	function(blend)
 	{
 		_blend	=	blend
-		part_type_blend(_ind,_blend)
+		part_type_blend(_index,_blend)
 	}
-	static speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
+	static set_speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_speed	=[_min,_max,_incr,_wiggle]
-		part_type_speed(_ind,_speed[0],_speed[1],_speed[2],_speed[3])
+		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
 	}
-	static shape		=	function(shape)
+	static set_shape		=	function(shape)
 	{
 		_shape			=	shape
 		_set_to_sprite	=	false
-		part_type_shape(_ind,_shape)
+		part_type_shape(_index,_shape)
 	}
-	static sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
 	{
 		_sprite			=	[sprite,_animate,_stretch,_random]
 		_set_to_sprite	=	true
-		part_type_sprite(_ind,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+		part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
 	}
-	static orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
+	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
 		_orient	=[_min,_max,_incr,_wiggle,_relative]
-		part_type_orientation(_ind,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
+		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
 	}
-	static gravity_set	=	function(_amount,_direction)
+	static set_gravity		=	function(_amount,_direction)
 	{
 		_gravity	=[_amount,_direction]
-		part_type_gravity(_ind,_gravity[0],_gravity[1])
+		part_type_gravity(_index,_gravity[0],_gravity[1])
 	}
-	static direction_set=	function(_min,_max,_incr=0,_wiggle=0)
+	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_direction	=[_min,_max,_incr,_wiggle]
-		part_type_direction(_ind,_direction[0],_direction[1],_direction[2],_direction[3])
+		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
 	}
-	
+	static set_step_particle=	function(_number,_step)
+	{
+		if _step != undefined exit
+		_step_type		=	_step
+		_step_number	=	_number
+		part_type_step(_index,_step_number,_step_type)
+	}
+	static set_death_particle=	function(_number,_death)
+	{
+		if _death != undefined exit
+		_death_type		=	_death
+		_death_number	=	_number
+		part_type_death(_index,_death_number,_death_type)
+	}
+#endregion
+/*
+	static add_dynamic = function(_condition_property,_min,_max,_property)
+	{
+		var struct = {}
+		struct.condition = function(_condition_property,_min,_max)
+		{
+			if _condition_property> _min && _condition_property< _max
+			{return true}
+			else
+			{return false}			
+		}
+		struct.property =  _property
+		array_push(_dynamics,struct)
+		return array_last(_dynamics)
+	}
+*/
+	static launch		=	function(_struct)
+	{
+		with(_struct)
+		{
+			part_type_life(particle_index,__life,__life);
+			part_type_speed(particle_index,_speed,_speed,_accel,0)
+			part_type_direction(particle_index,dir,dir,other._direction[2],0)
+		
+			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);
+		}		
+	}
 }
 
-function pulse_convert_particles(part_system)
+function __pulse_instance_particle	(_object) constructor
+{
+	_index			=	_object
+	_size			=	__PULSE_DEFAULT_PART_SIZE
+	_scale			=	__PULSE_DEFAULT_PART_SCALE
+	_life			=	__PULSE_DEFAULT_PART_LIFE
+	_color			=	__PULSE_DEFAULT_PART_COLOR
+	_color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
+	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
+	_blend			=	__PULSE_DEFAULT_PART_BLEND
+	_speed			=	__PULSE_DEFAULT_PART_SPEED
+	_sprite			=	undefined
+	_orient			=	__PULSE_DEFAULT_PART_ORIENT
+	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
+	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
+	_death_type		=	undefined
+	_death_number	=	undefined
+	_step_type		=	undefined
+	_step_number	=	undefined
+	
+	#region //SET BASIC PROPERTIES
+	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
+	{
+		_size	=[_min,_max,_incr,_wiggle]
+	}
+	static set_scale		=	function(scalex,_scaley)
+	{
+		_scale			= [scalex,_scaley]
+	}
+	static set_life			=	function(_min,_max)
+	{
+		_life	=[_min,_max]
+	}
+	static set_color		=	function(color1,color2=-1,color3=-1)
+	{
+		if color3 != -1
+		{
+			_color=[color1,color2,color3]	
+		}
+		else if color2 != -1
+		{
+			_color=[color1,color2]
+		}
+		else
+		{
+			_color=[color1]
+		}
+		_color_mode		= __PULSE_COLOR_MODE.COLOR
+	}
+	static set_alpha		=	function(alpha1,alpha2=-1,ac_curve=-1)
+	{
+		if alpha2 != -1
+		{
+			_alpha=[alpha1,alpha2]
+
+		}
+		else
+		{
+			_alpha=[alpha1]
+
+		}
+	}
+	static set_blend		=	function(blend)
+	{
+		_blend	=	blend
+
+	}
+	static set_speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
+	{
+		_speed	=[_min,_max,_incr,_wiggle]
+
+	}
+	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	{
+		_sprite			=	[sprite,_animate,_stretch,_random]
+
+	}
+	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
+	{
+		_orient	=[_min,_max,_incr,_wiggle,_relative]
+	}
+	static set_gravity		=	function(_amount,_direction)
+	{
+		_gravity	=[_amount,_direction]
+	}
+	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
+	{
+		_direction	=[_min,_max,_incr,_wiggle]
+	}
+	#endregion
+	
+	static launch		=	function(_struct)
+	{		 
+		_struct._size			=	_size
+		_struct._scale			=	_scale
+		_struct._color			=	_color
+		_struct._color_mode		=	_color_mode
+		_struct._alpha			=	_alpha
+		_struct._blend			=	_blend
+		_struct._sprite			=	_sprite
+		_struct._orient			=	_orient
+		_struct._gravity		=	_gravity
+		_struct._death_type		=	_death_type
+		_struct._death_number	=	_death_number
+		_struct._step_type		=	_step_type
+		_struct._step_number	=	_step_number
+
+		instance_create_layer(_struct.x_origin,_struct.y_origin,layer,_struct._index,_struct)
+	}
+}
+
+function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= -1,_persistent=false)
+{
+	if _name		==__PULSE_DEFAULT_SYS_NAME
+	{
+		var l		=	struct_names_count(global.pulse.systems)		
+		_name		=	$"{_name}_{l}";		
+	}
+	
+	global.pulse.systems[$_name] = new __pulse_system(_layer,_persistent);
+	__pulse_show_debug_message($"PULSE SUCCESS: Created system by the name {_name}");
+	
+		if _return_index
+		{
+			return global.pulse.systems[$_name]._index
+		}
+		else
+		{
+			return global.pulse.systems[$_name]
+		}
+}
+
+function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=false)
+{
+	if _name		==__PULSE_DEFAULT_PART_NAME
+	{
+		var l		=	struct_names_count(global.pulse.part_types)		
+		_name		=	$"{_name}_{l}";		
+	}
+		global.pulse.part_types[$_name] = new __pulse_particle()
+			show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+		if _return_index
+		{
+			return global.pulse.part_types[$_name]._index
+		}
+		else
+		{
+			return global.pulse.part_types[$_name]
+		}
+}
+
+function pulse_convert_particles	(part_system)
 {
 	var struct = particle_get_info(part_system)
 	var length = array_length(struct.emitters)
@@ -192,30 +436,33 @@ function pulse_convert_particles(part_system)
 	{
 		var target	=	pulse_make_particle(struct.emitters[l].name,false)
 		var src	=	struct.emitters[l].parttype
-		target.size(src.size_min,src.size_max,src.size_incr,src.size_wiggle)
-		target.scale(src.xscale,src.yscale)
-		target.life(src.life_min,src.life_max)
-		//death
-		//step
-		target.speed_start(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
-		target.direction_set(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
-		target.gravity_set(src.grav_amount,src.grav_dir)
-		target.orient(src.ang_min,src.ang_max,src.ang_inc,src.ang_wiggle,src.ang_relative)
-		target.color(src.color1,src.color2,src.color3)
-		target.alpha(src.alpha1,src.alpha2,src.alpha3)
-		target.blend(src.additive)
+		target.set_size(src.size_min,src.size_max,src.size_incr,src.size_wiggle)
+		target.set_scale(src.xscale,src.yscale)
+		target.set_life(src.life_min,src.life_max)
+		if src.death_type != -1
+		{
+			target.set_death_particle(src.death_number,src.death_type)
+		}
+		if src.step_type != -1
+		{
+			target.set_step_particle(src.step_number,src.step_type)
+		}
+		target.set_speed_start(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
+		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
+		target.set_gravity(src.grav_amount,src.grav_dir)
+		target.set_orient(src.ang_min,src.ang_max,src.ang_inc,src.ang_wiggle,src.ang_relative)
+		target.set_color(src.color1,src.color2,src.color3)
+		target.set_alpha(src.alpha1,src.alpha2,src.alpha3)
+		target.set_blend(src.additive)
+		
 		if src.sprite == -1
 		{
-			target.shape(src.shape)
+			target.set_shape(src.shape)
 		}
 		else
 		{
-			target.sprite(src.sprite,src.animate,src.stretch,src.random)
+			target.set_sprite(src.sprite,src.animate,src.stretch,src.random)
 		}
 	l++
 	}
-	
-	
-	
-	
 }

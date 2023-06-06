@@ -1,3 +1,5 @@
-sys.inward(3,3,-.03,60,60,true)
-global.pulse.part_types[0].color(c_fuchsia,c_purple)
+sys.direction_range=[180,180]
+sys.part_type.set_color(c_fuchsia,c_purple)
 shockwave.pulse(200,x,y)
+
+

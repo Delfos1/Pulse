@@ -1,1 +1,1 @@
-sys.direction_range(0,359)
+sys.set_direction_range(0,359)
