@@ -5,8 +5,8 @@
   "closed": false,
   "kind": 1,
   "parent": {
-    "name": "Paths",
-    "path": "folders/Paths.yy",
+    "name": "Examples",
+    "path": "folders/Pulse/Examples.yy",
   },
   "points": [
     {"speed":100.0,"x":290.556,"y":568.62415,},

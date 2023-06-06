@@ -2,5 +2,5 @@
 
 pulse_convert_particles(ParticleSystem1)
 
-sys._part_type=global.pulse.part_types.Snow
-sys.index = sys._part_type._index
+sys.part_type=global.pulse.part_types.Snow
+sys.particle_index=sys.part_type._index

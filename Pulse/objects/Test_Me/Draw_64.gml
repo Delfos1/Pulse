@@ -1,6 +1,6 @@
 if !debug exit
 
-var amount = part_particles_count(sys._part_system)
+var amount = part_particles_count(sys.part_system)
 
 
 draw_set_font(Font1)

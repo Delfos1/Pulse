@@ -28,8 +28,8 @@
   "managed": true,
   "overriddenProperties": [],
   "parent": {
-    "name": "Objects",
-    "path": "folders/Objects.yy",
+    "name": "Examples",
+    "path": "folders/Pulse/Examples.yy",
   },
   "parentObjectId": null,
   "persistent": false,

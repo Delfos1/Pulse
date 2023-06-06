@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "Pulse_Particles",
+  "name": "TurboGML_Extract",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

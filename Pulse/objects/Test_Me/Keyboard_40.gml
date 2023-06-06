@@ -1,2 +1,2 @@
-//if sys._mask_start !=0 
-sys._mask_start-=1
+//if sys.mask_start !=0 
+sys.mask_start-=.01

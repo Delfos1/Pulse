@@ -6,7 +6,7 @@
   "kind": 1,
   "parent": {
     "name": "Rooms",
-    "path": "folders/Rooms.yy",
+    "path": "folders/Pulse/Examples/Rooms.yy",
   },
   "points": [
     {"speed":100.0,"x":198.0,"y":348.24902,},

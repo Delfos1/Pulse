@@ -29,7 +29,6 @@ function pulse_destroy_all()
 	
 }	
 
-
 // Will create a new system and reference the previous struct
 function pulse_clone_system(__name,__new_name)
 {

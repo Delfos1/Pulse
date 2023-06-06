@@ -25,8 +25,8 @@
   "nineSlice": null,
   "origin": 4,
   "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+    "name": "Examples",
+    "path": "folders/Pulse/Examples.yy",
   },
   "preMultiplyAlpha": false,
   "sequence": {

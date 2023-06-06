@@ -14,7 +14,7 @@
   ],
   "parent": {
     "name": "Particle Systems",
-    "path": "folders/Particle Systems.yy",
+    "path": "folders/Pulse/Examples/Particle Systems.yy",
   },
   "showBackdrop": true,
   "showBackdropImage": false,

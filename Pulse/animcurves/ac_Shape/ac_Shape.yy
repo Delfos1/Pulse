@@ -67,7 +67,7 @@
   ],
   "function": 2,
   "parent": {
-    "name": "Animation Curves",
-    "path": "folders/Animation Curves.yy",
+    "name": "Examples",
+    "path": "folders/Pulse/Examples.yy",
   },
 }

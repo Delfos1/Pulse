@@ -119,7 +119,7 @@ function tan01(radians_angle) {
 function speed_to_reach(dist, fric) {
 	return sqrt(2 * dist * fric);
 }
-
+/*
 /// @desc This function works like clamp(), but if the value is greater than max, it becomes min, and vice versa.
 /// @param {Real} val The value to check.
 /// @param {Real} minn The min value.
@@ -128,7 +128,7 @@ function clamp_wrap(val, minn, maxx) {
 	if (val > maxx) val = minn; else if (val < minn) val = maxx;
 	return val;
 }
-
+*/
 /// @desc Works like a lerp() but for angles, no rotation limits.
 /// @param {Real} a The first angle to check.
 /// @param {Real} b The second angle to check.

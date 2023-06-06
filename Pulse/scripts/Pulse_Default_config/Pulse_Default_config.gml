@@ -6,7 +6,7 @@ enum __PULSE_COLOR_MODE
 	HSV
 }
 
-
+//Shows messages on the Output
 #macro __PULSE_SHOW_DEBUG				true
 
 // Default naming
@@ -43,8 +43,15 @@ enum __PULSE_COLOR_MODE
 
 //Default Pulse Emitter Properties
 
-#macro __PULSE_DEFAULT_EMITTER_MODE				PULSE_MODE.OUTWARD
+#macro __PULSE_DEFAULT_EMITTER_STENCIL_MODE				PULSE_STENCIL.EXTERNAL
 
-#macro __PULSE_DEFAULT_EMITTER_DISTRIBUTION		PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_EMITTER_FORM_MODE				PULSE_FORM.ELLIPSE
 
-#macro __PULSE_DEFAULT_EMITTER_DIRECTION_DIST	PULSE_RANDOM.RANDOM
+//Distribution along the perpendicular (the radius of a circle, normal vector of a path)
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_NORMAL		PULSE_RANDOM.RANDOM
+
+//Distribution along the transversal (along the path or perimeter)
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_FORM			PULSE_RANDOM.RANDOM
+
+//Whether the emitter changes the direction of the particle is emitting
+#macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true

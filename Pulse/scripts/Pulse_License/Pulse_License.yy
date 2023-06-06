@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "Pulse_Particles",
+  "name": "Pulse_License",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

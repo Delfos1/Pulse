@@ -83,6 +83,7 @@ function __pulse_particle			() constructor
 	_death_number	=	1
 	_step_type		=	undefined
 	_step_number	=	1
+	_dynamics		=	[]
 	
 	static reset	=	function()
 	{
@@ -138,9 +139,9 @@ function __pulse_particle			() constructor
 		_size	=[_min,_max,_incr,_wiggle]
 		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
 	}
-	static set_scale		=	function(_scalex,_scaley)
+	static set_scale		=	function(scalex,_scaley)
 	{
-		_scale			= [_scalex,_scaley]
+		_scale			= [scalex,_scaley]
 		part_type_scale(_index,_scale[0],_scale[1]);
 	}
 	static set_life			=	function(_min,_max)
@@ -237,15 +238,32 @@ function __pulse_particle			() constructor
 		part_type_death(_index,_death_number,_death_type)
 	}
 #endregion
-
+/*
+	static add_dynamic = function(_condition_property,_min,_max,_property)
+	{
+		var struct = {}
+		struct.condition = function(_condition_property,_min,_max)
+		{
+			if _condition_property> _min && _condition_property< _max
+			{return true}
+			else
+			{return false}			
+		}
+		struct.property =  _property
+		array_push(_dynamics,struct)
+		return array_last(_dynamics)
+	}
+*/
 	static launch		=	function(_struct)
 	{
-		part_type_life(_struct._index,_struct.__life,_struct.__life);
-		part_type_speed(_struct._index,_struct._speed,_struct._speed,_struct._accel,0)
-		part_type_direction(_struct._index,_struct.dir,_struct.dir,0,0)
+		with(_struct)
+		{
+			part_type_life(particle_index,__life,__life);
+			part_type_speed(particle_index,_speed,_speed,_accel,0)
+			part_type_direction(particle_index,dir,dir,other._direction[2],0)
 		
-		part_particles_create(_struct._part_system, _struct.x_origin,_struct.y_origin,_struct._index, 1);
-		//reset()
+			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);
+		}		
 	}
 }
 
@@ -260,25 +278,23 @@ function __pulse_instance_particle	(_object) constructor
 	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
 	_blend			=	__PULSE_DEFAULT_PART_BLEND
 	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	_shape			=	__PULSE_DEFAULT_PART_SHAPE
 	_sprite			=	undefined
 	_orient			=	__PULSE_DEFAULT_PART_ORIENT
 	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
 	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	_set_to_sprite	=	false
 	_death_type		=	undefined
 	_death_number	=	undefined
 	_step_type		=	undefined
 	_step_number	=	undefined
 	
-	
+	#region //SET BASIC PROPERTIES
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_size	=[_min,_max,_incr,_wiggle]
 	}
-	static set_scale		=	function(_scalex,_scaley)
+	static set_scale		=	function(scalex,_scaley)
 	{
-		_scale			= [_scalex,_scaley]
+		_scale			= [scalex,_scaley]
 	}
 	static set_life			=	function(_min,_max)
 	{
@@ -340,18 +356,25 @@ function __pulse_instance_particle	(_object) constructor
 	{
 		_direction	=[_min,_max,_incr,_wiggle]
 	}
+	#endregion
 	
 	static launch		=	function(_struct)
-	{
-		
-		part_type_life(_struct._index,_struct.__life,_struct.__life);
-		part_type_speed(_struct._index,_struct._speed,_struct._speed,_struct._accel,0)
-		part_type_direction(_struct._index,_struct.dir,_struct.dir,0,0)
-		_struct.x_origin	+= (lengthdir_x(_struct.length,_struct.normal)*_struct._scalex);
-		_struct.y_origin	+= (lengthdir_y(_struct.length,_struct.normal)*_struct._scaley);
-				
-		part_particles_create(_struct._part_system, _struct.x_origin,_struct.y_origin,_struct._index, 1);
-		reset()
+	{		 
+		_struct._size			=	_size
+		_struct._scale			=	_scale
+		_struct._color			=	_color
+		_struct._color_mode		=	_color_mode
+		_struct._alpha			=	_alpha
+		_struct._blend			=	_blend
+		_struct._sprite			=	_sprite
+		_struct._orient			=	_orient
+		_struct._gravity		=	_gravity
+		_struct._death_type		=	_death_type
+		_struct._death_number	=	_death_number
+		_struct._step_type		=	_step_type
+		_struct._step_number	=	_step_number
+
+		instance_create_layer(_struct.x_origin,_struct.y_origin,layer,_struct._index,_struct)
 	}
 }
 
