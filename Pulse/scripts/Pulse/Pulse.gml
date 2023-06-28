@@ -18,6 +18,14 @@ enum PULSE_RANDOM
 	EVEN				=	22,
 }
 
+enum PULSE_COLOR
+{
+	A_TO_B_RGB			=30,
+	A_TO_B_HSV			=31,
+	COLOR_MAP			=32,
+	RGB					=33,
+	NONE				=34,
+}
 
 function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50) constructor
 {
@@ -69,13 +77,31 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	force_to_edge		=	false	
 	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
 	
-
+	displacement_map	=	undefined
+	displace			=
+						{
+							position		:false,
+							position_amount	:1,
+							speed			:false,
+							speed_amount	:1,
+							life			:false,
+							life_amount		:1,
+							size			:false,
+							size_amount		:1,
+							orientation		:false,
+							orient_amount	:1,
+							color_A_to_B	:false,
+							color_A			:-1,
+							color_B			:-1,
+							color_mode		: PULSE_COLOR.A_TO_B_RGB
+						};
+	color_map			=	undefined					
 	direction_range		=	[0,0]
 	_speed_start		=	part_type._speed
 	_life				=	part_type._life
 
 	
-	
+
 	//Pulse properties settings
 	
 	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=-1,_mode=PULSE_STENCIL.EXTERNAL)
@@ -104,6 +130,8 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			
 			stencil_mode= _mode
+			
+			return self
 	}
 	
 	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
@@ -114,23 +142,31 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		ac_tween =	0;	
 		
 		stencil_mode= _mode
+		
+		return self
 	}
 	
 	static	set_mask			=	function(_mask_start,_mask_end)
 	{
 		mask_start			=	clamp(_mask_start,0,1);
 		mask_end			=	clamp(_mask_end,0,1);
+		
+		return self
 	}
 
 	static	set_radius			=	function(_radius_internal,_radius_external)
 	{
 		radius_internal	=	_radius_internal;
 		radius_external	=	_radius_external;
+		
+		return self
 	}
 	
 	static	set_direction_range	=	function(_direction_min,_direction_max)
 	{
 		direction_range	=	[_direction_min,_direction_max]
+		
+		return self
 	}
 	
 	static	even_distrib		=	function(_angle=true,_length=true,_revolutions=1)
@@ -144,6 +180,8 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			distr_along_normal		= PULSE_RANDOM.EVEN	
 		}
 		revolutions = _revolutions
+		
+		return self
 	}
 
 	static	set_transform		=	function(_scalex=scalex,_scaley=scaley,_rotation=rotation)
@@ -151,6 +189,8 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		scalex			=	_scalex
 		scaley			=	_scaley
 		rotation		=	_rotation
+		
+		return self
 	}
 	
 	static	set_path			=	function(_path)
@@ -158,7 +198,132 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		path_a = _path
 		path_res = power(path_get_number(path_a)-1,path_get_precision(path_a))
 		form_mode = PULSE_FORM.PATH
+		
+		return self
 	}
+	
+	#region DISPLACEMENT MAP PROPERTIES
+	
+	static	set_displacement_map	=	function(_map)
+	{
+		if buffer_exists(_map.noise)
+		{
+			displacement_map	=	_map
+		}
+		else
+		{		
+		__pulse_show_debug_message("PULSE ERROR: Displacement Map is a wrong format")
+		}
+		
+		return self
+	}
+	
+	static	set_color_map			=	function(_map)
+	{
+		if buffer_exists(_map.noise)
+		{
+			color_map			=	_map
+			displace.color_mode	=	PULSE_COLOR.COLOR_MAP
+		}
+		else
+		{
+		__pulse_show_debug_message("PULSE ERROR: Color Map is a wrong format")
+		}
+		return self
+	}
+	
+	static	set_displace_position	=	function(amount)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+		displace.position = true;
+		displace.position_amount = amount;
+		
+		return self
+	}
+	
+	static	set_displace_size		=	function(amount)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+		displace.size = true;
+		displace.size_amount = amount;
+		
+		return self
+	}
+	
+	static	set_displace_speed		=	function(amount)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+		displace.speed = true;
+		displace.speed_amount = amount;
+		
+		return self
+	}
+	
+	static	set_displace_orientation=	function(amount)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+		displace.orientation = true;
+		displace.orient_amount = amount;
+		
+		return self
+	}
+	
+	static	set_displace_life		=	function(amount)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+		displace.life = true;
+		displace.life_amount = amount;
+		
+		return self
+	}
+	
+	static	set_displace_color		=	function(color_A,color_B,color_mode= PULSE_COLOR.A_TO_B_RGB)
+	{
+		if displacement_map == undefined
+		{
+			__pulse_show_debug_message("PULSE WARNING: Displacement map undefined")
+		}
+			
+		if color_mode== PULSE_COLOR.A_TO_B_RGB
+		{
+			displace.color_A= [color_get_red(color_A),color_get_blue(color_A),color_get_green(color_A)]
+			displace.color_B= [color_get_red(color_B),color_get_blue(color_B),color_get_green(color_B)]
+			displace.color_A_to_B = true
+			displace.color_mode=color_mode
+			return self
+		}
+		else if color_mode== PULSE_COLOR.A_TO_B_HSV
+		{
+			displace.color_A= [color_get_hue(color_A),color_get_saturation(color_A),color_get_value(color_A)]
+			displace.color_B= [color_get_hue(color_B),color_get_saturation(color_B),color_get_value(color_B)]
+			displace.color_A_to_B = true
+			displace.color_mode=color_mode
+			return self
+		}
+		else
+		{
+			__pulse_show_debug_message("PULSE ERROR: Color mode needs to be A to B for displacement maps")
+			return self
+		}
+		
+	}
+	
+	#endregion
 	
 	static	draw_debug			=	function(x,y)
 	{
@@ -196,7 +361,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	//Emit/Burst function 
 	static	pulse				=	function(_amount,x,y,_cache=false)
 	{
-		var rev,rev2,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,point,transv,int,ext,total;
+		var rev,rev2,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,point,transv,int,ext,total,r_h,g_s,b_v,_orient;
 		if _cache var cache = array_create(_amount,0)
 		if path_res ==-1 && path_a!= undefined && form_mode == PULSE_FORM.PATH
 		{
@@ -215,6 +380,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			form_mode = PULSE_FORM.ELLIPSE
 		}
+		
 		var _speed_start	=	part_type._speed
 		var _life			=	part_type._life
 		
@@ -229,6 +395,11 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 
 		repeat(_amount)
 			{
+				r_h			=	-1
+				g_s			=	-1
+				b_v			=	-1
+				_size		=	undefined
+				_orient		=	undefined
 				var to_edge = false
 				
 				#region ASSIGN POINT 
@@ -267,27 +438,26 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					case PULSE_FORM.PATH:
 					{
-						if		path_a != undefined //If there is a path assigned, evaluate it.
-						{
 							j			= 1/path_res
 							x_origin	= path_get_x(path_a,point)
 							y_origin	= path_get_y(path_a,point)
 							x1			= path_get_x(path_a,point+j)
 							y1			= path_get_y(path_a,point+j)
-							//var x2		= path_get_x(path_a,point+(j*2))
-							//var y2		= path_get_y(path_a,point+(j*2))
 							transv		= point_direction(x_origin,y_origin,x1,y1)
+							
+							// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
+							//var x2	= path_get_x(path_a,point+(j*2))
+							//var y2	= path_get_y(path_a,point+(j*2))
 							//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
 
 							normal		= ((transv+90)>=360) ? transv-270 : transv+90;
-						}
 						break;
 					}
 					case PULSE_FORM.ELLIPSE:
 					{
 						x_origin	=	x
 						y_origin	=	y
-						normal		=	point*360
+						normal		=	(point*360)%360
 						transv		=	normal-90<0 ? normal+270 : normal-90;
 						
 					break;
@@ -325,6 +495,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				eval		=	1;
 				eval_a		=	1;
 				eval_b		=	1;
+				total		=	1;
 				
 				if stencil_mode != PULSE_STENCIL.NONE
 				{
@@ -348,13 +519,8 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						eval_a	=	animcurve_channel_evaluate(ac_channel_b,dir_stencil);
 						eval	=	eval_a
 					}
-				}
 				
-				#endregion
-				
-				#region ASSIGN LENGTH (distance from origin)
-				
-				switch (stencil_mode)
+					switch (stencil_mode)
 				{
 					case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
 					{
@@ -378,18 +544,24 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						break;
 					}
 				}
+				}
 				
+				#endregion
+				
+				#region ASSIGN LENGTH (distance from origin)
+		
 				if radius_internal==radius_external
 				{
 					// If the 2 radius are equal, then there is no need to randomize
-					
+					var normal_length = total
 					length		=	total*radius_external;
 				}
 				else if distr_along_normal == PULSE_RANDOM.RANDOM
 				{
 					//Distribute along the radius by randomizing, then adjusting by shape evaluation
-					
-					length		=	random_range(int*radius_internal,ext*radius_external);
+					var normal_length = random(1)
+					length = lerp(int*radius_internal,ext*radius_external,normal_length)
+					//length		=	random_range(int*radius_internal,ext*radius_external);
 				}
 				else if distr_along_normal == PULSE_RANDOM.GAUSSIAN
 				{
@@ -401,18 +573,108 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				else if distr_along_normal == PULSE_RANDOM.EVEN
 				{
 					//Distribute evenly
-					
-					length		=	lerp(int*radius_internal,ext*radius_external,(rev/revolutions))
+					var normal_length =(rev/revolutions)
+					length		=	lerp(int*radius_internal,ext*radius_external,normal_length)
 					
 				}
 				#endregion
 				
-				// IF COHESION POINT EXISTS, APPLY
-				
 				var _speed		=	random_range(_speed_start[0],_speed_start[1])
 				var __life		=	random_range(_life[0],_life[1])
+								
+				#region DISPLACEMENT MAP
+				
+				if displacement_map != undefined
+				{
+					var pixel = displacement_map.GetNormalised(normal_length,point)
+					if is_array(pixel)
+					{
+						pixel[0] =pixel[0]/255
+						pixel[1] =pixel[1]/255
+						pixel[2] =pixel[2]/255
+						pixel[3] =pixel[3]/255
+						disp_value = (pixel[0]+pixel[1]+pixel[2]+pixel[3])/4
+					}else{
+						var disp_value= pixel/255
+					}
+					
+					if displace.position && displace.position_amount!=0
+					{
+						length		=	lerp(int*radius_internal+length,ext*radius_external+length,disp_value*displace.position_amount)
+					}
+					if displace.speed && displace.speed_amount!=0
+					{
+						_speed		=	lerp(_speed_start[0],_speed_start[1],disp_value*displace.speed_amount)
+					}
+					if displace.life && displace.life_amount!=0
+					{
+						__life		=	lerp(_life[0],_life[1],disp_value*displace.life_amount)
+					}
+					if displace.orientation && displace.orient_amount!=0
+					{
+						_orient = lerp(part_type._orient[0],part_type._orient[1],disp_value*displace.orient_amount)
+					}
+					if displace.color_A_to_B && displace.color_mode != PULSE_COLOR.COLOR_MAP
+					{
+						if is_array(pixel)
+						{
+							 r_h =  lerp(displace.color_A[0],displace.color_B[0],pixel[0])
+							 g_s =  lerp(displace.color_A[1],displace.color_B[1],pixel[1])
+							 b_v =  lerp(displace.color_A[2],displace.color_B[2],pixel[2])
+						}
+						else
+						{
+							
+							 r_h =  lerp(displace.color_A[0],displace.color_B[0],disp_value)
+							 g_s =  lerp(displace.color_A[1],displace.color_B[1],disp_value)
+							 b_v =  lerp(displace.color_A[2],displace.color_B[2],disp_value)
+						}
+					}
+				
+					if displace.size && displace.size_amount!=0
+					{
+						if is_array(pixel)
+						{
+						var _size = lerp(part_type._size[0],part_type._size[1],pixel[3]*displace.size_amount)
+						}else{
+						var _size = lerp(part_type._size[0],part_type._size[1],disp_value*displace.size_amount)
+						}
+						
+					}
+				}
+				
+				if color_map != undefined && displace.color_mode==PULSE_COLOR.COLOR_MAP
+				{
+					var _color = color_map.GetNormalised(normal_length,point)
+						if is_array(_color)
+						{
+							 r_h =  _color[0]
+							 g_s =  _color[1]
+							 b_v =  _color[2]
+						}
+						else
+						{
+							 r_h = _color
+							 g_s = _color
+							 b_v = _color
+						}
+					if displace.size && displace.size_amount!=0
+					{
+						if is_array(_color)
+						{
+						var _size = lerp(0,part_type._size[1],(_color[3]/255)*displace.size_amount)
+						}else{
+						var _size = lerp(0,part_type._size[1],(_color/255)*displace.size_amount)
+						}
+					}
+				}
+				
+				#endregion
+				
 				var _accel		=	_speed_start[2]*__life
 				var displacement = (_speed*__life)+_accel
+				// IF COHESION POINT EXISTS, APPLY
+				
 				
 				#region FORM CULLING (speed change) Depending on direction change speed to conform to form
 				
@@ -462,8 +724,14 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					x_origin			:x_origin,
 					y_origin			:y_origin,
 					dir					:dir,
+					_orient				:_orient,
+					_size				:_size,
 					part_system_index	:part_system_index,
-					particle_index		:particle_index
+					particle_index		:particle_index,
+					r_h	: r_h,
+					g_s	: g_s,
+					b_v	: b_v,
+					color_mode			: displace.color_mode,
 				}
 				
 				if _cache
@@ -481,7 +749,6 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					rev	=	1
 					rev2 ++
 					if rev2 > revolutions rev2=1
-				
 				}
 			}
 			if _cache return cache
@@ -493,6 +760,6 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				part_type.launch(_element)
 		}
-		array_foreach(_cache,_launch_particle,irandom(array_length(_cache)-1),_amount)
+		array_foreach(_cache,_launch_particle,irandom(array_length(_cache)-1-_amount),_amount)
 	}
 }

@@ -140,16 +140,19 @@ function __pulse_particle			() constructor
 	{
 		_size	=[_min,_max,_incr,_wiggle]
 		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
+		return self
 	}
 	static set_scale		=	function(scalex,_scaley)
 	{
 		_scale			= [scalex,_scaley]
 		part_type_scale(_index,_scale[0],_scale[1]);
+		return self
 	}
 	static set_life			=	function(_min,_max)
 	{
 		_life	=[_min,_max]
 		part_type_life(_index,_life[0],_life[1])
+		return self
 	}
 	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
@@ -169,6 +172,7 @@ function __pulse_particle			() constructor
 			part_type_color1(_index,_color[0])
 		}
 		_color_mode		= __PULSE_COLOR_MODE.COLOR
+		return self
 	}
 	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
 	{
@@ -187,43 +191,51 @@ function __pulse_particle			() constructor
 			_alpha=[alpha1]
 			part_type_alpha1(_index,_alpha[0])
 		}
+		return self
 	}
 	static set_blend		=	function(blend)
 	{
 		_blend	=	blend
 		part_type_blend(_index,_blend)
+		return self
 	}
 	static set_speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_speed	=[_min,_max,_incr,_wiggle]
 		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
+		return self
 	}
 	static set_shape		=	function(shape)
 	{
 		_shape			=	shape
 		_set_to_sprite	=	false
 		part_type_shape(_index,_shape)
+		return self
 	}
 	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
 	{
 		_sprite			=	[sprite,_animate,_stretch,_random]
 		_set_to_sprite	=	true
 		part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+		return self
 	}
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
 		_orient	=[_min,_max,_incr,_wiggle,_relative]
 		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
+		return self
 	}
 	static set_gravity		=	function(_amount,_direction)
 	{
 		_gravity	=[_amount,_direction]
 		part_type_gravity(_index,_gravity[0],_gravity[1])
+		return self
 	}
 	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_direction	=[_min,_max,_incr,_wiggle]
 		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
+		return self
 	}
 	static set_step_particle=	function(_number,_step)
 	{
@@ -231,6 +243,7 @@ function __pulse_particle			() constructor
 		_step_type		=	_step
 		_step_number	=	_number
 		part_type_step(_index,_step_number,_step_type)
+		return self
 	}
 	static set_death_particle=	function(_number,_death)
 	{
@@ -238,6 +251,7 @@ function __pulse_particle			() constructor
 		_death_type		=	_death
 		_death_number	=	_number
 		part_type_death(_index,_death_number,_death_type)
+		return self
 	}
 #endregion
 /*
@@ -264,7 +278,27 @@ function __pulse_particle			() constructor
 			part_type_speed(particle_index,_speed,_speed,_accel,0)
 			part_type_direction(particle_index,dir,dir,other._direction[2],0)
 		
+			if _size !=undefined
+			{
+				part_type_size(particle_index,_size,_size,other._size[2],0)	
+			}
+			if _orient !=undefined
+			{
+				part_type_orientation(particle_index,_orient,_orient,other._orient[2],0,other._orient[4])	
+			}
+			
+			if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
+			{
+				part_type_color_rgb(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
+			} 
+			else if color_mode == PULSE_COLOR.A_TO_B_HSV
+			{
+				part_type_color_hsv(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
+			}
+			
 			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);
+
+
 		}		
 	}
 }

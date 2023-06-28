@@ -26,7 +26,6 @@ function pulse_destroy_all()
 		__pulse_show_debug_message("PULSE SUCCESS: Particles destroyed");
 	}
 	
-	
 }	
 
 // Will create a new system and reference the previous struct
