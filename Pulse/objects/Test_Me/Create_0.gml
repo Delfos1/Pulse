@@ -18,9 +18,8 @@ shockwave=  new pulse_emitter("sys_2","white_wave")
 // If unnamed they get a default name assigned. You can change default values in the Default_config script.
 // They can be accessed by their name with a dot accessor like this:
 
-global.pulse.part_types.particle.set_speed_start(0.6,3,-0.05)
-global.pulse.part_types.particle.set_life(20,50)
-global.pulse.part_types.particle.set_size(0.1,0.35,-.002)
+global.pulse.part_types.particle.set_speed(0.6,3,-0.05).set_life(20,50).set_size(0.1,0.35,-.002)
+
 var wave = global.pulse.part_types.white_wave
 
 // Pulse particles store all properties that a regular particle may have
@@ -34,7 +33,7 @@ wave.set_color(c_white)
 .set_alpha(.5,.2,0)
 .set_life(30,35)
 .set_blend(true)
-.set_speed_start(15,15,-.2)
+.set_speed(15,15,-.2)
 .set_shape(pt_shape_sphere)
 .set_size(.5,.5,-.01,0)
 .set_scale(2,.3)
@@ -59,29 +58,12 @@ wave.set_color(c_white)
 				force_to_edge will force the particles to stay within the inner or outer radius.
 */				
 
-sys.set_radius(100,200)
-//sys.set_stencil(ac_Shape,"Splash")
+sys.set_radius(0,300)
+
 //sys.set_mask(.25,.65)
-sys.part_type.set_color(c_yellow,c_lime).set_speed_start(1,5,-.002)
+sys.part_type.set_color(c_yellow,c_lime).set_speed(1,5,-.002)
 shockwave.set_stencil(ac_Shape,"Splash")
 shockwave.set_radius(20,60)
-//sys.even_distrib(false,true,3)
+sys.even_distrib(false,true,3)
 
-
-
-//sys.set_path(Path3)
-var i=0
-repeat(5)
-{
-
-var _map = macaw_generate(256,256,8,255);
-
-sys.set_displacement_map(_map);
-sys.set_color_map(_map);
-sys.set_displace_speed(1)
-sys.set_displace_color(c_aqua,c_blue,PULSE_COLOR.A_TO_B_HSV)
-
-cache[i]= sys.pulse(2000,x,y,true)
-i++
-}
 

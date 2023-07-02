@@ -17,7 +17,6 @@ enum PULSE_RANDOM
 	GAUSSIAN			=	21,
 	EVEN				=	22,
 }
-
 enum PULSE_COLOR
 {
 	A_TO_B_RGB			=30,
@@ -25,6 +24,12 @@ enum PULSE_COLOR
 	COLOR_MAP			=32,
 	RGB					=33,
 	NONE				=34,
+}
+enum PULSE_TO_EDGE
+{
+	NONE=40,
+	SPEED=41,
+	LIFE=42,
 }
 
 function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50) constructor
@@ -74,7 +79,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	distr_along_normal	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_NORMAL
 	distr_along_form	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_FORM
 	revolutions			=	1
-	force_to_edge		=	false	
+	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
 	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
 	
 	displacement_map	=	undefined
@@ -93,16 +98,17 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 							color_A_to_B	:false,
 							color_A			:-1,
 							color_B			:-1,
-							color_mode		: PULSE_COLOR.A_TO_B_RGB
+							color_mode		: PULSE_COLOR.NONE
 						};
 	color_map			=	undefined					
 	direction_range		=	[0,0]
+	/*
 	_speed_start		=	part_type._speed
 	_life				=	part_type._life
 
-	
+	*/
 
-	//Pulse properties settings
+	#region EMITTER SETTINGS
 	
 	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=-1,_mode=PULSE_STENCIL.EXTERNAL)
 	{
@@ -201,6 +207,8 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		return self
 	}
+	
+	#endregion
 	
 	#region DISPLACEMENT MAP PROPERTIES
 	
@@ -358,7 +366,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	
-	//Emit/Burst function 
+	//Emit\Burst function 
 	static	pulse				=	function(_amount,x,y,_cache=false)
 	{
 		var rev,rev2,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,point,transv,int,ext,total,r_h,g_s,b_v,_orient;
@@ -438,19 +446,19 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					case PULSE_FORM.PATH:
 					{
-							j			= 1/path_res
-							x_origin	= path_get_x(path_a,point)
-							y_origin	= path_get_y(path_a,point)
-							x1			= path_get_x(path_a,point+j)
-							y1			= path_get_y(path_a,point+j)
-							transv		= point_direction(x_origin,y_origin,x1,y1)
+						j			= 1/path_res
+						x_origin	= path_get_x(path_a,point)
+						y_origin	= path_get_y(path_a,point)
+						x1			= path_get_x(path_a,point+j)
+						y1			= path_get_y(path_a,point+j)
+						transv		= point_direction(x_origin,y_origin,x1,y1)
 							
-							// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-							//var x2	= path_get_x(path_a,point+(j*2))
-							//var y2	= path_get_y(path_a,point+(j*2))
-							//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+						// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
+						//var x2	= path_get_x(path_a,point+(j*2))
+						//var y2	= path_get_y(path_a,point+(j*2))
+						//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
 
-							normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
 						break;
 					}
 					case PULSE_FORM.ELLIPSE:
@@ -461,6 +469,10 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						transv		=	normal-90<0 ? normal+270 : normal-90;
 						
 					break;
+					}
+					case PULSE_FORM.LINE:
+					{
+						
 					}
 				}
 				
@@ -561,7 +573,6 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					//Distribute along the radius by randomizing, then adjusting by shape evaluation
 					var normal_length = random(1)
 					length = lerp(int*radius_internal,ext*radius_external,normal_length)
-					//length		=	random_range(int*radius_internal,ext*radius_external);
 				}
 				else if distr_along_normal == PULSE_RANDOM.GAUSSIAN
 				{
@@ -577,8 +588,14 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					length		=	lerp(int*radius_internal,ext*radius_external,normal_length)
 					
 				}
-				#endregion
 				
+				if length<0
+				{
+					dir = (dir+180)%360
+				}
+				
+				#endregion
+
 				var _speed		=	random_range(_speed_start[0],_speed_start[1])
 				var __life		=	random_range(_life[0],_life[1])
 								
@@ -670,39 +687,77 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 				
 				#endregion
-				
-				var _accel		=	_speed_start[2]*__life
-				var displacement = (_speed*__life)+_accel
-				// IF COHESION POINT EXISTS, APPLY
-				
+
+				// If Speed is Negative flip the direction and make it positive
+				if _speed<0 
+				{
+					dir		=	dir+180>=360 ? dir-180 : dir+180;
+					_speed*=-1
+				}
 				
 				#region FORM CULLING (speed change) Depending on direction change speed to conform to form
 				
-				if force_to_edge
+				if force_to_edge != PULSE_TO_EDGE.NONE
 				{
-					if abs(angle_difference(dir,transv))<=30		//TRANSVERSAL
-					{
-						var _edge		= sqrt(power(radius_external,2)-power(length,2))
+					//First we define where the EDGE is, where our partcile should stop
 					
-						if	displacement > _edge
+					if abs(angle_difference(dir,transv))<=30	or 	 abs(angle_difference(dir,transv-180))<=30//TRANSVERSAL
+					{
+						// Find half chord of the coordinate to the circle (distance to the edge)
+						var _edge	= sqrt(power(radius_external,2)-power(length,2)) 
+						
+						//This second formula should work with any angle, but it doesn't work atm
+						//var _edge	= radius_external*sin(degtorad(dir-90))
+					}
+					else if abs(angle_difference(dir,normal))<=75	//NORMAL AWAY FROM CENTER
+					{	
+						if length>0
+						{
+							var _edge	=	radius_external-abs(length)
+						}
+						else
+						{
+							var _edge	=	radius_internal-abs(length)
+						}
+					}
+					else											//NORMAL TOWARDS CENTER
+					{		
+						if radius_internal >= 0
+						{
+							var _edge	=	abs(length)-radius_internal
+						}
+						else
+						{
+							if length>0
+							{
+								var _edge	=	abs(length)
+							}
+							else
+							{
+								var _edge	=	abs(radius_internal)
+							}
+						}
+					}
+					
+					//Then we calculate the Total Displacement of the particle over its life
+					var _accel		=	_speed_start[2]*__life
+					var _displacement = (_speed*__life)+_accel
+					
+					// If the particle moves beyond the edge of the radius, change either its speed or life
+					if	_displacement > _edge
+					{
+						if force_to_edge == PULSE_TO_EDGE.SPEED
 						{
 							_speed	=	(_edge-_accel)/__life
-							to_edge	=	true
+						} 
+						else if force_to_edge == PULSE_TO_EDGE.LIFE
+						{
+							__life	=	(_edge-_accel)/_speed
 						}
+						//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
+						to_edge	=	true
 					}
-					else if (displacement > length)
-					{
-						if abs(angle_difference(dir,normal))<=75			//NORMAL AWAY FROM CENTER
-						{		
-							_speed	=	(length-_accel)/__life
-							to_edge	=	true
-						}
-						else												//NORMAL TOWARDS CENTER
-						{										
-							_speed	=	(length-_accel)/__life
-							to_edge	=	true
-						}
-					}
+				
 				}
 				
 				 #endregion
@@ -720,12 +775,12 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				var launch_struct ={
 					__life				:__life,
 					_speed				:_speed,
-					_accel				:_accel,
 					x_origin			:x_origin,
 					y_origin			:y_origin,
 					dir					:dir,
 					_orient				:_orient,
 					_size				:_size,
+					part_system			:part_system,
 					part_system_index	:part_system_index,
 					particle_index		:particle_index,
 					r_h	: r_h,

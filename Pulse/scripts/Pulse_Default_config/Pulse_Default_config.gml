@@ -55,3 +55,5 @@ enum __PULSE_COLOR_MODE
 
 //Whether the emitter changes the direction of the particle is emitting
 #macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true
+
+#macro __PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE			PULSE_TO_EDGE.LIFE

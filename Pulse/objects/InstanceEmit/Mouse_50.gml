@@ -1,0 +1,1 @@
+emit.pulse(20,x,y)

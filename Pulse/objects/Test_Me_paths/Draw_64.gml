@@ -1,3 +1,5 @@
+draw_path(Path2,290,355,true)
+
 if !debug exit
 
 

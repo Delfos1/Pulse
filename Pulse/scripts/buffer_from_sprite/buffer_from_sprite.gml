@@ -1,7 +1,8 @@
 /// @function              buffer_from_sprite(_sprite,_subimage)
-/// @description           loads a sprite into a buffer-struct that saves the buffer reference and the size of the image.  
-/// @param {Asset.Sprite}     
-/// @return {Buffer}
+/// @description           loads a sprite into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
+/// @param _sprite {Asset.GMSprite}  
+/// @param _subimage {real}
+/// @return {struct}
 function buffer_from_sprite(_sprite,_subimage){
 	
     var _sw = sprite_get_width(_sprite);
@@ -18,6 +19,24 @@ function buffer_from_sprite(_sprite,_subimage){
 	return new __buffered_sprite(buffer,_sw,_sh);
 }
 
+/// @function              buffer_from_surface(_surface)
+/// @description           loads a ssurface into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
+/// @param _surface {Id.Surface}     
+/// @return {struct}
+function buffer_from_surface(_surface){
+	
+	if !surface_exists(_surface) exit
+	
+    var _sw = surface_get_width(_surface);
+    var _sh = surface_get_height(_surface);
+
+	var buffer = buffer_create(_sw * _sh * 4, buffer_fixed, 1);
+	buffer_get_surface(buffer, _surface, 0);
+	
+	return new __buffered_sprite(buffer,_sw,_sh);
+}
+	
+/// Buffered sprite class	
 function __buffered_sprite(buffer, w, h) constructor {
     
     self.noise = buffer;

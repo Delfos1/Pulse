@@ -6,34 +6,43 @@ global.pulse =
 
 function __pulse_system				(_layer= -1,_persistent=false) constructor
 {
-	if _layer == -1
+	if layer_exists(_layer)
+	{
+		if is_string(_layer)
+		{
+			layer	=	layer_get_id(_layer)
+			depth	=	layer_get_depth(layer);
+		}
+			index	=	part_system_create_layer(layer,_persistent);
+	}
+	else 
 	{
 		index	=	part_system_create();
-	}
-
-	else
-	{
-		index	=	part_system_create_layer(_layer,_persistent);
+		layer			=	-1
+		depth			=	0;
 	}
 	
 	draw			=	true;
 	draw_oldtonew	=	true
 	update			=	true;
-	depth			=	0;
-	layer			=	_layer;
 	x				=	0;
 	y				=	0;
 	
-	static set_depth	= function(_depth)
+	static set_depth	= function(_depth=depth)
 	{
 		depth	=	_depth;
 		part_system_depth(index, depth);
+		layer = -1
+		
+		return self
 	}
 	
 	static set_update	= function(_bool)
 	{
 		update	=	_bool;
 		part_system_automatic_update(index,update);
+		
+		return self
 	}
 	
 	static set_draw		= function(_bool)
@@ -41,18 +50,24 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	{
 		draw	=	_bool;
 		part_system_automatic_draw(index,draw);
+		
+		return self
 	}
 	
 	static set_layer	= function(_layer)
 	{
 		layer	=	_layer;
 		part_system_layer(index,layer);
+		
+		return self
 	}
 	
 	static set_draw		= function(_bool)
 	{
 		draw_oldtonew	=	_bool;
 		part_system_draw_order(index,draw_oldtonew);
+		
+		return self
 	}
 	
 	static set_position	= function(_x,_y)
@@ -60,6 +75,8 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 		x				=	_x;
 		y				=	_y;
 		part_system_position(index,x,y);
+		
+		return self
 	}
 
 }
@@ -199,7 +216,7 @@ function __pulse_particle			() constructor
 		part_type_blend(_index,_blend)
 		return self
 	}
-	static set_speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
+	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_speed	=[_min,_max,_incr,_wiggle]
 		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
@@ -275,7 +292,7 @@ function __pulse_particle			() constructor
 		with(_struct)
 		{
 			part_type_life(particle_index,__life,__life);
-			part_type_speed(particle_index,_speed,_speed,_accel,0)
+			part_type_speed(particle_index,_speed,_speed,other._speed[2],0)
 			part_type_direction(particle_index,dir,dir,other._direction[2],0)
 		
 			if _size !=undefined
@@ -314,7 +331,7 @@ function __pulse_instance_particle	(_object) constructor
 	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
 	_blend			=	__PULSE_DEFAULT_PART_BLEND
 	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	_sprite			=	undefined
+	//_sprite			=	_object.sprite_index
 	_orient			=	__PULSE_DEFAULT_PART_ORIENT
 	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
 	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
@@ -327,14 +344,18 @@ function __pulse_instance_particle	(_object) constructor
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_size	=[_min,_max,_incr,_wiggle]
+		
+		return self
 	}
 	static set_scale		=	function(scalex,_scaley)
 	{
 		_scale			= [scalex,_scaley]
+		return self
 	}
 	static set_life			=	function(_min,_max)
 	{
 		_life	=[_min,_max]
+		return self
 	}
 	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
@@ -351,6 +372,7 @@ function __pulse_instance_particle	(_object) constructor
 			_color=[color1]
 		}
 		_color_mode		= __PULSE_COLOR_MODE.COLOR
+		return self
 	}
 	static set_alpha		=	function(alpha1,alpha2=-1,ac_curve=-1)
 	{
@@ -364,56 +386,82 @@ function __pulse_instance_particle	(_object) constructor
 			_alpha=[alpha1]
 
 		}
+		return self
 	}
 	static set_blend		=	function(blend)
 	{
 		_blend	=	blend
+		return self
 
 	}
-	static set_speed_start	=	function(_min,_max,_incr=0,_wiggle=0)
+	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_speed	=[_min,_max,_incr,_wiggle]
-
+		return self
 	}
-	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	/*static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
 	{
 		_sprite			=	[sprite,_animate,_stretch,_random]
 
-	}
+	}*/
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
 		_orient	=[_min,_max,_incr,_wiggle,_relative]
+		return self
 	}
 	static set_gravity		=	function(_amount,_direction)
 	{
 		_gravity	=[_amount,_direction]
+		return self
 	}
 	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_direction	=[_min,_max,_incr,_wiggle]
+		return self
 	}
 	#endregion
 	
 	static launch		=	function(_struct)
 	{		 
-		_struct._size			=	_size
+		if _struct._size == undefined
+		{
+			_struct._size			=	_size
+		}
+		if _struct._orient == undefined
+		{
+			_struct._orient			=	_orient
+		}
 		_struct._scale			=	_scale
 		_struct._color			=	_color
-		_struct._color_mode		=	_color_mode
 		_struct._alpha			=	_alpha
 		_struct._blend			=	_blend
-		_struct._sprite			=	_sprite
-		_struct._orient			=	_orient
+		//_struct._sprite			=	_sprite
+
 		_struct._gravity		=	_gravity
 		_struct._death_type		=	_death_type
 		_struct._death_number	=	_death_number
 		_struct._step_type		=	_step_type
 		_struct._step_number	=	_step_number
 
-		instance_create_layer(_struct.x_origin,_struct.y_origin,layer,_struct._index,_struct)
+		if _struct.part_system.layer == -1
+		{
+			instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,_struct.particle_index,_struct)
+		}
+		else
+		{
+			instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,_struct.particle_index,_struct)	
+		}
 	}
 }
 
+
+/// @function				
+/// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the particle index if the second argument is true.
+/// @param {String}			name : Name your particle or leave empty to use the default name
+/// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
+/// @param {ID.Layer}		_layer	: Which layer to place the system
+/// @param {Bool}			_persistent	: Whether to return the particle index or not (false by default)
+/// @return {Struct}
 function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= -1,_persistent=false)
 {
 	if _name		==__PULSE_DEFAULT_SYS_NAME
@@ -435,25 +483,60 @@ function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false
 		}
 }
 
+			
+/// @description			Use this to create a new particle. It returns a reference to the struct by default, but it will return the particle index if the last argument is true.
+/// @param {String}			name : Name your particle or leave empty to use the default name
+/// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
+/// @return {Struct}
 function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=false)
 {
+	// If using the default name, count particles and rename so there are no repeated entries
+	
 	if _name		==__PULSE_DEFAULT_PART_NAME
 	{
 		var l		=	struct_names_count(global.pulse.part_types)		
 		_name		=	$"{_name}_{l}";		
 	}
-		global.pulse.part_types[$_name] = new __pulse_particle()
-			show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
-		if _return_index
-		{
-			return global.pulse.part_types[$_name]._index
-		}
-		else
-		{
-			return global.pulse.part_types[$_name]
-		}
+	
+	global.pulse.part_types[$_name] = new __pulse_particle()
+	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+	
+	if _return_index
+	{
+		return global.pulse.part_types[$_name]._index
+	}
+	else
+	{
+		return global.pulse.part_types[$_name]
+	}
 }
 
+/// @function				
+/// @description			Use this to create a new Instance particle. It returns a reference to the struct
+/// @param {ASset.GMObject}	object : Object to make instances of.
+/// @param {String}			name : Name your particle or leave empty to use the default name
+/// @param {Real}			depth: Depth in which the instance will be created
+/// @return {Struct}
+function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
+{
+	// If using the default name, count particles and rename so there are no repeated entries
+	if _name		==__PULSE_DEFAULT_PART_NAME
+	{
+		var l		=	struct_names_count(global.pulse.part_types)		
+		_name		=	$"{_name}_{l}";		
+	}
+	
+	global.pulse.part_types[$_name] = new __pulse_instance_particle(_object)
+	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+	
+	return global.pulse.part_types[$_name]
+}
+
+/// @function				pulse_convert_particles
+/// @description			   
+///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
+///							Particles are named after the emitter they are on.
+/// @param {ParticleSystem}	part_system : The particle system asset you wish to convert.
 function pulse_convert_particles	(part_system)
 {
 	var struct = particle_get_info(part_system)
@@ -481,7 +564,7 @@ function pulse_convert_particles	(part_system)
 		{
 			target.set_step_particle(src.step_number,src.step_type)
 		}
-		target.set_speed_start(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
+		target.set_speed(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
 		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
 		target.set_gravity(src.grav_amount,src.grav_dir)
 		target.set_orient(src.ang_min,src.ang_max,src.ang_inc,src.ang_wiggle,src.ang_relative)
