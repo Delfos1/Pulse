@@ -16,7 +16,7 @@
   "overriddenProperties": [],
   "parent": {
     "name": "Objects",
-    "path": "folders/Pulse/Examples/Objects.yy",
+    "path": "folders/Examples/Objects.yy",
   },
   "parentObjectId": null,
   "persistent": false,

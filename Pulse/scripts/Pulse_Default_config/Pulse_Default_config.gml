@@ -48,12 +48,14 @@ enum __PULSE_COLOR_MODE
 #macro __PULSE_DEFAULT_EMITTER_FORM_MODE				PULSE_FORM.ELLIPSE
 
 //Distribution along the perpendicular (the radius of a circle, normal vector of a path)
-#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_NORMAL		PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD		PULSE_RANDOM.RANDOM
 
 //Distribution along the transversal (along the path or perimeter)
-#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_FORM			PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_U_COORD			PULSE_RANDOM.RANDOM
 
 //Whether the emitter changes the direction of the particle is emitting
 #macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true
 
 #macro __PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE			PULSE_TO_EDGE.LIFE
+
+#macro __PULSE_DEFAULT_DISTR_PROPERTY				PULSE_RANDOM.RANDOM

@@ -33,7 +33,7 @@
   ],
   "parent": {
     "name": "Rooms",
-    "path": "folders/Pulse/Examples/Rooms.yy",
+    "path": "folders/Examples/Rooms.yy",
   },
   "parentRoom": null,
   "physicsSettings": {

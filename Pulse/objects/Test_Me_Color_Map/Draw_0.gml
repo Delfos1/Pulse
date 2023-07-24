@@ -7,4 +7,6 @@ if emit.color_map == undefined
 	emit.set_color_map(_map)
 	//setting the size will make any particles appearing in a spot with 0 alpha to have no size 
 	emit.set_displace_size(1)
+	cache = emit.pulse(5000,x,y,true)
+	_map.Destroy()
 }

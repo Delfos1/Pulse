@@ -13,7 +13,7 @@ sys.part_type.set_size(.15,.15,0,0)
 sys.part_type.set_life(200,200).set_color(c_aqua,c_fuchsia)
 
 
-sys.set_radius(0,50)
+sys.set_radius(-50,50)
 //sys.set_mask(0,0.001)
 sys.set_direction_range(-90,-90)
 

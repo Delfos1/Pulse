@@ -5,7 +5,7 @@
   "isCompatibility": false,
   "isDnD": false,
   "parent": {
-    "name": "Extensions",
-    "path": "folders/Extensions.yy",
+    "name": "Pulse",
+    "path": "folders/Pulse.yy",
   },
 }

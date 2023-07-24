@@ -68,6 +68,6 @@
   "function": 2,
   "parent": {
     "name": "Examples",
-    "path": "folders/Pulse/Examples.yy",
+    "path": "folders/Examples.yy",
   },
 }

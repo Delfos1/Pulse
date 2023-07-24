@@ -58,12 +58,13 @@ wave.set_color(c_white)
 				force_to_edge will force the particles to stay within the inner or outer radius.
 */				
 
-sys.set_radius(0,300)
 
-//sys.set_mask(.25,.65)
 sys.part_type.set_color(c_yellow,c_lime).set_speed(1,5,-.002)
 shockwave.set_stencil(ac_Shape,"Splash")
 shockwave.set_radius(20,60)
-sys.even_distrib(false,true,3)
-
-
+//sys.even_distrib(false,true,3)
+sys.set_radius(0,200)//.set_mask(0,.5)
+//sys.distr_along_v_coord = PULSE_RANDOM.ANIM_CURVE
+//sys.distr_along_u_coord = PULSE_RANDOM.ANIM_CURVE
+sys.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
+//sys.set_line(x+200,y-50)

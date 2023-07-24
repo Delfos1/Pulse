@@ -49,7 +49,7 @@
   "origin": 4,
   "parent": {
     "name": "Examples",
-    "path": "folders/Pulse/Examples.yy",
+    "path": "folders/Examples.yy",
   },
   "preMultiplyAlpha": false,
   "sequence": {

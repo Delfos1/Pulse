@@ -153,6 +153,17 @@ function __pulse_particle			() constructor
 	reset()
 	
 	#region //SET BASIC PROPERTIES
+		#region jsDoc
+		/// @func    set_size()
+		/// @desc    sets the size of the pulse particle
+		///          
+		/// @context    __pulse_particle
+		/// @param   {Real} _min : Minimum size
+		/// @param   {Real} _max : Maximum size
+		/// @param   {Real} _incr : Size Increment
+		/// @param   {Real} _wiggle : Size wiggle range (frequency is fixed)
+		/// @returns {Struct}
+		#endregion
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		_size	=[_min,_max,_incr,_wiggle]
@@ -331,7 +342,7 @@ function __pulse_instance_particle	(_object) constructor
 	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
 	_blend			=	__PULSE_DEFAULT_PART_BLEND
 	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	//_sprite			=	_object.sprite_index
+	_sprite			=	object_get_sprite(_object)
 	_orient			=	__PULSE_DEFAULT_PART_ORIENT
 	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
 	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
@@ -399,11 +410,11 @@ function __pulse_instance_particle	(_object) constructor
 		_speed	=[_min,_max,_incr,_wiggle]
 		return self
 	}
-	/*static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
 	{
 		_sprite			=	[sprite,_animate,_stretch,_random]
 
-	}*/
+	}
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
 		_orient	=[_min,_max,_incr,_wiggle,_relative]
@@ -462,7 +473,7 @@ function __pulse_instance_particle	(_object) constructor
 /// @param {ID.Layer}		_layer	: Which layer to place the system
 /// @param {Bool}			_persistent	: Whether to return the particle index or not (false by default)
 /// @return {Struct}
-function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= -1,_persistent=false)
+function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= undefined,_persistent=false)
 {
 	if _name		==__PULSE_DEFAULT_SYS_NAME
 	{
@@ -513,7 +524,7 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 
 /// @function				
 /// @description			Use this to create a new Instance particle. It returns a reference to the struct
-/// @param {ASset.GMObject}	object : Object to make instances of.
+/// @param {Asset.GMObject}	object : Object to make instances of.
 /// @param {String}			name : Name your particle or leave empty to use the default name
 /// @param {Real}			depth: Depth in which the instance will be created
 /// @return {Struct}
@@ -536,7 +547,7 @@ function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
 /// @description			   
 ///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
 ///							Particles are named after the emitter they are on.
-/// @param {ParticleSystem}	part_system : The particle system asset you wish to convert.
+/// @param {Asset.GMParticleSystem}	part_system : The particle system asset you wish to convert.
 function pulse_convert_particles	(part_system)
 {
 	var struct = particle_get_info(part_system)
@@ -567,7 +578,7 @@ function pulse_convert_particles	(part_system)
 		target.set_speed(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
 		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
 		target.set_gravity(src.grav_amount,src.grav_dir)
-		target.set_orient(src.ang_min,src.ang_max,src.ang_inc,src.ang_wiggle,src.ang_relative)
+		target.set_orient(src.ang_min,src.ang_max,src.ang_incr,src.ang_wiggle,src.ang_relative)
 		target.set_color(src.color1,src.color2,src.color3)
 		target.set_alpha(src.alpha1,src.alpha2,src.alpha3)
 		target.set_blend(src.additive)
