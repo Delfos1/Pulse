@@ -64,15 +64,6 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		part_type = pulse_make_particle(__part_type);
 	}
 
-	if anim_curve == undefined
-	{
-		interpolations = animcurve_create()
-	}
-	else
-	{
-		interpolations = anim_curve
-	}
-
 	part_system_index	=	part_system.index
 	particle_index		=	part_type._index
 	
@@ -106,6 +97,40 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	distr_life			=	__PULSE_DEFAULT_DISTR_PROPERTY
 	divisions_v			=	1
 	divisions_u			=	1
+	v_cord_channel		=	undefined
+	u_cord_channel		=	undefined
+	speed_channel		=	undefined
+	life_channel		=	undefined
+	
+	if animcurve_really_exists(anim_curve)
+	{
+		interpolations = anim_curve
+		
+		if animcurve_channel_exists(interpolations,"v_coord")
+		{
+			distr_along_v_coord	= PULSE_RANDOM.ANIM_CURVE
+			v_cord_channel = animcurve_get_channel(interpolations,"v_coord")
+		}
+		if animcurve_channel_exists(interpolations,"u_coord")
+		{
+			distr_along_u_coord	= PULSE_RANDOM.ANIM_CURVE
+			u_cord_channel = animcurve_get_channel(interpolations,"u_coord")
+		}
+		if animcurve_channel_exists(interpolations,"speed")
+		{
+			distr_speed	= PULSE_RANDOM.ANIM_CURVE
+			speed_channel = animcurve_get_channel(interpolations,"speed")
+		}
+		if animcurve_channel_exists(interpolations,"life")
+		{
+			distr_life	= PULSE_RANDOM.ANIM_CURVE
+			life_channel = animcurve_get_channel(interpolations,"life")
+		}
+	}
+	else
+	{
+		//interpolations = animcurve_create()
+	}
 	
 	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
 	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
@@ -265,7 +290,57 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	#region NONLINEAR INTERPOLATIONS
 	
-	// 
+	static set_distribution_speed	=  function (anim_curve,channel)
+	{
+		if animcurve_exists(anim_curve)
+		{
+			if animcurve_channel_exists(anim_curve,channel)
+			{
+				distr_speed = PULSE_RANDOM.ANIM_CURVE
+				speed_channel = animcurve_get_channel(anim_curve,channel)
+			}
+		}
+		return self
+	}
+	
+	static set_distribution_life	=  function (anim_curve,channel)
+	{
+		if animcurve_exists(anim_curve)
+		{
+			if animcurve_channel_exists(anim_curve,channel)
+			{
+				distr_life	= PULSE_RANDOM.ANIM_CURVE
+				life_channel = animcurve_get_channel(anim_curve,channel)
+			}
+		}	
+		return self
+	}
+	
+	static set_distribution_u		=  function (anim_curve,channel)
+	{
+		if animcurve_exists(anim_curve)
+		{
+			if animcurve_channel_exists(anim_curve,channel)
+			{
+				distr_along_u_coord	= PULSE_RANDOM.ANIM_CURVE
+				u_cord_channel = animcurve_get_channel(anim_curve,channel)
+			}
+		}		
+		return self
+	}
+	
+	static set_distribution_v		=  function (anim_curve,channel)
+	{
+		if animcurve_exists(anim_curve)
+		{
+			if animcurve_channel_exists(anim_curve,channel)
+			{
+				distr_along_v_coord	= PULSE_RANDOM.ANIM_CURVE
+				v_cord_channel = animcurve_get_channel(anim_curve,channel)
+			}
+		}		
+		return self
+	}
 	
 	#endregion
 	
@@ -463,13 +538,10 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				//path_res = 1
 			}
 		}*/
-		if form_mode == PULSE_FORM.PATH && path_a== undefined
+		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
 		{
 			form_mode = PULSE_FORM.ELLIPSE
 		}
-		
-		// EVALUATE FOR NON-LINEAR INTERPOLATIONS
-		
 		
 		var _speed_start	=	part_type._speed
 		var _life			=	part_type._life
@@ -512,10 +584,9 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 				else if distr_along_u_coord	== PULSE_RANDOM.ANIM_CURVE
 				{
-					//Use gaussian to distribute the pointection along the mean
-					//This doesnt work great
+					//use an animation curve to distribute the values
 					
-					u_coord			=	lerp(mask_start,mask_end,animcurve_channel_evaluate(animcurve_get_channel(AnimationCurve2,"curve1"),random(1)))
+					u_coord			=	lerp(mask_start,mask_end,animcurve_channel_evaluate(u_cord_channel,random(1)))
 				}
 				else if distr_along_u_coord	== PULSE_RANDOM.EVEN
 				{
@@ -599,10 +670,10 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 				else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
 				{
-					//Distribute along the radius by gaussian random, then adjusting by shape evaluation
+					//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
 
 					var v_coord = random(1)
-					length		=	lerp(int*radius_internal,ext*radius_external,animcurve_channel_evaluate(animcurve_get_channel(AnimationCurve2,"curve1"),v_coord))
+					length		=	lerp(int*radius_internal,ext*radius_external,animcurve_channel_evaluate(u_cord_channel,v_coord))
 				}
 				else if distr_along_v_coord == PULSE_RANDOM.EVEN
 				{
@@ -614,9 +685,39 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				#endregion
 
-				var _speed		=	random_range(_speed_start[0],_speed_start[1])
-				var __life		=	random_range(_life[0],_life[1])
-								
+				//Particle speed and life need to be known before launching the particle, so they can be calculated for form culling
+				#region SPEED AND LIFE SETTINGS
+				
+				var _speed, __life
+
+				if _speed_start[0]==_speed_start[1]
+				{
+					_speed		=	_speed_start[0]
+				}
+				else if distr_speed == PULSE_RANDOM.RANDOM
+				{
+					_speed		=	random_range(_speed_start[0],_speed_start[1])
+				}
+				else if distr_speed == PULSE_RANDOM.ANIM_CURVE
+				{
+					_speed		=	lerp(_speed_start[0],_speed_start[1],animcurve_channel_evaluate(speed_channel,random(1)))
+				}
+				
+				if _life[0]==_life[1]
+				{
+					__life		=	_speed_start[0]
+				}
+				else if distr_life == PULSE_RANDOM.RANDOM
+				{
+					__life		=	random_range(_life[0],_life[1])
+				}
+				else if distr_life == PULSE_RANDOM.ANIM_CURVE
+				{
+					__life		=	lerp(_life[0],_life[1],animcurve_channel_evaluate(life_channel,random(1)))
+				}
+				
+				#endregion
+
 				#region DISPLACEMENT MAP
 				
 				if displacement_map != undefined
@@ -928,7 +1029,6 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					dir					:dir,
 					_orient				:_orient,
 					_size				:_size,
-					part_system			:part_system,
 					part_system_index	:part_system_index,
 					particle_index		:particle_index,
 					r_h	: r_h,

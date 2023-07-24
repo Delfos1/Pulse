@@ -9,8 +9,8 @@
   "managed": true,
   "overriddenProperties": [],
   "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+    "name": "Examples",
+    "path": "folders/Examples.yy",
   },
   "parentObjectId": null,
   "persistent": false,

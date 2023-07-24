@@ -31,16 +31,18 @@ function animcurve_channel_copy(curve_src, channel_src,curve_dst,channel_dst=cha
 {
 	if !animcurve_channel_exists(curve_src, channel_src) return false
 	
-	var _source,_dest;
+	var _source,_dest,_index;
 	_source = animcurve_get_channel(curve_src, channel_src)
 	
-	if !animcurve_channel_exists(curve_dst, channel_src)
+	if !animcurve_channel_exists(curve_dst, channel_dst)
 	{
 		_dest = animcurve_channel_new();
+		_index = array_length(curve_dst.channels)
 	}
 	else
 	{
-		_dest = animcurve_get_channel(curve_dst, channel_src)
+		_dest = animcurve_get_channel(curve_dst, channel_dst)
+		_index = animcurve_get_channel_index(curve_dst, channel_dst)
 	}
 
 
@@ -49,7 +51,23 @@ function animcurve_channel_copy(curve_src, channel_src,curve_dst,channel_dst=cha
 	_dest.iterations =	_source.iterations
 	_dest.points=		_source.points
 	
-	array_push(curve_dst.channels,_dest)
+	curve_dst.channels[_index]=_dest
+	
+	return true
+}
+
+function animcurve_really_exists(curve)
+{
+	if !is_real(curve) && !is_struct(curve) return false
+	if !animcurve_exists(curve) return false
+	
+	return true
+}
+
+function path_really_exists(path)
+{
+	if !is_real(path) && !is_struct(path) return false
+	if !path_exists(path) return false
 	
 	return true
 }
