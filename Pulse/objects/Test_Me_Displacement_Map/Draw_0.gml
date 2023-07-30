@@ -4,3 +4,4 @@
 	sys.set_color_map(_map)
 	sys.set_displace_size(1)
 }
+

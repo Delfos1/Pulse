@@ -41,6 +41,14 @@ enum PULSE_PROPERTY
 	ORDER_OF_CREATION,
 	TO_EDGE,
 }
+enum PULSE_FORCE
+{
+	DIRECTION,
+	POINT,
+	RANGE_INFINITE,
+	RANGE_RADIAL,
+	RANGE_DIRECTIONAL,
+}
 
 
 function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) constructor
@@ -162,7 +170,9 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						};
 	color_map			=	undefined					
 
-
+	//Forces, Groups, Colliders
+	local_forces		=	[]
+	
 
 	#region EMITTER SETTINGS
 	
@@ -478,6 +488,15 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	#endregion
 	
+	static add_local_force = function(_force)
+	{
+		if is_instanceof(_force,pulse_force)
+		{
+			array_push(local_forces,_force)
+		}
+		return self
+	}
+	
 	static	draw_debug			=	function(x,y)
 	{
 		// draw radiuses
@@ -705,7 +724,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				if _life[0]==_life[1]
 				{
-					__life		=	_speed_start[0]
+					__life		=	_life[0]
 				}
 				else if distr_life == PULSE_RANDOM.RANDOM
 				{
@@ -723,9 +742,9 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				if displacement_map != undefined
 				{
 					var u = (displace.u_scale * u_coord)+(displace.offset_u);
-					u = u>=1 ?  frac(u): u ;
+					u = u>1 ?  frac(u): u ;
 					var v = (displace.v_scale * v_coord)+(displace.offset_v);
-					v = v>=1 ?  frac(v): v;
+					v = v>1 ?  frac(v): v;
 					
 					var pixel = displacement_map.GetNormalised(u,v)
 					
@@ -747,15 +766,15 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					
 					if displace.position && displace.position_amount!=0
 					{
-						length		=	lerp(int*radius_internal+length,ext*radius_external+length,disp_value*displace.position_amount)
+						length		=	lerp(length,lerp(int*radius_internal+length,ext*radius_external+length,disp_value),displace.position_amount)
 					}
 					if displace.speed && displace.speed_amount!=0
 					{
-						_speed		=	lerp(_speed_start[0],_speed_start[1],disp_value*displace.speed_amount)
+						_speed		=	lerp(_speed,lerp(_speed_start[0],_speed_start[1],disp_value),displace.speed_amount)
 					}
 					if displace.life && displace.life_amount!=0
 					{
-						__life		=	lerp(_life[0],_life[1],disp_value*displace.life_amount)
+						__life		=	lerp(__life,lerp(_life[0],_life[1],disp_value),displace.life_amount)
 					}
 					if displace.orientation && displace.orient_amount!=0
 					{
@@ -768,28 +787,34 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 							 r_h =  lerp(displace.color_A[0],displace.color_B[0],pixel[0])
 							 g_s =  lerp(displace.color_A[1],displace.color_B[1],pixel[1])
 							 b_v =  lerp(displace.color_A[2],displace.color_B[2],pixel[2])
-							 
-							 r_h =  lerp(255,r_h,displace.color_blend)
-							 g_s =  lerp(255,g_s,displace.color_blend)
-							 b_v =  lerp(255,b_v,displace.color_blend)
 						}
 						else
 						{
 							 r_h =  lerp(displace.color_A[0],displace.color_B[0],disp_value)
 							 g_s =  lerp(displace.color_A[1],displace.color_B[1],disp_value)
 							 b_v =  lerp(displace.color_A[2],displace.color_B[2],disp_value)
-							 
-							 r_h =  lerp(255,r_h,displace.color_blend)
-							 g_s =  lerp(255,g_s,displace.color_blend)
-							 b_v =  lerp(255,b_v,displace.color_blend)
+						}
+						
+						if displace.color_mode == PULSE_COLOR.A_TO_B_RGB
+						{
+							r_h =  lerp(255,r_h,displace.color_blend)
+							g_s =  lerp(255,g_s,displace.color_blend)
+							b_v =  lerp(255,b_v,displace.color_blend)
+						}
+						else if displace.color_mode == PULSE_COLOR.A_TO_B_HSV
+						{
+							r_h =  lerp(0,r_h,displace.color_blend)
+							g_s =  lerp(0,g_s,displace.color_blend)
+							b_v =  lerp(255,b_v,displace.color_blend)
 						}
 					}
+					
 				
 					if displace.size && displace.size_amount!=0
 					{
 						if is_array(pixel)
 						{
-						var _size = lerp(part_type._size[0],part_type._size[1],pixel[3]*displace.size_amount)
+						var _size = lerp(part_type._size[0],part_type._size[1],disp_value*displace.size_amount)
 						}else{
 						var _size = lerp(part_type._size[0],part_type._size[1],disp_value*displace.size_amount)
 						}
@@ -854,6 +879,13 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						x_origin	+= (lengthdir_x(length,normal)*scalex);
 						y_origin	+= (lengthdir_y(length,normal)*scaley);
 						
+						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+						{
+							//then, the direction from the focal point to the origin
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
+						}
+						
 						break;
 					}
 					case PULSE_FORM.ELLIPSE:
@@ -872,7 +904,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 						{
 							//then, the direction from the focal point to the origin
-							normal		=	point_direction(x+x_focal_point,y+y_focal_point,x_origin,y_origin)
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
 						}
 
 						transv		=	((normal-90)<0) ? normal+270 : normal-90;
@@ -895,7 +927,7 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 						{
 							//then, the direction from the focal point to the origin
-							normal		=	point_direction(x+x_focal_point,y+y_focal_point,x_origin,y_origin)
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
 							transv		=	((normal-90)<0) ? normal+270 : normal-90;
 						}
 					}
@@ -1013,6 +1045,61 @@ function pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				 #endregion
 
 				//APPLY LOCAL AND GLOBAL FORCES
+				if array_length(local_forces)>0
+				{
+					for (var k=0;k<array_length(local_forces);k++)
+					{
+						var _weight = 0;
+						
+						if local_forces[k].range == PULSE_FORCE.RANGE_INFINITE
+						{
+							_weight = local_forces[k].weight //then weight is the force's full strength
+						}
+						else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
+						{
+							var _x_relative = x_origin - (x+local_forces[k].x)
+							var _y_relative = y_origin - (y+local_forces[k].y)
+							
+							var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
+							var _coordy = _y_relative<0 ? local_forces[k].north : local_forces[k].south
+							
+							if (abs(_x_relative)< _coordx || _coordx==-1) 
+								&& (abs(_y_relative)< _coordy || _coordy==-1)
+							{
+								//within influence, calculate weight!
+								var _weightx = _coordx==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_x_relative)/_coordx )
+								var _weighty = _coordy==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_y_relative)/_coordy )
+								_weight= (_weightx+_weighty)/2
+							}
+							else continue //not within influence. Byebye!
+						}
+						else if local_forces[k].range == PULSE_FORCE.RANGE_RADIAL
+						{
+							var _dist = point_distance(x_origin,y_origin,(x+local_forces[k].x),(y+local_forces[k].y)) 
+							if _dist < local_forces[k].radius
+							{
+								_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
+							}
+							else continue //not within influence. Byebye!
+
+						}
+						
+						if (_weight==0) continue; //no weight, nothing to do here!
+						
+						if local_forces[k].type = PULSE_FORCE.DIRECTION
+						{
+							dir = lerp_angle(dir,local_forces[k].direction,local_forces[k].weight)
+						}
+						else if local_forces[k].type = PULSE_FORCE.POINT
+						{
+							var dir_force	=	(point_direction( (x+local_forces[k].x),(y+local_forces[k].y),x_origin,y_origin)+local_forces[k].direction)%360
+							dir = lerp_angle(dir,dir_force,local_forces[k].weight)
+						}
+					}
+					
+					
+				}
+				
 				
 				//CHECK FOR OCCLUDERS/COLLISIONS
 				

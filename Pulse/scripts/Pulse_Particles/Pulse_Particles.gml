@@ -23,7 +23,7 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	}
 	
 	draw			=	true;
-	draw_oldtonew	=	true
+	draw_oldtonew	=	true;
 	update			=	true;
 	x				=	0;
 	y				=	0;
@@ -46,7 +46,6 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	}
 	
 	static set_draw		= function(_bool)
-
 	{
 		draw	=	_bool;
 		part_system_automatic_draw(index,draw);
@@ -62,7 +61,7 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 		return self
 	}
 	
-	static set_draw		= function(_bool)
+	static set_draw_oldtonew		= function(_bool)
 	{
 		draw_oldtonew	=	_bool;
 		part_system_draw_order(index,draw_oldtonew);
@@ -465,8 +464,41 @@ function __pulse_instance_particle	(_object) constructor
 	}
 }
 
+function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight = 1) constructor
+{
+	x			= _x
+	y			= _y
+	type		= _type
+	range		= PULSE_FORCE.RANGE_INFINITE
+	direction	= _direction
+	weight		= _weight
+	
+	static set_range_directional = function(_north=-1,_south=-1,_east=-1,_west=-1)
+	{
+		if (_north==-1 &&_south==-1 &&_east==-1 &&_west==-1) 
+		{
+			range		= PULSE_FORCE.RANGE_INFINITE
+			return self
+		}
+		north	= _north
+		south	= _south
+		east	=_east
+		west	=_west
+		
+		range		= PULSE_FORCE.RANGE_DIRECTIONAL
+		return self
+		
+	}
+	static set_range_radial = function (_radius)
+	{
+		radius		= _radius
+		range		= PULSE_FORCE.RANGE_RADIAL
+		return self
+	}
+	
+}
 
-/// @function				
+			
 /// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the particle index if the second argument is true.
 /// @param {String}			name : Name your particle or leave empty to use the default name
 /// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
@@ -486,7 +518,7 @@ function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false
 	
 		if _return_index
 		{
-			return global.pulse.systems[$_name]._index
+			return global.pulse.systems[$_name].index
 		}
 		else
 		{
@@ -522,7 +554,7 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 	}
 }
 
-/// @function				
+			
 /// @description			Use this to create a new Instance particle. It returns a reference to the struct
 /// @param {Asset.GMObject}	object : Object to make instances of.
 /// @param {String}			name : Name your particle or leave empty to use the default name
