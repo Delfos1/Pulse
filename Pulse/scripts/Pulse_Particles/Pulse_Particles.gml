@@ -1,10 +1,12 @@
 global.pulse =
 {
-	systems		: {},
-	part_types	: {},
+	systems		:	{},
+	part_types	:	{},
+	emitters	:	{},
+	particle_factor:1,
 }
 
-function __pulse_system				(_layer= -1,_persistent=false) constructor
+function __pulse_system				(_layer= -1,_persistent=true) constructor
 {
 	if layer_exists(_layer)
 	{
@@ -13,49 +15,108 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 			layer	=	layer_get_id(_layer)
 			depth	=	layer_get_depth(layer);
 		}
+		else
+		{
+			layer	=	_layer
+			depth	=	layer_get_depth(layer);
+		}
 			index	=	part_system_create_layer(layer,_persistent);
 	}
 	else 
 	{
-		index	=	part_system_create();
+		index			=	part_system_create();
 		layer			=	-1
 		depth			=	0;
 	}
 	
+	treshold		=	0
+	count			=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
+						{
+							if index != -1 && treshold > 0
+							{
+								var _current_particles =  part_particles_count(index)
+								
+								// if there are more particles than desired treshold
+								if _current_particles-treshold > treshold*.1
+								{
+									factor *= (treshold/_current_particles)
+								} 
+								else if treshold-_current_particles > treshold*.1
+								{
+									factor /= (_current_particles/treshold)
+								}
+								else if _current_particles == 0
+								{
+									time_source_stop(count)
+								}
+							}
+							else
+							{
+								time_source_stop(count)
+							}
+						},[],-1)
 	draw			=	true;
 	draw_oldtonew	=	true;
 	update			=	true;
 	x				=	0;
 	y				=	0;
+	samples			=	1;
+	persistent		=	_persistent;
+	factor			=	1;
 	
-	static set_depth	= function(_depth=depth)
+	static set_depth				= function(_depth=depth)
 	{
 		depth	=	_depth;
-		part_system_depth(index, depth);
 		layer = -1
 		
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
+		part_system_depth(index, depth);
+
 		return self
 	}
 	
-	static set_update	= function(_bool)
+	static set_update				= function(_bool)
 	{
 		update	=	_bool;
+		
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
 		part_system_automatic_update(index,update);
 		
 		return self
 	}
 	
-	static set_draw		= function(_bool)
+	static set_draw					= function(_bool)
 	{
+		
 		draw	=	_bool;
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
+		
 		part_system_automatic_draw(index,draw);
 		
 		return self
 	}
 	
-	static set_layer	= function(_layer)
+	static set_layer				= function(_layer)
 	{
 		layer	=	_layer;
+		
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
 		part_system_layer(index,layer);
 		
 		return self
@@ -64,20 +125,118 @@ function __pulse_system				(_layer= -1,_persistent=false) constructor
 	static set_draw_oldtonew		= function(_bool)
 	{
 		draw_oldtonew	=	_bool;
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
 		part_system_draw_order(index,draw_oldtonew);
 		
 		return self
 	}
 	
-	static set_position	= function(_x,_y)
+	static set_position				= function(_x,_y)
 	{
 		x				=	_x;
 		y				=	_y;
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
 		part_system_position(index,x,y);
 		
 		return self
 	}
 
+	static set_super_sampling		= function(_active, _samples)
+	{
+		if _active
+		{
+			set_update(false)
+			samples = _samples>1 ? floor(_samples) : 1
+		}
+		else
+		{
+			samples = 1
+		}
+	}
+	
+	static reset					= function()
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
+		if layer != -1
+		{
+			part_system_layer(index,layer);
+		}
+		else
+		{
+			part_system_depth(index, depth);
+		}
+		part_system_automatic_update(index,update);
+		part_system_automatic_draw(index,draw);
+		part_system_draw_order(index,draw_oldtonew);
+		part_system_position(index,x,y);
+	}
+	
+	static update_system			= function(_resample=1)
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return self
+		}
+		
+		if samples > 1 && !update
+		{
+			//less than 1 numbers will "slow down time", greater than 1 will "accelerate time"
+			var new_sample = ceil(samples*abs(_resample))
+			
+			repeat(new_sample)
+			{
+				part_system_update(index)
+			}
+		}
+		else
+		{
+			part_system_update(index)
+		}
+	}
+	
+	//RESOURCE MANAGEMENT
+	
+	static make_sleep				= function()
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is already asleep")
+		}
+		part_system_destroy(index)
+		index = -1
+	}
+	
+	static make_awake				= function()
+	{
+		if index != -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is already awake")
+		}
+		
+		if layer != -1
+		{
+			index	=	part_system_create_layer(layer,_persistent);
+		}
+		else
+		{
+			index	=	part_system_create()
+		}
+		reset()
+	}
+	
 }
 
 function __pulse_particle			() constructor
@@ -102,55 +261,10 @@ function __pulse_particle			() constructor
 	_step_type		=	undefined
 	_step_number	=	1
 	_dynamics		=	[]
+	time_factor		=	1
+	scale_factor	=	1
 	
-	static reset	=	function()
-	{
-		part_type_scale(_index,_scale[0],_scale[1]);
-		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
-		part_type_life(_index,_life[0],_life[1])
-		var color = array_length(_color)
-		if color==3
-		{
-			part_type_color3(_index,_color[0],_color[1],_color[2])
-		} else if color==2
-		{
-			part_type_color2(_index,_color[0],_color[1])
-		} else
-		{
-			part_type_color1(_index,_color[0])
-		}
-		var alpha = array_length(_alpha)
-		if alpha==3
-		{
-			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
-		} else if alpha==2
-		{
-			part_type_alpha2(_index,_alpha[0],_alpha[1])
-		} else
-		{
-			part_type_alpha1(_index,_alpha[0])
-		}
-				
-		part_type_blend(_index,_blend)
-		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
-		if !_set_to_sprite
-		{
-			part_type_shape(_index,_shape)
-		}
-		else
-		{
-			part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
-		}
-		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
-		part_type_gravity(_index,_gravity[0],_gravity[1])
-		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
-		
-		if _step_type != undefined part_type_step(_index,_step_number,_step_type)
-		if _death_type != undefined part_type_death(_index,_death_number,_death_type)
-	
-	}
-	reset()
-	
+
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
 		/// @func    set_size()
@@ -297,6 +411,112 @@ function __pulse_particle			() constructor
 		return array_last(_dynamics)
 	}
 */
+
+	#region TRANSFORMATION HELPERS
+
+		static scale_time		= function (_factor)
+		{
+			//If factor is one, nothing to be done here
+			if _factor ==1 exit
+		
+			// Record the changes to be able to reset it later
+			time_factor		=	time_factor*_factor
+			
+			set_life(_life[0]*_factor,_life[1]*_factor)
+		
+			//flip percentage
+			_factor = 1/_factor
+		
+			set_speed(_speed[0]*_factor,_speed[1]*_factor,_speed[2]*_factor,_speed[3]*_factor)
+			set_gravity(_gravity[0]*_factor,_gravity[1])
+		
+			return self
+		}
+		
+		static scale_time_abs	= function(_factor)
+		{
+			var _absolute_factor = _factor
+			_factor = _factor/time_factor
+			
+			scale_time(_factor)
+			
+			time_factor = _absolute_factor
+		
+			return self
+		}
+		
+		static scale_space		= function (_factor,_shrink_particle)
+		{
+		
+			set_size(_size[0]*_factor,_size[1]*_factor)
+			set_speed(_speed[0]*_factor,_speed[1]*_factor,_speed[2]*_factor,_speed[3]*_factor)
+			set_gravity(_gravity[0]*_factor,_gravity[1])
+		
+			return self
+		}
+		
+		static scale_space_abs	= function(_factor)
+		{
+			var _absolute_factor = _factor
+			_factor = _factor/space_factor
+			
+			scale_space(_factor)
+			
+			space_factor = _absolute_factor
+		
+			return self
+		}
+
+
+	#endregion 
+
+	static reset	=	function()
+	{
+		part_type_scale(_index,_scale[0],_scale[1]);
+		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
+		part_type_life(_index,_life[0],_life[1])
+		var color = array_length(_color)
+		if color==3
+		{
+			part_type_color3(_index,_color[0],_color[1],_color[2])
+		} else if color==2
+		{
+			part_type_color2(_index,_color[0],_color[1])
+		} else
+		{
+			part_type_color1(_index,_color[0])
+		}
+		var alpha = array_length(_alpha)
+		if alpha==3
+		{
+			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
+		} else if alpha==2
+		{
+			part_type_alpha2(_index,_alpha[0],_alpha[1])
+		} else
+		{
+			part_type_alpha1(_index,_alpha[0])
+		}
+				
+		part_type_blend(_index,_blend)
+		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
+		if !_set_to_sprite
+		{
+			part_type_shape(_index,_shape)
+		}
+		else
+		{
+			part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+		}
+		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
+		part_type_gravity(_index,_gravity[0],_gravity[1])
+		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
+		
+		if _step_type != undefined part_type_step(_index,_step_number,_step_type)
+		if _death_type != undefined part_type_death(_index,_death_number,_death_type)
+	
+	}
+	reset()
 	static launch		=	function(_struct)
 	{
 		with(_struct)

@@ -3,18 +3,19 @@ show_debug_overlay(debug)
 
 
 #region Same code as before
-sys= new pulse_emitter("sys_1","particle")
+sys= new pulse_local_emitter("sys_1","particle")
 
-shockwave=  new pulse_emitter("sys_2","white_wave")
+shockwave=  new pulse_local_emitter("sys_2","white_wave")
 
 global.pulse.part_types.particle.set_speed(10,15,-.21)
-.set_life(200,220)
+.set_life(80,100)
 .set_size(1.2,1.8,-.0005)
 .set_alpha(1,.5,0)
-.set_shape(pt_shape_line)
+.set_shape(pt_shape_disk)
 .set_gravity(.2,270)
 .set_orient(0,0,0,0,true)
-.set_sprite(mario)
+
+
 //.set_blend(true)
 sys.force_to_edge=PULSE_TO_EDGE.NONE
 sys.set_radius(50,200)

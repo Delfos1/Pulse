@@ -81,3 +81,17 @@ function __pulse_show_debug_message(_message)
 	show_debug_message(_message);
 }
 
+function pulse_destroy(_name)
+{
+	if struct_exists(global.pulse.systems,_name)
+	{
+		part_system_destroy(global.pulse.systems[$_name].index)
+		variable_struct_remove(global.pulse.systems,_name)
+	}
+	else if struct_exists(global.pulse.part_types,_name)
+	{
+		part_type_destroy(global.pulse.part_types[$_name].index)
+		variable_struct_remove(global.pulse.part_types,_name)
+	}
+
+}

@@ -2,10 +2,10 @@ debug = true
 show_debug_overlay(debug)
 
 
-sys= new pulse_emitter()
+sys= new pulse_local_emitter()
 
 // Just do set_path to add a Path to your emitter
-sys.set_path(Path2)
+sys.form_path(Path2)
 
 
 sys.part_type.set_speed(-3,-3,0)

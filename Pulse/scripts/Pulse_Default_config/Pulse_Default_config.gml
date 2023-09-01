@@ -59,3 +59,6 @@ enum __PULSE_COLOR_MODE
 #macro __PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE			PULSE_TO_EDGE.LIFE
 
 #macro __PULSE_DEFAULT_DISTR_PROPERTY				PULSE_RANDOM.RANDOM
+
+// Systems can reduce their particle count after a certain amount of frames.
+#macro __PULSE_DEFAULT_COUNT_TIMER		80

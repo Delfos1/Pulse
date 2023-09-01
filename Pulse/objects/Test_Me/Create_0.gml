@@ -4,15 +4,17 @@ show_debug_overlay(debug)
 
 
 // Welcome to Pulse!
-// Create a new pulse emitter by typing new pulse_emitter
+// Create a new pulse emitter by typing new pulse_local_emitter
 // You can supply 3 arguments: particle system, particle type and emitter size
 // If you don't supply any, Pulse will create them for you.
 // Pulse will create the new particle/system and assign it your string as a name.
 // If you have already created them with those names, it will re use the existing ones
 
-sys= new pulse_emitter("sys_1","particle")
+system = pulse_make_system("sys_1")
 
-shockwave=  new pulse_emitter("sys_2","white_wave")
+sys= new pulse_local_emitter("sys_1","particle")
+
+shockwave=  new pulse_local_emitter("sys_2","white_wave")
 
 // Particle/System ID s get allocated in global.pulse.systems and global.pulse.part_types respectively.
 // If unnamed they get a default name assigned. You can change default values in the Default_config script.
@@ -31,7 +33,7 @@ var wave = global.pulse.part_types.white_wave
 
 wave.set_color(c_white)
 .set_alpha(.5,.2,0)
-.set_life(30,35)
+.set_life(100,100)
 .set_blend(true)
 .set_speed(15,15,-.2)
 .set_shape(pt_shape_sphere)
@@ -68,3 +70,5 @@ sys.set_radius(0,200)//.set_mask(0,.5)
 //sys.distr_along_u_coord = PULSE_RANDOM.ANIM_CURVE
 sys.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
 //sys.set_line(x+200,y-50)
+
+system.treshold=200

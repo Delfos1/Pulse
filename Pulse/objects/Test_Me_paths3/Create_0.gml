@@ -12,9 +12,9 @@ path=path_add()
 
 var smoke_pt = pulse_make_particle("smoke",false)
 
-fire = new pulse_emitter("fire","Fire",8)
+fire = new pulse_local_emitter("fire","Fire",8)
 
-smoke= new pulse_emitter("smoke","smoke",1)
+smoke= new pulse_local_emitter("smoke","smoke",1)
 
 smoke.set_path(path)
 fire.alter_direction=false

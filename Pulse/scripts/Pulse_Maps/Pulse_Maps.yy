@@ -1,11 +1,11 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "__tgm_core",
+  "name": "Pulse_Maps",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {
-    "name": "TurboGML",
-    "path": "folders/Extensions/KazanGames/TurboGML.yy",
+    "name": "Pulse",
+    "path": "folders/Pulse.yy",
   },
 }
