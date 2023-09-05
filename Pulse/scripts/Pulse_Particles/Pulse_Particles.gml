@@ -6,8 +6,10 @@ global.pulse =
 	particle_factor:1,
 }
 
-function __pulse_system				(_layer= -1,_persistent=true) constructor
+function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 {
+	name = string(_name)
+	
 	if layer_exists(_layer)
 	{
 		if is_string(_layer)
@@ -30,31 +32,7 @@ function __pulse_system				(_layer= -1,_persistent=true) constructor
 	}
 	
 	treshold		=	0
-	count			=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
-						{
-							if index != -1 && treshold > 0
-							{
-								var _current_particles =  part_particles_count(index)
-								
-								// if there are more particles than desired treshold
-								if _current_particles-treshold > treshold*.1
-								{
-									factor *= (treshold/_current_particles)
-								} 
-								else if treshold-_current_particles > treshold*.1
-								{
-									factor /= (_current_particles/treshold)
-								}
-								else if _current_particles == 0
-								{
-									time_source_stop(count)
-								}
-							}
-							else
-							{
-								time_source_stop(count)
-							}
-						},[],-1)
+
 	draw			=	true;
 	draw_oldtonew	=	true;
 	update			=	true;
@@ -63,6 +41,11 @@ function __pulse_system				(_layer= -1,_persistent=true) constructor
 	samples			=	1;
 	persistent		=	_persistent;
 	factor			=	1;
+	
+	// wake-sleep rules
+	
+	wake_on_emit		= true
+	sleep_when_empty	= true
 	
 	static set_depth				= function(_depth=depth)
 	{
@@ -188,7 +171,7 @@ function __pulse_system				(_layer= -1,_persistent=true) constructor
 		if index == -1 
 		{
 			__pulse_show_debug_message("PULSE WARNING: System is asleep")
-			return self
+			exit
 		}
 		
 		if samples > 1 && !update
@@ -207,9 +190,20 @@ function __pulse_system				(_layer= -1,_persistent=true) constructor
 		}
 	}
 	
+	static draw_it						= function(_blend = bm_normal)
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			exit
+		}
+		
+		part_system_drawit(index)	
+	}
+	
 	//RESOURCE MANAGEMENT
 	
-	static make_sleep				= function()
+	static make_asleep				= function()
 	{
 		if index == -1 
 		{
@@ -237,40 +231,66 @@ function __pulse_system				(_layer= -1,_persistent=true) constructor
 		reset()
 	}
 	
+	
+	count			=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
+		{
+				if index != -1 && treshold > 0
+				{
+					var _current_particles =  part_particles_count(index)
+								
+					// if there are more particles than desired treshold
+					if _current_particles-treshold > treshold*.1
+					{
+						factor *= (treshold/_current_particles)
+					} 
+					else if treshold-_current_particles > treshold*.1
+					{
+						factor /= (_current_particles/treshold)
+					}
+					else if _current_particles == 0
+					{
+						time_source_stop(count)
+					}
+				}
+				else
+				{
+					time_source_stop(count)
+					if sleep_when_empty { make_asleep() }
+				}
+			},[],-1)
 }
 
-function __pulse_particle			() constructor
+function __pulse_particle			(_name) constructor
 {
-	_index			=	part_type_create();
-	_size			=	__PULSE_DEFAULT_PART_SIZE
-	_scale			=	__PULSE_DEFAULT_PART_SCALE
-	_life			=	__PULSE_DEFAULT_PART_LIFE
-	_color			=	__PULSE_DEFAULT_PART_COLOR
-	_color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
-	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
-	_blend			=	__PULSE_DEFAULT_PART_BLEND
-	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	_shape			=	__PULSE_DEFAULT_PART_SHAPE
-	_sprite			=	undefined
-	_orient			=	__PULSE_DEFAULT_PART_ORIENT
-	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
-	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	_set_to_sprite	=	false
-	_death_type		=	undefined
-	_death_number	=	1
-	_step_type		=	undefined
-	_step_number	=	1
-	_dynamics		=	[]
+	name			=	_name
+	index			=	part_type_create();
+	size			=	__PULSE_DEFAULT_PART_SIZE
+	scale			=	__PULSE_DEFAULT_PART_SCALE
+	life			=	__PULSE_DEFAULT_PART_LIFE
+	color			=	__PULSE_DEFAULT_PART_COLOR
+	color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
+	alpha			=	__PULSE_DEFAULT_PART_ALPHA
+	blend			=	__PULSE_DEFAULT_PART_BLEND
+	speed			=	__PULSE_DEFAULT_PART_SPEED
+	shape			=	__PULSE_DEFAULT_PART_SHAPE
+	sprite			=	undefined
+	orient			=	__PULSE_DEFAULT_PART_ORIENT
+	gravity			=	__PULSE_DEFAULT_PART_GRAVITY
+	direction		=	__PULSE_DEFAULT_PART_DIRECTION
+	set_to_sprite	=	false
+	death_type		=	undefined
+	death_number	=	1
+	step_type		=	undefined
+	step_number		=	1
+	dynamics		=	[]
 	time_factor		=	1
 	scale_factor	=	1
-	
+	altered_acceleration = 0
 
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
-		/// @func    set_size()
 		/// @desc    sets the size of the pulse particle
 		///          
-		/// @context    __pulse_particle
 		/// @param   {Real} _min : Minimum size
 		/// @param   {Real} _max : Maximum size
 		/// @param   {Real} _incr : Size Increment
@@ -279,119 +299,119 @@ function __pulse_particle			() constructor
 		#endregion
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_size	=[_min,_max,_incr,_wiggle]
-		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
+		size	=[_min,_max,_incr,_wiggle]
+		part_type_size(index,size[0],size[1],size[2],size[3])
 		return self
 	}
 	static set_scale		=	function(scalex,_scaley)
 	{
-		_scale			= [scalex,_scaley]
-		part_type_scale(_index,_scale[0],_scale[1]);
+		scale			= [scalex,_scaley]
+		part_type_scale(index,scale[0],scale[1]);
 		return self
 	}
 	static set_life			=	function(_min,_max)
 	{
-		_life	=[_min,_max]
-		part_type_life(_index,_life[0],_life[1])
+		life	=[_min,_max]
+		part_type_life(index,life[0],life[1])
 		return self
 	}
 	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
 		if color3 != -1
 		{
-			_color=[color1,color2,color3]	
-			part_type_color3(_index,_color[0],_color[1],_color[2])
+			color=[color1,color2,color3]	
+			part_type_color3(index,color[0],color[1],color[2])
 		}
 		else if color2 != -1
 		{
-			_color=[color1,color2]
-			part_type_color2(_index,_color[0],_color[1])
+			color=[color1,color2]
+			part_type_color2(index,color[0],color[1])
 		}
 		else
 		{
-			_color=[color1]
-			part_type_color1(_index,_color[0])
+			color=[color1]
+			part_type_color1(index,color[0])
 		}
-		_color_mode		= __PULSE_COLOR_MODE.COLOR
+		color_mode		= __PULSE_COLOR_MODE.COLOR
 		return self
 	}
 	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
 	{
 		if alpha3 != -1
 		{
-			_alpha=[alpha1,alpha2,alpha3]	
-			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
+			alpha=[alpha1,alpha2,alpha3]	
+			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
 		}
 		else if alpha2 != -1
 		{
-			_alpha=[alpha1,alpha2]
-			part_type_alpha2(_index,_alpha[0],_alpha[1])
+			alpha=[alpha1,alpha2]
+			part_type_alpha2(index,alpha[0],alpha[1])
 		}
 		else
 		{
-			_alpha=[alpha1]
-			part_type_alpha1(_index,_alpha[0])
+			alpha=[alpha1]
+			part_type_alpha1(index,alpha[0])
 		}
 		return self
 	}
-	static set_blend		=	function(blend)
+	static set_blend		=	function(_blend)
 	{
-		_blend	=	blend
-		part_type_blend(_index,_blend)
+		blend	=	_blend
+		part_type_blend(index,blend)
 		return self
 	}
 	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_speed	=[_min,_max,_incr,_wiggle]
-		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
+		speed	=[_min,_max,_incr,_wiggle]
+		part_type_speed(index,speed[0],speed[1],speed[2],speed[3])
 		return self
 	}
-	static set_shape		=	function(shape)
+	static set_shape		=	function(_shape)
 	{
-		_shape			=	shape
-		_set_to_sprite	=	false
-		part_type_shape(_index,_shape)
+		shape			=	_shape
+		set_to_sprite	=	false
+		part_type_shape(index,shape)
 		return self
 	}
-	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true)
 	{
-		_sprite			=	[sprite,_animate,_stretch,_random]
-		_set_to_sprite	=	true
-		part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+		sprite			=	[_sprite,_animate,_stretch,_random]
+		set_to_sprite	=	true
+		part_type_sprite(index,sprite[0],sprite[1],sprite[2],sprite[3])
 		return self
 	}
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
-		_orient	=[_min,_max,_incr,_wiggle,_relative]
-		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
+		orient	=[_min,_max,_incr,_wiggle,_relative]
+		part_type_orientation(index,orient[0],orient[1],orient[2],orient[3],orient[4])
 		return self
 	}
 	static set_gravity		=	function(_amount,_direction)
 	{
-		_gravity	=[_amount,_direction]
-		part_type_gravity(_index,_gravity[0],_gravity[1])
+		gravity	=[_amount,_direction]
+		part_type_gravity(index,gravity[0],gravity[1])
 		return self
 	}
 	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_direction	=[_min,_max,_incr,_wiggle]
-		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
+		direction	=[_min,_max,_incr,_wiggle]
+		part_type_direction(index,direction[0],direction[1],direction[2],direction[3])
 		return self
 	}
 	static set_step_particle=	function(_number,_step)
 	{
-		if _step != undefined exit
-		_step_type		=	_step
-		_step_number	=	_number
-		part_type_step(_index,_step_number,_step_type)
+		
+		step_type	=	_step
+		step_number	=	_number
+		part_type_step(index,step_number,step_type)
 		return self
 	}
 	static set_death_particle=	function(_number,_death)
 	{
-		if _death != undefined exit
-		_death_type		=	_death
-		_death_number	=	_number
-		part_type_death(_index,_death_number,_death_type)
+		
+		death_type		=	_death
+		death_number	=	_number
+		part_type_death(index,death_number,death_type)
 		return self
 	}
 #endregion
@@ -414,6 +434,8 @@ function __pulse_particle			() constructor
 
 	#region TRANSFORMATION HELPERS
 
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @param {Real}			_factor : factor to which to change the time scale of the particle, relative to the current factor
 		static scale_time		= function (_factor)
 		{
 			//If factor is one, nothing to be done here
@@ -422,17 +444,18 @@ function __pulse_particle			() constructor
 			// Record the changes to be able to reset it later
 			time_factor		=	time_factor*_factor
 			
-			set_life(_life[0]*_factor,_life[1]*_factor)
+			set_life(life[0]*_factor,life[1]*_factor)
 		
 			//flip percentage
 			_factor = 1/_factor
 		
-			set_speed(_speed[0]*_factor,_speed[1]*_factor,_speed[2]*_factor,_speed[3]*_factor)
-			set_gravity(_gravity[0]*_factor,_gravity[1])
+			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
+			set_gravity(gravity[0]*_factor,gravity[1])
 		
 			return self
 		}
-		
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @param {Real}			_factor : factor to which to change the time scale of the particle in absolute terms	
 		static scale_time_abs	= function(_factor)
 		{
 			var _absolute_factor = _factor
@@ -444,76 +467,121 @@ function __pulse_particle			() constructor
 		
 			return self
 		}
-		
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @param {Real}			_factor : factor to which to change the time scale of the particle		
 		static scale_space		= function (_factor,_shrink_particle)
 		{
 		
-			set_size(_size[0]*_factor,_size[1]*_factor)
-			set_speed(_speed[0]*_factor,_speed[1]*_factor,_speed[2]*_factor,_speed[3]*_factor)
-			set_gravity(_gravity[0]*_factor,_gravity[1])
+			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
+			set_gravity(gravity[0]*_factor,gravity[1])
+			if _shrink_particle
+			{
+				set_size(size[0]*_factor,size[1]*_factor)
+			}
 		
 			return self
 		}
-		
-		static scale_space_abs	= function(_factor)
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @param {Real}			_factor : factor to which to change the time scale of the particle		
+		static scale_space_abs	= function(_factor,_shrink_particle)
 		{
 			var _absolute_factor = _factor
 			_factor = _factor/space_factor
 			
-			scale_space(_factor)
+			scale_space(_factor,_shrink_particle)
 			
 			space_factor = _absolute_factor
 		
 			return self
 		}
+/// @description			Change a particle's scale by using absolute pixel size instead of relative scale
+/// @param {Real}			_min : minimum size of the particle, in pixels, when created	
+/// @param {Real}			_max : maximum size of the particle, in pixels, when created
+/// @param {Real}			_incr : +/- additive amount of pixels the particle can grow or shrink step to step	
+/// @param {Real}			_wiggle : +/- amount of pixels the particle can vary step to step	
+/// @param {Real}			_mode : 0 = average of width and height of sprite, 1 = use as reference the largest side, 2 = use the smallest side
+		static set_size_abs		=	function(_min,_max,_incr=0,_wiggle=0,_mode=0)
+	{
+		if sprite == undefined {}
+		
+		if _mode == 0		// average of width and height
+		{
+			var _size = mean(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+		}
+		else if _mode == 1	// take the largest of the sprite sides
+		{
+			var _size = max(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+		}
+		else				// or take the smallest
+		{
+			var _size = min(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+		}
 
-
+		_min	=	_min/_size
+		_max	=	_max/_size
+		_incr	=	_incr/_size
+		_wiggle =	_wiggle/_size
+		
+		size	=[_min,_max,_incr,_wiggle]
+		part_type_size(index,size[0],size[1],size[2],size[3])
+		return self
+	}
+/*		
+		static set_weighted_acc	=	function(_final_speed)
+		{
+			var _min_accel			=	speed[2]*life[0]
+			var _max_accel			=	speed[2]*life[1]
+			var _min_final_speed	=	speed[0]+min(_min_accel,_max_accel) // the slowest a particle can go
+			var _max_final_speed	=	speed[1]+max(_min_accel,_max_accel)	// the fastest a particle can go
+			
+		}
+*/		
 	#endregion 
 
 	static reset	=	function()
 	{
-		part_type_scale(_index,_scale[0],_scale[1]);
-		part_type_size(_index,_size[0],_size[1],_size[2],_size[3])
-		part_type_life(_index,_life[0],_life[1])
-		var color = array_length(_color)
-		if color==3
+		part_type_scale(index,scale[0],scale[1]);
+		part_type_size(index,size[0],size[1],size[2],size[3])
+		part_type_life(index,life[0],life[1])
+		var _color = array_length(color)
+		if _color==3
 		{
-			part_type_color3(_index,_color[0],_color[1],_color[2])
-		} else if color==2
+			part_type_color3(index,color[0],color[1],color[2])
+		} else if _color==2
 		{
-			part_type_color2(_index,_color[0],_color[1])
+			part_type_color2(index,color[0],color[1])
 		} else
 		{
-			part_type_color1(_index,_color[0])
+			part_type_color1(index,color[0])
 		}
-		var alpha = array_length(_alpha)
-		if alpha==3
+		var _alpha = array_length(alpha)
+		if _alpha==3
 		{
-			part_type_alpha3(_index,_alpha[0],_alpha[1],_alpha[2])
-		} else if alpha==2
+			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
+		} else if _alpha==2
 		{
-			part_type_alpha2(_index,_alpha[0],_alpha[1])
+			part_type_alpha2(index,alpha[0],alpha[1])
 		} else
 		{
-			part_type_alpha1(_index,_alpha[0])
+			part_type_alpha1(index,alpha[0])
 		}
 				
-		part_type_blend(_index,_blend)
-		part_type_speed(_index,_speed[0],_speed[1],_speed[2],_speed[3])
-		if !_set_to_sprite
+		part_type_blend(index,blend)
+		part_type_speed(index,speed[0],speed[1],speed[2],speed[3])
+		if !set_to_sprite
 		{
-			part_type_shape(_index,_shape)
+			part_type_shape(index,shape)
 		}
 		else
 		{
-			part_type_sprite(_index,_sprite[0],_sprite[1],_sprite[2],_sprite[3])
+			part_type_sprite(index,sprite[0],sprite[1],sprite[2],sprite[3])
 		}
-		part_type_orientation(_index,_orient[0],_orient[1],_orient[2],_orient[3],_orient[4])
-		part_type_gravity(_index,_gravity[0],_gravity[1])
-		part_type_direction(_index,_direction[0],_direction[1],_direction[2],_direction[3])
+		part_type_orientation(index,orient[0],orient[1],orient[2],orient[3],orient[4])
+		part_type_gravity(index,gravity[0],gravity[1])
+		part_type_direction(index,direction[0],direction[1],direction[2],direction[3])
 		
-		if _step_type != undefined part_type_step(_index,_step_number,_step_type)
-		if _death_type != undefined part_type_death(_index,_death_number,_death_type)
+		if step_type != undefined part_type_step(index,step_number,step_type)
+		if death_type != undefined part_type_death(index,death_number,death_type)
 	
 	}
 	reset()
@@ -521,17 +589,17 @@ function __pulse_particle			() constructor
 	{
 		with(_struct)
 		{
-			part_type_life(particle_index,__life,__life);
-			part_type_speed(particle_index,_speed,_speed,other._speed[2],0)
-			part_type_direction(particle_index,dir,dir,other._direction[2],0)
+			part_type_life(particle_index,_life,_life);
+			part_type_speed(particle_index,_speed,_speed,other.speed[2],other.speed[3])
+			part_type_direction(particle_index,dir,dir,other.direction[2],other.direction[3])
 		
 			if _size !=undefined
 			{
-				part_type_size(particle_index,_size,_size,other._size[2],0)	
+				part_type_size(particle_index,_size,_size,other.size[2],other.size[3])	
 			}
 			if _orient !=undefined
 			{
-				part_type_orientation(particle_index,_orient,_orient,other._orient[2],0,other._orient[4])	
+				part_type_orientation(particle_index,_orient,_orient,other.orient[2],other.orient[3],other.orient[4])	
 			}
 			
 			if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
@@ -544,109 +612,108 @@ function __pulse_particle			() constructor
 			}
 			
 			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);
-
-
 		}		
 	}
 }
 
 function __pulse_instance_particle	(_object) constructor
 {
-	_index			=	_object
-	_size			=	__PULSE_DEFAULT_PART_SIZE
-	_scale			=	__PULSE_DEFAULT_PART_SCALE
-	_life			=	__PULSE_DEFAULT_PART_LIFE
-	_color			=	__PULSE_DEFAULT_PART_COLOR
-	_color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
-	_alpha			=	__PULSE_DEFAULT_PART_ALPHA
-	_blend			=	__PULSE_DEFAULT_PART_BLEND
-	_speed			=	__PULSE_DEFAULT_PART_SPEED
-	_sprite			=	object_get_sprite(_object)
-	_orient			=	__PULSE_DEFAULT_PART_ORIENT
-	_gravity		=	__PULSE_DEFAULT_PART_GRAVITY
-	_direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	_death_type		=	undefined
-	_death_number	=	undefined
-	_step_type		=	undefined
-	_step_number	=	undefined
+	name			=	object_get_name(_object)
+	index			=	_object
+	size			=	__PULSE_DEFAULT_PART_SIZE
+	scale			=	__PULSE_DEFAULT_PART_SCALE
+	life			=	__PULSE_DEFAULT_PART_LIFE
+	color			=	__PULSE_DEFAULT_PART_COLOR
+	color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
+	alpha			=	__PULSE_DEFAULT_PART_ALPHA
+	blend			=	__PULSE_DEFAULT_PART_BLEND
+	speed			=	__PULSE_DEFAULT_PART_SPEED
+	sprite			=	object_get_sprite(_object)
+	orient			=	__PULSE_DEFAULT_PART_ORIENT
+	gravity			=	__PULSE_DEFAULT_PART_GRAVITY
+	direction		=	__PULSE_DEFAULT_PART_DIRECTION
+	death_type		=	undefined
+	death_number	=	undefined
+	step_type		=	undefined
+	step_number	=	undefined
 	
 	#region //SET BASIC PROPERTIES
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_size	=[_min,_max,_incr,_wiggle]
+		size	=[_min,_max,_incr,_wiggle]
 		
 		return self
 	}
 	static set_scale		=	function(scalex,_scaley)
 	{
-		_scale			= [scalex,_scaley]
+		scale			= [scalex,_scaley]
 		return self
 	}
 	static set_life			=	function(_min,_max)
 	{
-		_life	=[_min,_max]
+		life	=[_min,_max]
 		return self
 	}
 	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
 		if color3 != -1
 		{
-			_color=[color1,color2,color3]	
+			color=[color1,color2,color3]	
 		}
 		else if color2 != -1
 		{
-			_color=[color1,color2]
+			color=[color1,color2]
 		}
 		else
 		{
-			_color=[color1]
+			color=[color1]
 		}
-		_color_mode		= __PULSE_COLOR_MODE.COLOR
+		color_mode		= __PULSE_COLOR_MODE.COLOR
 		return self
 	}
 	static set_alpha		=	function(alpha1,alpha2=-1,ac_curve=-1)
 	{
 		if alpha2 != -1
 		{
-			_alpha=[alpha1,alpha2]
+			alpha=[alpha1,alpha2]
 
 		}
 		else
 		{
-			_alpha=[alpha1]
+			alpha=[alpha1]
 
 		}
 		return self
 	}
-	static set_blend		=	function(blend)
+	static set_blend		=	function(_blend)
 	{
-		_blend	=	blend
+		blend	=	_blend
 		return self
 
 	}
 	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_speed	=[_min,_max,_incr,_wiggle]
+		speed	=[_min,_max,_incr,_wiggle]
 		return self
 	}
-	static set_sprite		=	function(sprite,_animate=false,_stretch=false,_random=true)
+	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true)
 	{
-		_sprite			=	[sprite,_animate,_stretch,_random]
+		sprite			=	[_sprite,_animate,_stretch,_random]
 
 	}
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
-		_orient	=[_min,_max,_incr,_wiggle,_relative]
+		orient	=[_min,_max,_incr,_wiggle,_relative]
 		return self
 	}
 	static set_gravity		=	function(_amount,_direction)
 	{
-		_gravity	=[_amount,_direction]
+		gravity	=[_amount,_direction]
 		return self
 	}
 	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		_direction	=[_min,_max,_incr,_wiggle]
+		direction	=[_min,_max,_incr,_wiggle]
 		return self
 	}
 	#endregion
@@ -655,23 +722,23 @@ function __pulse_instance_particle	(_object) constructor
 	{		 
 		if _struct._size == undefined
 		{
-			_struct._size			=	_size
+			_struct._size			=	size
 		}
 		if _struct._orient == undefined
 		{
-			_struct._orient			=	_orient
+			_struct._orient			=	orient
 		}
-		_struct._scale			=	_scale
-		_struct._color			=	_color
-		_struct._alpha			=	_alpha
-		_struct._blend			=	_blend
+		_struct._scale			=	scale
+		_struct.color			=	color
+		_struct._alpha			=	alpha
+		_struct._blend			=	blend
 		//_struct._sprite			=	_sprite
 
-		_struct._gravity		=	_gravity
-		_struct._death_type		=	_death_type
-		_struct._death_number	=	_death_number
-		_struct._step_type		=	_step_type
-		_struct._step_number	=	_step_number
+		_struct._gravity		=	gravity
+		_struct._death_type		=	death_type
+		_struct._death_number	=	death_number
+		_struct._step_type		=	step_type
+		_struct._step_number	=	step_number
 
 		if _struct.part_system.layer == -1
 		{
@@ -684,7 +751,14 @@ function __pulse_instance_particle	(_object) constructor
 	}
 }
 
-function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight = 1) constructor
+/// @description			Use this to create a new force to apply within an emitter. Forces can be linear or radial, range of influence is infinite by default.
+/// @param {Real}			_x : X coordinate relative to the emitter
+/// @param {Real}			_y : Y coordinate relative to the emitter
+/// @param {Real}			_direction	: Which layer to place the system
+/// @param {Real}			_type	: Can be either PULSE_FORCE.DIRECTION or PULSE_FORCE.RADIAL
+/// @param {Real}			_weight	: Amount that this will influence the particle, from 0 to 1.
+/// @return {Struct}
+function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight = 1, _force = 1) constructor
 {
 	x			= _x
 	y			= _y
@@ -692,7 +766,10 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight 
 	range		= PULSE_FORCE.RANGE_INFINITE
 	direction	= _direction
 	weight		= _weight
-	
+	vec			= [0,0];
+	vec[0]		= lengthdir_x(_force,direction)
+	vec[1]		= lengthdir_y(_force,direction)
+							
 	static set_range_directional = function(_north=-1,_south=-1,_east=-1,_west=-1)
 	{
 		if (_north==-1 &&_south==-1 &&_east==-1 &&_west==-1) 
@@ -702,8 +779,8 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight 
 		}
 		north	= _north
 		south	= _south
-		east	=_east
-		west	=_west
+		east	= _east
+		west	= _west
 		
 		range		= PULSE_FORCE.RANGE_DIRECTIONAL
 		return self
@@ -733,7 +810,7 @@ function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false
 		_name		=	$"{_name}_{l}";		
 	}
 	
-	global.pulse.systems[$_name] = new __pulse_system(_layer,_persistent);
+	global.pulse.systems[$_name] = new __pulse_system(_name,_layer,_persistent);
 	__pulse_show_debug_message($"PULSE SUCCESS: Created system by the name {_name}");
 	
 		if _return_index
@@ -761,7 +838,7 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 		_name		=	$"{_name}_{l}";		
 	}
 	
-	global.pulse.part_types[$_name] = new __pulse_particle()
+	global.pulse.part_types[$_name] = new __pulse_particle(_name)
 	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
 	
 	if _return_index

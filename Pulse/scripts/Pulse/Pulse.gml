@@ -1,102 +1,116 @@
-enum PULSE_FORM
+function	__pulse_lookup_system(_name)
 {
-	PATH,
-	ELLIPSE,
-	LINE,
-}
-enum PULSE_STENCIL
-{
-	INTERNAL			=	10,
-	EXTERNAL			=	11,
-	A_TO_B				=	12,
-	NONE				=	13,
-}
-enum PULSE_RANDOM
-{
-	RANDOM				=	20,
-	ANIM_CURVE			=	21,
-	EVEN				=	22,
-}
-enum PULSE_COLOR
-{
-	A_TO_B_RGB			=30,
-	A_TO_B_HSV			=31,
-	COLOR_MAP			=32,
-	RGB					=33,
-	NONE				=34,
-}
-enum PULSE_TO_EDGE
-{
-	NONE=40,
-	SPEED=41,
-	LIFE=42,
-	FOCAL_SPEED = 43,
-	FOCAL_LIFE	= 44,
-}
-enum PULSE_PROPERTY
-{
-	U_COORD,
-	V_COORD,
-	PATH_SPEED,
-	ORDER_OF_CREATION,
-	TO_EDGE,
-}
-enum PULSE_FORCE
-{
-	DIRECTION,
-	POINT,
-	RANGE_INFINITE,
-	RANGE_RADIAL,
-	RANGE_DIRECTIONAL,
+	var system_found =  0 /// 0 = found , 1 = not found ,2 = not found with default name
+	
+	if is_string(_name) 
+	{
+		if _name == __PULSE_DEFAULT_SYS_NAME
+		{
+			system_found =  1	
+		}		
+		else if struct_exists(global.pulse.systems,_name)
+		{
+			system_found =  0 //found in struct
+		}
+		else
+		{
+			system_found =  1 //create with provided name
+		}
+	}
+	else if  is_instanceof(_name,__pulse_system)
+	{
+		if struct_exists(global.pulse.systems,_name.name)
+		{
+			_name = _name.name
+			system_found =  0 //found in struct
+		}
+		else
+		{
+			system_found =  3 //found locally
+		}
+	}
+	else
+	{
+		system_found =  2 //Not found, make 
+	}
+	
+	switch(system_found)
+	{
+		case 0:
+				return global.pulse.systems[$_name];
+		break
+		case 1:
+				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system by that name")
+				return pulse_make_system(_name);
+		break
+		case 2:
+				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system with default name")
+				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
+		break
+	}
+	
 }
 
+function	__pulse_lookup_particle(_name)
+{
+	var particle_found =  0 /// 0 = found , 1 = not found ,2 = not found with default name
+	
+	if is_string(_name) 
+	{
+		if _name == __PULSE_DEFAULT_PART_NAME
+		{
+			particle_found =  1	
+		}		
+		else if struct_exists(global.pulse.part_types,_name)
+		{
+			particle_found =  0 //found in struct
+		}
+		else
+		{
+			particle_found =  1 //create with provided name
+		}
+	}
+	else if  is_instanceof(_name,__pulse_particle)
+	{
+		if struct_exists(global.pulse.part_types,_name.name)
+		{
+			_name = _name.name
+			particle_found =  0 //found in struct
+		}
+		else
+		{
+			particle_found =  3 //found locally
+		}
+	}
+	else
+	{
+		particle_found =  2 //Not found, make 
+	}
+	
+	switch(particle_found)
+	{
+		case 0:
+				return global.pulse.part_types[$_name];
+		break
+		case 1:
+				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with that name")
+				return pulse_make_particle(_name);
+		break
+		case 2:
+				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with default name")
+				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
+		break
+	}
+	
+}
 
 function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) constructor
 {
-	//PART SYSTEM
-	if is_string(__part_system)
-	{
-		if struct_exists(global.pulse.systems,__part_system)
-		{
-			part_system = global.pulse.systems[$__part_system];
-		}
-		else
-		{
-			part_system = pulse_make_system(__part_system);
-		}
-	}
-	else if  is_instanceof(__part_system,__pulse_system)
-	{
-		part_system = global.pulse.systems[$__part_system];
-	}
-	else
-	{
-		part_system = pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
-	}
+
+	part_system = 	 __pulse_lookup_system(__part_system)
+	part_type	=	 __pulse_lookup_particle(__part_type)
+
 	
-	//PART TYPE
-	if is_string(__part_type)
-	{
-		if struct_exists(global.pulse.part_types,__part_type)
-		{
-			part_type = global.pulse.part_types[$__part_type];
-		}
-		else
-		{
-			part_type = pulse_make_particle(__part_type);
-		}
-	}
-	else if  is_instanceof(__part_type,__pulse_particle)
-	{
-		part_type = global.pulse.part_types[$__part_type];
-	}
-	else
-	{
-		part_type = pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
-	}
-	
-	part_system_index	=	part_system.index
-	particle_index		=	part_type._index
 	
 	//emitter form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
@@ -398,6 +412,17 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	static	remove_local_force	=	function(_force)
+	{
+		if is_instanceof(_force,pulse_force)
+		{
+			array_push(local_forces,_force)
+		}
+		return self
+	
+	
+	}
+	
 	static	draw_debug			=	function(x,y)
 	{
 		// draw radiuses
@@ -441,6 +466,18 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	//Emit\Burst function 
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
 	{
+		if part_system.index = -1
+		{
+			if part_system.wake_on_emit
+			{
+				part_system.make_awake()
+			}
+			else
+			{
+				__pulse_show_debug_message("PULSE ERROR: System is currently asleep!")
+				exit
+			}
+		}
 		if !_cache
 		{
 			if part_system.treshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
@@ -495,8 +532,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			form_mode = PULSE_FORM.ELLIPSE
 		}
 		var map_color_mode	=	PULSE_COLOR.NONE
-		var _speed_start	=	part_type._speed
-		var _life			=	part_type._life
+		var _speed_start	=	part_type.speed
+		var _life			=	part_type.life
 		
 		mask_start			=	clamp_wrap(mask_start,0,1)
 		mask_end			=	clamp_wrap(mask_end,0,1)
@@ -710,7 +747,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					}
 					if displacement_map.orientation && displacement_map.orient_amount!=0
 					{
-						_orient		=	lerp(part_type._orient[0],part_type._orient[1],disp_value*displacement_map.orient_amount)
+						_orient		=	lerp(part_type.orient[0],part_type.orient[1],disp_value*displacement_map.orient_amount)
 					}
 					if displacement_map.color_A_to_B && displacement_map.color_mode != PULSE_COLOR.COLOR_MAP
 					{
@@ -751,9 +788,9 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					{
 						if is_array(pixel)
 						{
-						var _size = lerp(part_type._size[0],part_type._size[1],disp_value*displacement_map.size_amount)
+						var _size = lerp(part_type.size[0],part_type.size[1],disp_value*displacement_map.size_amount)
 						}else{
-						var _size = lerp(part_type._size[0],part_type._size[1],disp_value*displacement_map.size_amount)
+						var _size = lerp(part_type.size[0],part_type.size[1],disp_value*displacement_map.size_amount)
 						}
 					}
 				}
@@ -771,7 +808,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 							r_h =  lerp(255,_color[0],color_map.color_blend)
 							g_s =  lerp(255,_color[1],color_map.color_blend)
 							b_v =  lerp(255,_color[2],color_map.color_blend)
-							var _size = lerp(0,part_type._size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
+							var _size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
 						}
 					var map_color_mode = PULSE_COLOR.COLOR_MAP
 				}
@@ -837,10 +874,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					}
 					case PULSE_FORM.LINE:
 					{
-						transv		= point_direction(x,y,line[0],line[1])
+						transv		= point_direction(x,y,x+line[0],y+line[1])
 						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
-						x_origin	= lerp(x,line[0],u_coord)
-						y_origin	= lerp(y,line[1],u_coord)
+						x_origin	= lerp(x,x+line[0],u_coord)
+						y_origin	= lerp(y,y+line[1],u_coord)
 						
 						if v_coord != 0
 						{
@@ -886,13 +923,13 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				}
 				else
 				{
-					dir = (random_range(part_type._direction[0],part_type._direction[1]))%360
+					dir = (random_range(part_type.direction[0],part_type.direction[1]))%360
 				}
 				
 	
 				#endregion
 				
-				#region FORM CULLING (speed change) Depending on direction change speed to conform to form
+				#region FORM CULLING (speed/life change) Depending on direction change speed to conform to form
 				
 				//If we wish to cull the particle to the "edge" , proceed
 				if force_to_edge != PULSE_TO_EDGE.NONE
@@ -972,9 +1009,12 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				//APPLY LOCAL AND GLOBAL FORCES
 				if array_length(local_forces)>0
 				{
+					// For each local force, analyze reach and influence over particle
 					for (var k=0;k<array_length(local_forces);k++)
 					{
 						var _weight = 0;
+						
+						if local_forces[k].weight <= 0 continue //no weight, nothing to do here!
 						
 						if local_forces[k].range == PULSE_FORCE.RANGE_INFINITE
 						{
@@ -982,18 +1022,25 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						}
 						else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
 						{
+							// relative position of the particle to the force
 							var _x_relative = x_origin - (x+local_forces[k].x)
 							var _y_relative = y_origin - (y+local_forces[k].y)
 							
+							//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
 							var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
 							var _coordy = _y_relative<0 ? local_forces[k].north : local_forces[k].south
 							
+							// if particle origin is within the area of influence OR the influence is infinite (==-1)
 							if (abs(_x_relative)< _coordx || _coordx==-1) 
 								&& (abs(_y_relative)< _coordy || _coordy==-1)
 							{
 								//within influence, calculate weight!
+								// If the influence is infinite, apply weight as defined
+								// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
 								var _weightx = _coordx==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_x_relative)/_coordx )
 								var _weighty = _coordy==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_y_relative)/_coordy )
+								
+								//Average of vertical and horizontal influences
 								_weight= (_weightx+_weighty)/2
 							}
 							else continue //not within influence. Byebye!
@@ -1005,27 +1052,34 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 							{
 								_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
 							}
-							else continue //not within influence. Byebye!
-
+							else continue //not within influence. 
 						}
 						
 						if (_weight==0) continue; //no weight, nothing to do here!
 						
-						if local_forces[k].type = PULSE_FORCE.DIRECTION
+						if local_forces[k].type == PULSE_FORCE.DIRECTION
 						{
-							dir = lerp_angle(dir,local_forces[k].direction,local_forces[k].weight)
+							var _vec2 =[0,0];
+							_vec2[0] = lengthdir_x(_speed,dir);
+							_vec2[1] = lengthdir_y(_speed,dir);
+							
+							_vec2[0] = _vec2[0]+(local_forces[k].vec[0]*_weight)
+							_vec2[1] = _vec2[1]+(local_forces[k].vec[1]*_weight)
+							
+							dir = point_direction(0,0,_vec2[0],_vec2[1])
+							_speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
 						}
 						else if local_forces[k].type = PULSE_FORCE.POINT
 						{
 							var dir_force	=	(point_direction( (x+local_forces[k].x),(y+local_forces[k].y),x_origin,y_origin)+local_forces[k].direction)%360
 							dir = lerp_angle(dir,dir_force,local_forces[k].weight)
 						}
+						
 					}
 					
 					
 				}
-				
-				
+								
 				//CHECK FOR OCCLUDERS/COLLISIONS
 				
 				//DETERMINE DYNAMIC PARTICLES
@@ -1034,15 +1088,15 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				var launch_struct ={
 					u_coord				:u_coord,	//Gets passed to the struct but not to the particle, for cache use
 					v_coord				:v_coord,	//Gets passed to the struct but not to the particle, for cache use
-					__life				:__life,
+					_life				:__life,
 					_speed				:_speed,
 					x_origin			:x_origin,
 					y_origin			:y_origin,
 					dir					:dir,
 					_orient				:_orient,
 					_size				:_size,
-					part_system_index	:part_system_index,
-					particle_index		:particle_index,
+					part_system_index	:part_system.index,
+					particle_index		:part_type.index,
 					r_h	: r_h,
 					g_s	: g_s,
 					b_v	: b_v,

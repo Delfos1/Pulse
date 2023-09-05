@@ -5,6 +5,64 @@ enum __PULSE_COLOR_MODE
 	MIX,
 	HSV
 }
+enum PULSE_FORM
+{
+	PATH,
+	ELLIPSE,
+	LINE,
+}
+enum PULSE_STENCIL
+{
+	INTERNAL			=	10,
+	EXTERNAL			=	11,
+	A_TO_B				=	12,
+	NONE				=	13,
+}
+enum PULSE_RANDOM
+{
+	RANDOM				=	20,
+	ANIM_CURVE			=	21,
+	EVEN				=	22,
+}
+enum PULSE_COLOR
+{
+	A_TO_B_RGB			=30,
+	A_TO_B_HSV			=31,
+	COLOR_MAP			=32,
+	RGB					=33,
+	NONE				=34,
+}
+enum PULSE_TO_EDGE
+{
+	NONE=40,
+	SPEED=41,
+	LIFE=42,
+	FOCAL_SPEED = 43,
+	FOCAL_LIFE	= 44,
+}
+enum PULSE_PROPERTY
+{
+	U_COORD,
+	V_COORD,
+	PATH_SPEED,
+	ORDER_OF_CREATION,
+	TO_EDGE,
+}
+enum PULSE_FORCE
+{
+	DIRECTION,
+	POINT,
+	RANGE_INFINITE,
+	RANGE_RADIAL,
+	RANGE_DIRECTIONAL,
+}
+
+function __pulse_show_debug_message(_message)
+{
+	if __PULSE_SHOW_DEBUG == false exit;
+	
+	show_debug_message(_message);
+}
 
 //Shows messages on the Output
 #macro __PULSE_SHOW_DEBUG				true

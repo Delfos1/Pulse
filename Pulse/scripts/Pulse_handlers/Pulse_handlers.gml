@@ -8,7 +8,11 @@ function pulse_destroy_all()
 	{
 		for(i=0;i==array_length(sys);i++)
 		{
-		part_system_destroy(global.pulse.systems[$sys[i]].index)
+			part_system_destroy(global.pulse.systems[$sys[i]].index)
+			if time_source_exists(global.pulse.systems[$sys[i]].count)
+			{
+				time_source_destroy(global.pulse.systems[$sys[i]].count,true)
+			}
 		}
 		global.pulse.systems={}
 		
@@ -19,7 +23,7 @@ function pulse_destroy_all()
 	{
 		for(i=0;i==array_length(global.pulse.part_types);i++)
 		{
-		part_type_destroy(global.pulse.part_types[$part[i]]._index)
+			part_type_destroy(global.pulse.part_types[$part[i]].index)
 		}
 		global.pulse.part_types={}
 		
@@ -29,7 +33,7 @@ function pulse_destroy_all()
 }	
 
 // Will create a new system and reference the previous struct
-function pulse_clone_system(__name,__new_name)
+function pulse_clone_system(__name,__new_name=__name)
 {
 	if  !struct_exists(global.pulse.systems,__name)
 	{
@@ -51,7 +55,7 @@ function pulse_clone_system(__name,__new_name)
 	return global.pulse.systems[$__new_name]
 }
 // Will create a new particle and reference the previous struct
-function pulse_clone_particle(__name,__new_name)
+function pulse_clone_particle(__name,__new_name=__name)
 {
 
 	if  !struct_exists(global.pulse.part_types,__name)
@@ -66,7 +70,7 @@ function pulse_clone_particle(__name,__new_name)
 	}
 		
 	global.pulse.part_types[$__new_name]		=	variable_clone(global.pulse.part_types[$__name])
-	global.pulse.part_types[$__new_name]._index	=	part_type_create();
+	global.pulse.part_types[$__new_name].index	=	part_type_create();
 	global.pulse.part_types[$__new_name].reset()
 
 	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
@@ -74,24 +78,32 @@ function pulse_clone_particle(__name,__new_name)
 	return global.pulse.part_types[$__new_name]
 }
 
-function __pulse_show_debug_message(_message)
-{
-	if __PULSE_SHOW_DEBUG == false exit;
-	
-	show_debug_message(_message);
-}
-
-function pulse_destroy(_name)
+function pulse_destroy_system(_name)
 {
 	if struct_exists(global.pulse.systems,_name)
 	{
+		// Destroy particle system
 		part_system_destroy(global.pulse.systems[$_name].index)
+		
+		// Destroy time_source
+		if time_source_exists(global.pulse.systems[$_name].count)
+		{
+			time_source_destroy(global.pulse.systems[$_name].count,true)
+		}
+		//Remove from struct
 		variable_struct_remove(global.pulse.systems,_name)
 	}
-	else if struct_exists(global.pulse.part_types,_name)
+
+}
+
+function pulse_destroy_particle(_name)
+{
+	if struct_exists(global.pulse.part_types,_name)
 	{
 		part_type_destroy(global.pulse.part_types[$_name].index)
 		variable_struct_remove(global.pulse.part_types,_name)
 	}
 
 }
+
+

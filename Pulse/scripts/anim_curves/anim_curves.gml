@@ -56,6 +56,11 @@ function animcurve_channel_copy(curve_src, channel_src,curve_dst,channel_dst=cha
 	return true
 }
 
+/**
+ * Checks for the existence of an anim curve without returning error if its not an anim curve asset
+ * @param {asset.GMAnimCurve}
+ * @return {bool}
+ */
 function animcurve_really_exists(curve)
 {
 	if !is_real(curve) && !is_struct(curve) return false
@@ -63,7 +68,11 @@ function animcurve_really_exists(curve)
 	
 	return true
 }
-
+/**
+ * Checks for the existence of an path without returning error if its not an path
+ * @param {asset.GMPath}
+ * @return {bool}
+ */
 function path_really_exists(path)
 {
 	if !is_real(path) && !is_struct(path) return false

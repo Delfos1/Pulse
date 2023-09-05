@@ -1,4 +1,4 @@
-debug	 = true
+/*debug	 = true
 on		 = false
 _x = x
 show_debug_overlay(debug)
