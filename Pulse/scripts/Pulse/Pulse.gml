@@ -174,7 +174,36 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	}
 	else
 	{
+		//Is it necessary to create?
 		//interpolations = animcurve_create()
+	}
+	
+	_internal_curve = animcurve_create()
+	{
+		_internal_curve.name = "_internal_curve";
+		var _channels = array_create(1);
+		_channels[0] = animcurve_channel_new();
+		_channels[0].name = "direction";
+		_channels[0].type = animcurvetype_catmullrom;
+		_channels[0].iterations = 8;
+		var _points = array_create(5);
+		_points[0] = animcurve_point_new();
+		_points[0].posx = 0;
+		_points[0].value = 0;
+		_points[1] = animcurve_point_new();
+		_points[1].posx = 0.25;
+		_points[1].value = 90;
+		_points[2] = animcurve_point_new();
+		_points[2].posx = 0.2;
+		_points[2].value = 180;
+		_points[3] = animcurve_point_new();
+		_points[3].posx = 0.75;
+		_points[3].value = 270;
+		_points[4] = animcurve_point_new();
+		_points[4].posx = 1;
+		_points[4].value = 360;
+		_channels[0].points = _points;
+		_internal_curve.channels = _channels;	
 	}
 	
 	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
@@ -190,7 +219,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 	#region EMITTER SETTINGS
 	
-	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=-1,_mode=PULSE_STENCIL.EXTERNAL)
+	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=-1,_mode=PULSE_STENCIL.EXTERNAL,_precise=false)
 	{
 
 			if !is_string(_channel)
@@ -217,13 +246,37 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			
 			stencil_mode= _mode
 			
+			if _precise
+			{
+			switch (form_mode)
+			{
+					case PULSE_FORM.ELLIPSE:
+					{
+						form_mode = PULSE_FORM.ELLIPSE_PRECISE;
+					break;	
+					}
+					case PULSE_FORM.LINE:
+					{
+						form_mode = PULSE_FORM.LINE_PRECISE;
+					break;	
+					}
+					case PULSE_FORM.PATH:
+					{
+						form_mode = PULSE_FORM.PATH_PRECISE;
+					break;	
+					}
+					
+				
+			}
+			
 			return self
 	}
+	}
 	
-	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
+	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B,_precise=false)
 	{
-		set_stencil(__ac_curve_a,_ac_channel_a,"a");
-		set_stencil(__ac_curve_b,_ac_channel_b,"b");
+		set_stencil(__ac_curve_a,_ac_channel_a,"a",_mode,_precise);
+		set_stencil(__ac_curve_b,_ac_channel_b,"b",_mode,_precise);
 
 		ac_tween =	0;	
 		
@@ -236,7 +289,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	{
 		mask_start			=	clamp(_mask_start,0,1);
 		mask_end			=	clamp(_mask_end,0,1);
-		
+
 		return self
 	}
 
@@ -849,7 +902,32 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						
 						break;
 					}
+					case PULSE_FORM.PATH_PRECISE:
+					{
+						j			= 1/path_res
+						x_origin	= path_get_x(path_a,u_coord)
+						y_origin	= path_get_y(path_a,u_coord)
+						x1			= path_get_x(path_a,u_coord+j)
+						y1			= path_get_y(path_a,u_coord+j)
+						x_origin	+= (lengthdir_x(length,normal)*scalex);
+						y_origin	+= (lengthdir_y(length,normal)*scaley);
+						x1	+= (lengthdir_x(length,normal)*scalex);
+						y1	+= (lengthdir_y(length,normal)*scaley);
+						
+						transv		= point_direction(x_origin,y_origin,x1,y1)
+						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+						
+						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+						{
+							//then, the direction from the focal point to the origin
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
+						}
+						
+						break;
+					}
 					case PULSE_FORM.ELLIPSE:
+					case PULSE_FORM.ELLIPSE_PRECISE:
 					{
 						normal		=	(u_coord*360)%360
 						
@@ -866,13 +944,35 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						{
 							//then, the direction from the focal point to the origin
 							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
+						}
+						else if form_mode == PULSE_FORM.ELLIPSE_PRECISE
+						{
+							var u_cord_b	=	(u_coord+.0001)>1 ? (u_coord+.0001)-1 : (u_coord+.0001)
+							var normal_b	=	(u_cord_b*360)%360
+							x1				=	x+(lengthdir_x(length,normal_b)*scalex);
+							y1				=	y+(lengthdir_y(length,normal_b)*scaley);
+							
+							transv			=	point_direction(x_origin,y_origin,x1,y1)
+						//	normal			=	((transv+90)>360) ? transv-270 : transv+90;
+							/*
+							var _channeldata = animcurve_get_channel(_internal_curve, "direction");
+							var _points = _channeldata.points;
+							_points[0].value=360
+							_points[1].value=transv-normal
+							_points[2].value=180
+							_points[3].value=(transv+180-normal)%360
+							_points[4].value=0*/
+						}
+						else
+						{
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
 						}
 
-						transv		=	((normal-90)<0) ? normal+270 : normal-90;
-	
 					break;
 					}
 					case PULSE_FORM.LINE:
+					case PULSE_FORM.LINE_PRECISE:
 					{
 						transv		= point_direction(x,y,x+line[0],y+line[1])
 						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
@@ -891,6 +991,13 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
 							transv		=	((normal-90)<0) ? normal+270 : normal-90;
 						}
+						else if form_mode== PULSE_FORM.LINE
+						{
+							j			= .1
+							x1			= lerp(x,x+line[0],u_coord+j)+(lengthdir_x(length,normal)*scalex);
+							y1			= lerp(y,y+line[1],u_coord+j)+(lengthdir_y(length,normal)*scaley);
+							transv		= point_direction(x_origin,y_origin,x1,y1)
+						}
 					}
 				}
 				
@@ -901,15 +1008,29 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				
 				if alter_direction
 				{
-					if direction_range[0]!=direction_range[1]
+					if form_mode == PULSE_FORM.ELLIPSE_PRECISE || form_mode == PULSE_FORM.LINE_PRECISE || form_mode == PULSE_FORM.PATH_PRECISE
 					{
-						dir =	(normal + random_range(direction_range[0],direction_range[1]))%360
+						if direction_range[0]!=direction_range[1]
+						{
+							dir =	(transv + random_range(direction_range[0],direction_range[1]))%360
+						}
+						else
+						{
+							dir =	(transv  + direction_range[0])%360
+						}
+							//dir = (animcurve_channel_evaluate(_channeldata,_alter_dir/360)+normal)%360
 					}
 					else
 					{
+						if direction_range[0]!=direction_range[1]
+					{
+						dir =	(normal + random_range(direction_range[0],direction_range[1]))%360
+					}
+						else
+					{
 						dir =	(normal + direction_range[0])%360
 					}
-				
+					}
 					if length<0		// Mirror angle if the particle is on the negative side of the emitter
 					{
 						dir		= (transv+angle_difference(transv,dir))%360
