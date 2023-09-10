@@ -1,3 +1,5 @@
+
+
 function	__pulse_lookup_system(_name)
 {
 	var system_found =  0 /// 0 = found , 1 = not found ,2 = not found with default name
@@ -110,7 +112,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	part_system = 	 __pulse_lookup_system(__part_system)
 	part_type	=	 __pulse_lookup_particle(__part_type)
 
-	
 	
 	//emitter form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
@@ -416,7 +417,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	{
 		if is_instanceof(_force,pulse_force)
 		{
-			array_push(local_forces,_force)
+			var _i = array_get_index(local_forces,_force)
+			if _i != -1
+			{
+				array_delete(local_forces,_i,1)
+			}
 		}
 		return self
 	
@@ -480,24 +485,24 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		if !_cache
 		{
-			if part_system.treshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
+			if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
 			{
 				/* this method reduces the amount of particles too much, essentially killing the system
 				
 				var _current_particles =  part_particles_count(part_system.index)+(_request*part_system.factor*global.pulse.particle_factor)
-				if _current_particles > part_system.treshold
+				if _current_particles > part_system.threshold
 				{
-					part_system.factor *= (part_system.treshold/_current_particles)
+					part_system.factor *= (part_system.threshold/_current_particles)
 				} else
 				{
-					part_system.factor = (_current_particles/part_system.treshold)
+					part_system.factor = (_current_particles/part_system.threshold)
 				}
 				*/
 				
 				//This method seems to be good only 
-				if _amount_request >= part_system.treshold
+				if _amount_request >= part_system.threshold
 				{
-					part_system.factor *= (part_system.treshold/_amount_request)
+					part_system.factor *= (part_system.threshold/_amount_request)
 				}
 				
 				time_source_reset(part_system.count)

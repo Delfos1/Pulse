@@ -1,3 +1,4 @@
+// Color mode use internally to set to particles
 enum __PULSE_COLOR_MODE
 {
 	COLOR,
@@ -24,6 +25,7 @@ enum PULSE_RANDOM
 	ANIM_CURVE			=	21,
 	EVEN				=	22,
 }
+// Color mode used by emitter
 enum PULSE_COLOR
 {
 	A_TO_B_RGB			=30,

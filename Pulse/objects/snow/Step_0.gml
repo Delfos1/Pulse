@@ -11,4 +11,9 @@ shift = _sign * amplitude * dsin(t);
 
 particle.set_gravity(shift,25)
 
-emit.pulse(1,0,0)
+var _random = irandom_range(0,1)
+
+if _random == 0
+{
+emit.pulse(1,-50,-50)
+}

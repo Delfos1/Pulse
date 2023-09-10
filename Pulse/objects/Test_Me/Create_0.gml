@@ -71,4 +71,4 @@ sys.set_radius(0,200)//.set_mask(0,.5)
 sys.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
 //sys.set_line(x+200,y-50)
 
-system.treshold=200
+system.threshold=200

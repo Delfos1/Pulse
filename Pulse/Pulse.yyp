@@ -21,6 +21,7 @@
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"64 stght","folderPath":"folders/Examples/Sprites/64 stght.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Extensions","folderPath":"folders/Extensions.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Fonts","folderPath":"folders/Fonts.yy",},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Particle Shapes","folderPath":"folders/Particle Shapes.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Paths","folderPath":"folders/Paths.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Pulse","folderPath":"folders/Pulse.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Scripts","folderPath":"folders/Scripts.yy",},
@@ -31,7 +32,7 @@
   "isEcma": false,
   "LibraryEmitters": [],
   "MetaData": {
-    "IDEVersion": "2023.6.0.92",
+    "IDEVersion": "2023.8.0.98",
   },
   "resources": [
     {"id":{"name":"InstanceEmit","path":"objects/InstanceEmit/InstanceEmit.yy",},},
@@ -81,7 +82,6 @@
     {"id":{"name":"_64_strght__00031","path":"sprites/_64_strght__00031/_64_strght__00031.yy",},},
     {"id":{"name":"Path3","path":"paths/Path3/Path3.yy",},},
     {"id":{"name":"_64_strght__00022","path":"sprites/_64_strght__00022/_64_strght__00022.yy",},},
-    {"id":{"name":"Scr_Gaussian","path":"scripts/Scr_Gaussian/Scr_Gaussian.yy",},},
     {"id":{"name":"_64_strght__00019","path":"sprites/_64_strght__00019/_64_strght__00019.yy",},},
     {"id":{"name":"_64_strght__00011","path":"sprites/_64_strght__00011/_64_strght__00011.yy",},},
     {"id":{"name":"_64_strght__00024","path":"sprites/_64_strght__00024/_64_strght__00024.yy",},},
@@ -93,6 +93,7 @@
     {"id":{"name":"_64_strght__00001","path":"sprites/_64_strght__00001/_64_strght__00001.yy",},},
     {"id":{"name":"_64_strght__00026","path":"sprites/_64_strght__00026/_64_strght__00026.yy",},},
     {"id":{"name":"Sprite3","path":"sprites/Sprite3/Sprite3.yy",},},
+    {"id":{"name":"pt_snow_cartoon","path":"sprites/pt_snow_cartoon/pt_snow_cartoon.yy",},},
     {"id":{"name":"ac_Shape","path":"animcurves/ac_Shape/ac_Shape.yy",},},
     {"id":{"name":"o_particle_example","path":"objects/o_particle_example/o_particle_example.yy",},},
     {"id":{"name":"_64_strght__00009","path":"sprites/_64_strght__00009/_64_strght__00009.yy",},},
@@ -126,6 +127,7 @@
     {"roomId":{"name":"Room_Path","path":"rooms/Room_Path/Room_Path.yy",},},
     {"roomId":{"name":"Room_Path_SmartSmoke","path":"rooms/Room_Path_SmartSmoke/Room_Path_SmartSmoke.yy",},},
   ],
+  "templateType": null,
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
   ],

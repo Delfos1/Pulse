@@ -116,3 +116,5 @@ function __pulse_map(_map) constructor
 		return self
 	}
 }
+
+

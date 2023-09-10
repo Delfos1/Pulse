@@ -1,4 +1,7 @@
 /*
+PULSE v 0.6.00
+2023.09.10
+
 
 Pulse is a Particle Library for GameMaker, made by Matias 'Delfos' Poggini
 (c) 2023, MIT License.

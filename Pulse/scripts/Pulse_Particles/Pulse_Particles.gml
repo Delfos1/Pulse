@@ -31,7 +31,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		depth			=	0;
 	}
 	
-	treshold		=	0
+	threshold		=	0
 
 	draw			=	true;
 	draw_oldtonew	=	true;
@@ -234,18 +234,18 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	
 	count			=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
 		{
-				if index != -1 && treshold > 0
+				if index != -1 && threshold > 0
 				{
 					var _current_particles =  part_particles_count(index)
 								
-					// if there are more particles than desired treshold
-					if _current_particles-treshold > treshold*.1
+					// if there are more particles than desired threshold
+					if _current_particles-threshold > threshold*.1
 					{
-						factor *= (treshold/_current_particles)
+						factor *= (threshold/_current_particles)
 					} 
-					else if treshold-_current_particles > treshold*.1
+					else if threshold-_current_particles > threshold*.1
 					{
-						factor /= (_current_particles/treshold)
+						factor /= (_current_particles/threshold)
 					}
 					else if _current_particles == 0
 					{
@@ -282,7 +282,7 @@ function __pulse_particle			(_name) constructor
 	death_number	=	1
 	step_type		=	undefined
 	step_number		=	1
-	dynamics		=	[]
+	prelaunch		= function(_struct){}
 	time_factor		=	1
 	scale_factor	=	1
 	altered_acceleration = 0
@@ -299,8 +299,26 @@ function __pulse_particle			(_name) constructor
 		#endregion
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
-		size	=[_min,_max,_incr,_wiggle]
-		part_type_size(index,size[0],size[1],size[2],size[3])
+		if is_array(_min) or is_array(_max) or is_array(_incr) or is_array(_wiggle)
+		{
+			size[0]= is_array(_min) ? _min[0] : _min
+			size[1]= is_array(_min) ? _min[1] : _min
+			size[2]= is_array(_max) ? _max[0] : _max
+			size[3]= is_array(_max) ? _max[1] : _max
+			size[4]= is_array(_incr) ? _incr[0] : _incr
+			size[5]= is_array(_incr) ? _incr[1] : _incr
+			size[6]= is_array(_wiggle) ? _wiggle[0] : _wiggle
+			size[7]= is_array(_wiggle) ? _wiggle[1] : _wiggle
+
+			part_type_size_x(index,size[0],size[2],size[4],size[6])
+			part_type_size_y(index,size[1],size[3],size[5],size[7])
+			
+		}
+		else
+		{
+			size	=[_min,_min,_max,_max,_incr,_incr,_wiggle,_wiggle]
+			part_type_size(index,size[0],size[2],size[4],size[6])
+		}
 		return self
 	}
 	static set_scale		=	function(scalex,_scaley)
@@ -315,24 +333,58 @@ function __pulse_particle			(_name) constructor
 		part_type_life(index,life[0],life[1])
 		return self
 	}
-	static set_color		=	function(color1,color2=-1,color3=-1)
+	static set_color		=	function(color1,color2=-1,color3=-1,_mode = __PULSE_COLOR_MODE.COLOR)
 	{
 		if color3 != -1
 		{
-			color=[color1,color2,color3]	
-			part_type_color3(index,color[0],color[1],color[2])
+			color=[color1,color2,color3]
+			
+			switch(_mode)
+			{
+				case __PULSE_COLOR_MODE.COLOR :
+					part_type_color3(index,color[0],color[1],color[2])
+				break
+				case __PULSE_COLOR_MODE.RGB :
+					if is_array(color1) && is_array(color2) && is_array(color3)
+					{
+						part_type_color_rgb(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+					}
+					else
+					{
+						part_type_color_rgb(index,color[0],color[0],color[1],color[1],color[2],color[2])
+					}
+				break
+				case __PULSE_COLOR_MODE.HSV :
+					if is_array(color1) && is_array(color2) && is_array(color3)
+					{
+						part_type_color_hsv(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+					}
+					else
+					{
+						part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
+					}
+				break
+			}
 		}
 		else if color2 != -1
 		{
+			if _mode == __PULSE_COLOR_MODE.COLOR
+			{
+				part_type_color2(index,color[0],color[1])
+			}
+			else if _mode == __PULSE_COLOR_MODE.MIX
+			{
+				part_type_color_mix(index,color[0],color[1])
+			}
 			color=[color1,color2]
-			part_type_color2(index,color[0],color[1])
 		}
 		else
 		{
+			_mode = __PULSE_COLOR_MODE.COLOR
 			color=[color1]
 			part_type_color1(index,color[0])
 		}
-		color_mode		= __PULSE_COLOR_MODE.COLOR
+		color_mode		= _mode
 		return self
 	}
 	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
@@ -373,11 +425,15 @@ function __pulse_particle			(_name) constructor
 		part_type_shape(index,shape)
 		return self
 	}
-	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true)
+	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true,_subimg=0)
 	{
-		sprite			=	[_sprite,_animate,_stretch,_random]
+		sprite			=	[_sprite,_animate,_stretch,_random,_subimg]
 		set_to_sprite	=	true
-		part_type_sprite(index,sprite[0],sprite[1],sprite[2],sprite[3])
+		part_type_sprite(index,_sprite,_animate,_stretch,_random)
+		if _random == false
+		{
+			part_type_subimage(index,_subimg)
+		}
 		return self
 	}
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
@@ -432,6 +488,7 @@ function __pulse_particle			(_name) constructor
 	}
 */
 
+
 	#region TRANSFORMATION HELPERS
 
 /// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
@@ -445,12 +502,14 @@ function __pulse_particle			(_name) constructor
 			time_factor		=	time_factor*_factor
 			
 			set_life(life[0]*_factor,life[1]*_factor)
-		
+
 			//flip percentage
 			_factor = 1/_factor
 		
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
 			set_gravity(gravity[0]*_factor,gravity[1])
+			
+
 		
 			return self
 		}
@@ -476,7 +535,7 @@ function __pulse_particle			(_name) constructor
 			set_gravity(gravity[0]*_factor,gravity[1])
 			if _shrink_particle
 			{
-				set_size(size[0]*_factor,size[1]*_factor)
+				set_size([size[0]*_factor,size[1]*_factor],[size[2]*_factor,size[3]*_factor],[size[4]*_factor,size[5]*_factor],[size[6]*_factor,size[7]*_factor])
 			}
 		
 			return self
@@ -501,31 +560,52 @@ function __pulse_particle			(_name) constructor
 /// @param {Real}			_wiggle : +/- amount of pixels the particle can vary step to step	
 /// @param {Real}			_mode : 0 = average of width and height of sprite, 1 = use as reference the largest side, 2 = use the smallest side
 		static set_size_abs		=	function(_min,_max,_incr=0,_wiggle=0,_mode=0)
-	{
-		if sprite == undefined {}
+		{
+			if !set_to_sprite
+			{
+				return self
+			}
 		
-		if _mode == 0		// average of width and height
-		{
-			var _size = mean(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
-		}
-		else if _mode == 1	// take the largest of the sprite sides
-		{
-			var _size = max(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
-		}
-		else				// or take the smallest
-		{
-			var _size = min(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
-		}
+			if _mode == 0		// average of width and height
+			{
+				var _size = mean(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+			}
+			else if _mode == 1	// take the largest of the sprite sides
+			{
+				var _size = max(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+			}
+			else				// or take the smallest
+			{
+				var _size = min(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+			}
 
-		_min	=	_min/_size
-		_max	=	_max/_size
-		_incr	=	_incr/_size
-		_wiggle =	_wiggle/_size
-		
-		size	=[_min,_max,_incr,_wiggle]
-		part_type_size(index,size[0],size[1],size[2],size[3])
-		return self
-	}
+			if is_array(_min) or is_array(_max) or is_array(_incr) or is_array(_wiggle)
+			{
+				size[0]= is_array(_min) ? _min[0]/_size : _min/_size
+				size[1]= is_array(_min) ? _min[1]/_size : _min/_size
+				size[2]= is_array(_max) ? _max[0]/_size : _max/_size
+				size[3]= is_array(_max) ? _max[1]/_size : _max/_size
+				size[4]= is_array(_incr) ? _incr[0]/_size : _incr/_size
+				size[5]= is_array(_incr) ? _incr[1]/_size : _incr/_size
+				size[6]= is_array(_wiggle) ? _wiggle[0]/_size : _wiggle/_size
+				size[7]= is_array(_wiggle) ? _wiggle[1]/_size : _wiggle/_size
+
+				part_type_size_x(index,size[0],size[2],size[4],size[6])
+				part_type_size_y(index,size[1],size[3],size[5],size[7])
+			
+			}
+			else
+			{		
+				_min	=	_min/_size
+				_max	=	_max/_size
+				_incr	=	_incr/_size
+				_wiggle =	_wiggle/_size
+				size	=[_min,_min,_max,_max,_incr,_incr,_wiggle,_wiggle]
+				part_type_size(index,size[0],size[2],size[4],size[6])
+			}
+
+			return self
+		}
 /*		
 		static set_weighted_acc	=	function(_final_speed)
 		{
@@ -540,6 +620,9 @@ function __pulse_particle			(_name) constructor
 
 	static reset	=	function()
 	{
+		time_factor		=	1
+		scale_factor	=	1
+		
 		part_type_scale(index,scale[0],scale[1]);
 		part_type_size(index,size[0],size[1],size[2],size[3])
 		part_type_life(index,life[0],life[1])
@@ -610,6 +693,8 @@ function __pulse_particle			(_name) constructor
 			{
 				part_type_color_hsv(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
 			}
+			
+			other.prelaunch(_struct)
 			
 			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);
 		}		
