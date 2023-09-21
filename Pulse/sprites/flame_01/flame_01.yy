@@ -26,8 +26,8 @@
   "nineSlice": null,
   "origin": 9,
   "parent": {
-    "name": "Particle Shapes",
-    "path": "folders/Particle Shapes.yy",
+    "name": "Sprites",
+    "path": "folders/Examples/Sprites.yy",
   },
   "preMultiplyAlpha": false,
   "sequence": {

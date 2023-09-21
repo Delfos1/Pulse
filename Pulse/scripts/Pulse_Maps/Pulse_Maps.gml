@@ -2,6 +2,8 @@
 /// @param {Id.Instance}     
 /// @param {Asset.GMObject}  
 /// @return {Bool}
+
+
 function __pulse_map(_map) constructor
 {
 	buffer			= _map;
@@ -9,16 +11,41 @@ function __pulse_map(_map) constructor
 	scale_v			=	1;
 	offset_u		=	0;
 	offset_v		=	0;
-	position		=false;
-	position_amount	=1;
-	speed			=false;
-	speed_amount	=1;
-	life			=false;
-	life_amount		=1;
-	size			=false;
-	size_amount		=1;
-	orientation		=false;
-	orient_amount	=1;
+	position		=
+	{
+		active		: false,
+		weight		:1,
+		range		:[0,0],
+		channels	:[1,1,1,1],
+	}
+	speed			=
+	{
+		active		: false,
+		weight		:1,
+		range		:[0,0],
+		channels	:[1,1,1,1],
+	}
+	life			=
+	{
+		active		: false,
+		weight		:1,
+		range		:[0,0],
+		channels	:[1,1,1,1],
+	}
+	size			=
+	{
+		active		: false,
+		weight		:1,
+		range		:[0,0],
+		channels	:[1,1,1,1],
+	}
+	orientation		=	
+	{
+		active		: false,
+		weight		:1,
+		range		:[0,0],
+		channels	:[1,1,1,1],
+	}
 	color_A_to_B	=false;
 	color_A			=-1;
 	color_B			=-1;
@@ -26,42 +53,67 @@ function __pulse_map(_map) constructor
 	color_blend		=1;
 		
 	
-	static	set_position	=	function(amount)
+	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
 	{
-		position = true;
-		position_amount = amount;
+		with (position)
+		{
+			active		= true;
+			weight		= _weight;
+			range		= _range;
+			channels	= _RGBA;
+		};
 		
 		return self
 	}
 	
-	static	set_size		=	function(amount)
+	static	set_size		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
 	{
-		size = true;
-		size_amount = amount;
+		with (size)
+		{
+			active		= true;
+			weight		= _weight;
+			range		= _range;
+			channels	= _RGBA;
+		};
 		
 		return self
 	}
 	
-	static	set_speed		=	function(amount)
+	static	set_speed		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
 	{
-		speed = true;
-		speed_amount = amount;
+		with (speed)
+		{
+			active		= true;
+			weight		= _weight;
+			range		= _range;
+			channels	= _RGBA;
+		};
 		
 		return self
 	}
 	
-	static	set_orientation	=	function(amount)
+	static	set_orientation	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
 	{
-		orientation = true;
-		orient_amount = amount;
+		with (orientation)
+		{
+			active		= true;
+			weight		= _weight;
+			range		= _range;
+			channels	= _RGBA;
+		};
 		
 		return self
 	}
 	
-	static	set_life		=	function(amount)
+	static	set_life		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
 	{
-		life = true;
-		life_amount = amount;
+		with (life)
+		{
+			active		= true;
+			weight		= _weight;
+			range		= _range;
+			channels	= _RGBA;
+		};
 		
 		return self
 	}

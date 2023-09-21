@@ -243,19 +243,20 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 					{
 						factor *= (threshold/_current_particles)
 					} 
-					else if threshold-_current_particles > threshold*.1
+					else if threshold-_current_particles > threshold*.1 && factor<1
 					{
 						factor /= (_current_particles/threshold)
+						factor = min(1,factor)
 					}
 					else if _current_particles == 0
 					{
 						time_source_stop(count)
+						if sleep_when_empty { make_asleep() }
 					}
 				}
 				else
 				{
 					time_source_stop(count)
-					if sleep_when_empty { make_asleep() }
 				}
 			},[],-1)
 }
@@ -368,6 +369,8 @@ function __pulse_particle			(_name) constructor
 		}
 		else if color2 != -1
 		{
+			color=[color1,color2]
+			
 			if _mode == __PULSE_COLOR_MODE.COLOR
 			{
 				part_type_color2(index,color[0],color[1])
@@ -376,7 +379,7 @@ function __pulse_particle			(_name) constructor
 			{
 				part_type_color_mix(index,color[0],color[1])
 			}
-			color=[color1,color2]
+			
 		}
 		else
 		{
@@ -678,7 +681,7 @@ function __pulse_particle			(_name) constructor
 		
 			if _size !=undefined
 			{
-				part_type_size(particle_index,_size,_size,other.size[2],other.size[3])	
+				part_type_size(particle_index,_size,_size,other.size[4],other.size[6])	
 			}
 			if _orient !=undefined
 			{

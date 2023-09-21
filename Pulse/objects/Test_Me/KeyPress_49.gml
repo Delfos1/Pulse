@@ -1,5 +1,6 @@
-sys.even_distrib(false,1,true,3)
-sys.distr_along_u_coord=PULSE_RANDOM.RANDOM
+
+sys.set_distribution_v(PULSE_RANDOM.EVEN,3)
+sys.set_distribution_u()
 sys.part_type.set_color(c_yellow,c_lime)
 shockwave.pulse(200,x,y)
 

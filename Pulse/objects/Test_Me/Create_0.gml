@@ -68,7 +68,7 @@ shockwave.set_radius(20,60)
 sys.set_radius(0,200)//.set_mask(0,.5)
 //sys.distr_along_v_coord = PULSE_RANDOM.ANIM_CURVE
 //sys.distr_along_u_coord = PULSE_RANDOM.ANIM_CURVE
-sys.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
+sys.force_to_edge=PULSE_TO_EDGE.LIFE
 //sys.set_line(x+200,y-50)
 
-system.threshold=200
+//system.threshold=200
