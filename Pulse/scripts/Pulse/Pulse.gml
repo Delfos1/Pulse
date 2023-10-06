@@ -1,51 +1,21 @@
-
-
+/// feather ignore all
 function	__pulse_lookup_system(_name)
 {
-	var system_found =  0 /// 0 = found , 1 = not found ,2 = not found with default name
-	
-	if is_string(_name) 
-	{
-		if _name == __PULSE_DEFAULT_SYS_NAME
-		{
-			system_found =  1	
-		}		
-		else if struct_exists(global.pulse.systems,_name)
-		{
-			system_found =  0 //found in struct
-		}
-		else
-		{
-			system_found =  1 //create with provided name
-		}
-	}
-	else if  is_instanceof(_name,__pulse_system)
-	{
-		if struct_exists(global.pulse.systems,_name.name)
-		{
-			_name = _name.name
-			system_found =  0 //found in struct
-		}
-		else
-		{
-			system_found =  3 //found locally
-		}
-	}
-	else
-	{
-		system_found =  2 //Not found, make 
-	}
+	var system_found = pulse_exists_system(_name)
 	
 	switch(system_found)
 	{
-		case 0:
-				return global.pulse.systems[$_name];
+		case 2:
+				return _name
 		break
 		case 1:
+				return global.pulse.systems[$_name];
+		break
+		case 0:
 				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system by that name")
 				return pulse_make_system(_name);
 		break
-		case 2:
+		case -1:
 				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system with default name")
 				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
 		break
@@ -55,57 +25,27 @@ function	__pulse_lookup_system(_name)
 
 function	__pulse_lookup_particle(_name)
 {
-	var particle_found =  0 /// 0 = found , 1 = not found ,2 = not found with default name
-	
-	if is_string(_name) 
-	{
-		if _name == __PULSE_DEFAULT_PART_NAME
-		{
-			particle_found =  1	
-		}		
-		else if struct_exists(global.pulse.part_types,_name)
-		{
-			particle_found =  0 //found in struct
-		}
-		else
-		{
-			particle_found =  1 //create with provided name
-		}
-	}
-	else if  is_instanceof(_name,__pulse_particle)
-	{
-		if struct_exists(global.pulse.part_types,_name.name)
-		{
-			_name = _name.name
-			particle_found =  0 //found in struct
-		}
-		else
-		{
-			particle_found =  3 //found locally
-		}
-	}
-	else
-	{
-		particle_found =  2 //Not found, make 
-	}
+	var particle_found = pulse_exists_particle(_name)
 	
 	switch(particle_found)
 	{
-		case 0:
-				return global.pulse.part_types[$_name];
+		case 2:
+				return _name
 		break
 		case 1:
+				return global.pulse.part_types[$_name];
+		break
+		case 0:
 				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with that name")
 				return pulse_make_particle(_name);
 		break
-		case 2:
+		case -1:
 				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with default name")
 				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
 		break
 	}
 	
 }
-
 function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) constructor
 {
 	part_system_array = []
@@ -141,9 +81,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		part_type	=	 __pulse_lookup_particle(__part_type)
 		part_type_array[0]=part_type
 	}
-	
 
-	
 	//emitter form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
 	form_mode			=	__PULSE_DEFAULT_EMITTER_FORM_MODE
@@ -172,13 +110,14 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	distr_along_u_coord	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_U_COORD
 	distr_speed			=	__PULSE_DEFAULT_DISTR_PROPERTY
 	distr_life			=	__PULSE_DEFAULT_DISTR_PROPERTY
+	distr_orient		=	__PULSE_DEFAULT_DISTR_PROPERTY
 	divisions_v			=	1
 	divisions_u			=	1
 	v_coord_channel		=	undefined
 	u_coord_channel		=	undefined
 	speed_channel		=	undefined
 	life_channel		=	undefined
-	
+	orient_channel		=	undefined
 	if animcurve_really_exists(anim_curve)
 	{
 		interpolations = anim_curve
@@ -202,6 +141,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			distr_life	= PULSE_RANDOM.ANIM_CURVE
 			life_channel = animcurve_get_channel(interpolations,"life")
+		}
+		if animcurve_channel_exists(interpolations,"orient")
+		{
+			distr_orient	= PULSE_RANDOM.ANIM_CURVE
+			orient_channel = animcurve_get_channel(interpolations,"life")
 		}
 	}
 	else
@@ -385,6 +329,32 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 			return self
 		}
+	
+	static set_distribution_orient	=  function (_mode=PULSE_RANDOM.RANDOM,anim_curve=undefined,channel=undefined)
+	{
+		switch(_mode)
+		{
+			case 	PULSE_RANDOM.ANIM_CURVE:
+			{
+				if animcurve_exists(anim_curve)
+				{
+					if animcurve_channel_exists(anim_curve,channel)
+					{
+						distr_orient = PULSE_RANDOM.ANIM_CURVE
+						orient_channel = animcurve_get_channel(anim_curve,channel)
+						break
+					}
+				}
+				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				break
+			}
+			default:
+				distr_orient = PULSE_RANDOM.RANDOM
+		}
+		
+
+		return self
+	}
 	
 	static set_distribution_u		=  function (_mode=PULSE_RANDOM.RANDOM,_input=undefined)
 	{
@@ -652,7 +622,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		var map_color_mode	=	PULSE_COLOR.NONE
 		var _speed_start	=	part_type.speed
 		var _life			=	part_type.life
-		
+		var _orient_base	=	part_type.orient
 		mask_start			=	clamp_wrap(mask_start,0,1)
 		mask_end			=	clamp_wrap(mask_end,0,1)
 		
@@ -824,6 +794,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				else if distr_life == PULSE_RANDOM.ANIM_CURVE
 				{
 					__life		=	lerp(_life[0],_life[1],animcurve_channel_evaluate(life_channel,random(1)))
+				}
+				
+				if distr_orient == PULSE_RANDOM.ANIM_CURVE
+				{
+					_orient		=	lerp(_orient_base[0],_orient_base[1],animcurve_channel_evaluate(orient_channel,random(1)))
 				}
 				
 				#endregion
@@ -1159,9 +1134,15 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						}
 						else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
 						{
+							var __force_x,__force_y
+							if 
+							{
+								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
+								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+							}
 							// relative position of the particle to the force
-							var _x_relative = x_origin - (x+local_forces[k].x)
-							var _y_relative = y_origin - (y+local_forces[k].y)
+							var _x_relative = x_origin - __force_x
+							var _y_relative = y_origin - __force_y
 							
 							//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
 							var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
@@ -1184,7 +1165,14 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						}
 						else if local_forces[k].range == PULSE_FORCE.RANGE_RADIAL
 						{
-							var _dist = point_distance(x_origin,y_origin,(x+local_forces[k].x),(y+local_forces[k].y)) 
+							var __force_x,__force_y
+							if 
+							{
+								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
+								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+							}
+							
+							var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
 							if _dist < local_forces[k].radius
 							{
 								_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
@@ -1214,9 +1202,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						}
 						
 					}
-					
-					
-				}
 								
 				//CHECK FOR OCCLUDERS/COLLISIONS
 				

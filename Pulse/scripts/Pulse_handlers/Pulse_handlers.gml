@@ -106,4 +106,75 @@ function pulse_destroy_particle(_name)
 
 }
 
+/// Checks if a system exists with the name provided as string or if its a struct.
+/// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+function pulse_exists_system(_name)
+{
+	var system_found =  1 /// 2 found, ref on a variable, 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name , 
+	
+	if is_string(_name) 
+	{
+		if struct_exists(global.pulse.systems,_name)
+		{
+			system_found =  1 //found in struct
+		}
+		else
+		{
+			system_found =  0 //create with provided name
+		}
+	}
+	else if  is_instanceof(_name,__pulse_system)
+	{
+		if struct_exists(global.pulse.systems,_name.name)
+		{
+			system_found =  2 //found in struct
+		}
+		else
+		{
+			system_found =  3 //found locally
+		}
+	}
+	else
+	{
+		system_found =  -1 //Not found, make 
+	}
+	
+	return system_found
+}
 
+/// Checks if a particle exists with the name provided as string or if its a struct.
+/// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+function pulse_exists_particle(_name)
+{
+	var particle_found =  1 /// 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+	
+	if is_string(_name) 
+	{
+		if struct_exists(global.pulse.part_types,_name)
+		{
+			particle_found =  1 //found in struct
+		}
+		else
+		{
+			particle_found =  0 //create with provided name
+		}
+	}
+	else if  is_instanceof(_name,__pulse_particle)
+	{
+		if struct_exists(global.pulse.part_types,_name.name)
+		{
+			_name = _name.name
+			particle_found =  2 //found in struct
+		}
+		else
+		{
+			particle_found =  3 //found locally
+		}
+	}
+	else
+	{
+		 particle_found =  -1 //Not found, make 
+	}
+	
+	return particle_found
+}

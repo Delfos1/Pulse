@@ -1,1 +1,1 @@
-part_particles_create(system.index,x,y,particle.index,1)
+emitter.pulse(x,y,10)

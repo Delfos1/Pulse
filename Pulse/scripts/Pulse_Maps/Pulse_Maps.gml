@@ -1,16 +1,8 @@
-/// @description             
-/// @param {Id.Instance}     
-/// @param {Asset.GMObject}  
-/// @return {Bool}
+/// feather ignore all
 
-
-function __pulse_map(_map) constructor
+function __pulse_map(_map): __pulse_color_map(_map) constructor 
 {
-	buffer			= _map;
-	scale_u			=	1;
-	scale_v			=	1;
-	offset_u		=	0;
-	offset_v		=	0;
+
 	position		=
 	{
 		active		: false,
@@ -49,8 +41,6 @@ function __pulse_map(_map) constructor
 	color_A_to_B	=false;
 	color_A			=-1;
 	color_B			=-1;
-	color_mode		= PULSE_COLOR.NONE;
-	color_blend		=1;
 		
 	
 	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
@@ -147,6 +137,19 @@ function __pulse_map(_map) constructor
 		
 	}
 	
+}
+
+function __pulse_color_map(_map) constructor
+{
+	buffer			= _map;
+	scale_u			=	1;
+	scale_v			=	1;
+	offset_u		=	0;
+	offset_v		=	0;
+	color_mode		= PULSE_COLOR.NONE;
+	color_blend		=1;
+	
+
 	static	set_color_map	=	function(_blend=1)
 	{
 		color_mode= PULSE_COLOR.COLOR_MAP
@@ -168,5 +171,3 @@ function __pulse_map(_map) constructor
 		return self
 	}
 }
-
-

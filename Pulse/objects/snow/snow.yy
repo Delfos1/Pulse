@@ -9,8 +9,8 @@
   "managed": true,
   "overriddenProperties": [],
   "parent": {
-    "name": "Examples",
-    "path": "folders/Examples.yy",
+    "name": "Particle Systems",
+    "path": "folders/Examples/Particle Systems.yy",
   },
   "parentObjectId": null,
   "persistent": false,

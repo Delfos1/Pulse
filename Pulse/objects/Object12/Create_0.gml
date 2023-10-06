@@ -1,5 +1,7 @@
 particle = pulse_make_particle("particle")
-system = pulse_make_system("sys")
-particle.set_life(600,600).set_speed(1,1,0).set_size(1,1).set_sprite(s_count,true,true,true).set_color(c_white,c_black)
+system = pulse_make_system("sys").set_draw(false)
+particle.set_life(100,100).set_speed(0,0,0).set_size(1,1).set_shape(pt_shape_disk).set_color(c_grey)
 
-
+emitter = new pulse_local_emitter("sys","particle")
+emitter.set_distribution_u(PULSE_RANDOM.EVEN,10).form_line(50,0)
+mode = 0

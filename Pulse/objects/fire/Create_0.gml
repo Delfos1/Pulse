@@ -39,6 +39,7 @@ t = 0;
 increment = 10; //degrees 
 amplitude = 45; //acceleration 
 
+
 t2 = 0;
 increment2 = 4; //degrees 
 amplitude2 = 25; //acceleration 

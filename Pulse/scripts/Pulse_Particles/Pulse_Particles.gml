@@ -296,7 +296,6 @@ function __pulse_particle			(_name) constructor
 		/// @param   {Real} _max : Maximum size
 		/// @param   {Real} _incr : Size Increment
 		/// @param   {Real} _wiggle : Size wiggle range (frequency is fixed)
-		/// @returns {Struct}
 		#endregion
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
@@ -564,6 +563,8 @@ function __pulse_particle			(_name) constructor
 /// @param {Real}			_mode : 0 = average of width and height of sprite, 1 = use as reference the largest side, 2 = use the smallest side
 		static set_size_abs		=	function(_min,_max,_incr=0,_wiggle=0,_mode=0)
 		{
+			var _size
+			
 			if !set_to_sprite
 			{
 				return self
@@ -584,14 +585,17 @@ function __pulse_particle			(_name) constructor
 
 			if is_array(_min) or is_array(_max) or is_array(_incr) or is_array(_wiggle)
 			{
-				size[0]= is_array(_min) ? _min[0]/_size : _min/_size
-				size[1]= is_array(_min) ? _min[1]/_size : _min/_size
-				size[2]= is_array(_max) ? _max[0]/_size : _max/_size
-				size[3]= is_array(_max) ? _max[1]/_size : _max/_size
-				size[4]= is_array(_incr) ? _incr[0]/_size : _incr/_size
-				size[5]= is_array(_incr) ? _incr[1]/_size : _incr/_size
-				size[6]= is_array(_wiggle) ? _wiggle[0]/_size : _wiggle/_size
-				size[7]= is_array(_wiggle) ? _wiggle[1]/_size : _wiggle/_size
+				var _height	=	sprite_get_height(sprite[0])
+				var _width	=	sprite_get_width(sprite[0])
+				
+				size[0]= is_array(_min) ? _min[0]/_width		: _min/_size
+				size[1]= is_array(_min) ? _min[1]/_height		: _min/_size
+				size[2]= is_array(_max) ? _max[0]/_width		: _max/_size
+				size[3]= is_array(_max) ? _max[1]/_height		: _max/_size
+				size[4]= is_array(_incr) ? _incr[0]/_width		: _incr/_size
+				size[5]= is_array(_incr) ? _incr[1]/_height		: _incr/_size
+				size[6]= is_array(_wiggle) ? _wiggle[0]/_width	: _wiggle/_size
+				size[7]= is_array(_wiggle) ? _wiggle[1]/_height : _wiggle/_size
 
 				part_type_size_x(index,size[0],size[2],size[4],size[6])
 				part_type_size_y(index,size[1],size[3],size[5],size[7])
@@ -609,16 +613,69 @@ function __pulse_particle			(_name) constructor
 
 			return self
 		}
-/*		
-		static set_weighted_acc	=	function(_final_speed)
+/// @description			Choose a particle's final speed by changing its acceleration
+/// @param {Real}			_final_speed : Final speed desired
+/// @param {Real}			_mode : 0 = apply in relation to slowest,shortest lived particle 1 = fastest, long-lived. 2 =  average of both
+/// @param {Real}			_steps : achieve the speed in X amount of steps from birth instead.
+
+		static set_final_speed	=	function(_final_speed,_mode=0,_steps=undefined)
+		{
+			var _accel;
+			var _min_life			=	_steps ?? life[0]
+			var _max_life			=	_steps ?? life[1] 
+			
+			switch(_mode)
+			{
+				case 0: // min
+				{
+					_accel = (_final_speed-speed[0])/_min_life
+					break
+				}
+				case 1: //max
+				{
+					_accel = (_final_speed-speed[1])/_max_life
+					
+					break
+				}
+				default ://avg
+					_accel = mean(((_final_speed-speed[0])/_min_life),((_final_speed-speed[1])/_max_life))
+			}
+			
+			set_speed(speed[0],speed[1],_accel,speed[3])
+			return self
+		}
+		
+		static change_current_speed	=	function(_final_speed, _steps ,_mode=0)
 		{
 			var _min_accel			=	speed[2]*life[0]
 			var _max_accel			=	speed[2]*life[1]
 			var _min_final_speed	=	speed[0]+min(_min_accel,_max_accel) // the slowest a particle can go
 			var _max_final_speed	=	speed[1]+max(_min_accel,_max_accel)	// the fastest a particle can go
 			
+			var _accel;
+			var _min_life			=	_steps ?? life[0]
+			var _max_life			=	_steps ?? life[1] 
+			
+			switch(_mode)
+			{
+				case 0: // min
+				{
+					_accel = (_final_speed-speed[0])/_min_life
+					break
+				}
+				case 1: //max
+				{
+					_accel = (_final_speed-speed[1])/_max_life
+					
+					break
+				}
+				default: //avg
+					_accel = mean(((_final_speed-speed[0])/_min_life),((_final_speed-speed[1])/_max_life))
+			}
+			
+			set_speed(speed[0],speed[1],_accel,speed[3])
 		}
-*/		
+		
 	#endregion 
 
 	static reset	=	function()
@@ -627,19 +684,65 @@ function __pulse_particle			(_name) constructor
 		scale_factor	=	1
 		
 		part_type_scale(index,scale[0],scale[1]);
-		part_type_size(index,size[0],size[1],size[2],size[3])
-		part_type_life(index,life[0],life[1])
-		var _color = array_length(color)
-		if _color==3
+		
+		if size[0]!=size[1] or size[2]!=size[3] or size[4]!=size[5] or size[6]!=size[7]
 		{
-			part_type_color3(index,color[0],color[1],color[2])
-		} else if _color==2
-		{
-			part_type_color2(index,color[0],color[1])
-		} else
-		{
-			part_type_color1(index,color[0])
+			part_type_size_x(index,size[0],size[2],size[4],size[6])
+			part_type_size_y(index,size[1],size[3],size[5],size[7])
 		}
+		else
+		{
+			part_type_size(index,size[0],size[2],size[4],size[6])
+		}
+		
+		part_type_life(index,life[0],life[1])
+		
+		
+		switch(color_mode)
+		{
+		
+			case __PULSE_COLOR_MODE.COLOR :
+			{
+					var _color = array_length(color)
+					if _color==3
+					{
+						part_type_color3(index,color[0],color[1],color[2])
+					} else if _color==2
+					{
+						part_type_color2(index,color[0],color[1])
+					} else
+					{
+						part_type_color1(index,color[0])
+					}
+				break
+			}
+			case __PULSE_COLOR_MODE.RGB :
+			{
+				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
+				{
+					part_type_color_rgb(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+				}
+				else
+				{
+					part_type_color_rgb(index,color[0],color[0],color[1],color[1],color[2],color[2])
+				}
+			break;
+			}
+			case __PULSE_COLOR_MODE.HSV :
+			{
+				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
+				{
+					part_type_color_hsv(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+				}
+				else
+				{
+					part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
+				}
+			break;
+			}
+		
+		}
+
 		var _alpha = array_length(alpha)
 		if _alpha==3
 		{
@@ -857,6 +960,7 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight 
 	vec			= [0,0];
 	vec[0]		= lengthdir_x(_force,direction)
 	vec[1]		= lengthdir_y(_force,direction)
+	local		= true
 							
 	static set_range_directional = function(_north=-1,_south=-1,_east=-1,_west=-1)
 	{
@@ -883,7 +987,7 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight 
 	
 }
 
-			
+	
 /// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the particle index if the second argument is true.
 /// @param {String}			name : Name your particle or leave empty to use the default name
 /// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
@@ -897,9 +1001,12 @@ function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false
 		var l		=	struct_names_count(global.pulse.systems)		
 		_name		=	$"{_name}_{l}";		
 	}
-	
-	global.pulse.systems[$_name] = new __pulse_system(_name,_layer,_persistent);
-	__pulse_show_debug_message($"PULSE SUCCESS: Created system by the name {_name}");
+
+	if pulse_exists_system(_name) <= 0 
+	{
+		global.pulse.systems[$_name] = new __pulse_system(_name,_layer,_persistent);
+		__pulse_show_debug_message($"PULSE SUCCESS: Created system by the name {_name}");
+	}
 	
 		if _return_index
 		{
@@ -926,12 +1033,15 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 		_name		=	$"{_name}_{l}";		
 	}
 	
-	global.pulse.part_types[$_name] = new __pulse_particle(_name)
-	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+	if pulse_exists_particle(_name) <= 0 // If it doesnt exist, create it
+	{
+		global.pulse.part_types[$_name] = new __pulse_particle(_name)
+		__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+	}
 	
 	if _return_index
 	{
-		return global.pulse.part_types[$_name]._index
+		return global.pulse.part_types[$_name].index
 	}
 	else
 	{
@@ -939,7 +1049,7 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 	}
 }
 
-			
+				
 /// @description			Use this to create a new Instance particle. It returns a reference to the struct
 /// @param {Asset.GMObject}	object : Object to make instances of.
 /// @param {String}			name : Name your particle or leave empty to use the default name

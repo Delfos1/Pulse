@@ -76,7 +76,7 @@ function __pulse_show_debug_message(_message)
 
 // Default Particle properties
 
-#macro __PULSE_DEFAULT_PART_SIZE		[.1,.2,0,0]
+#macro __PULSE_DEFAULT_PART_SIZE		[.1,.1,.2,.2,0,0,0,0]
 
 #macro __PULSE_DEFAULT_PART_SCALE		[1,1]
 
