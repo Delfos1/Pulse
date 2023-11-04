@@ -550,6 +550,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 	}
 	
+	#region private methods
+	
 	static __assign_u_coordinate	=	function(div_u,struct={})
 	{
 		//Chooses a u coord at random along the form (number between 0 and 1)
@@ -899,6 +901,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				
 	}
 	
+	#endregion
 	
 	//Emit\Burst function 
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
@@ -935,63 +938,58 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			var cache = array_create(_amount,0)
 		}
-		var div_v,div_u,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,u_coord,transv,int,ext,total,r_h,g_s,b_v,_orient;
+		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
 
 		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
 		{
 			form_mode = PULSE_FORM.ELLIPSE
 		}
 		var map_color_mode	=	PULSE_COLOR.NONE
-		var _speed_start	=	part_type.speed
-		var _life			=	part_type.life
-		var _orient_base	=	part_type.orient
-		mask_start			=	clamp_wrap(mask_start,0,1)
-		mask_end			=	clamp_wrap(mask_end,0,1)
-		
+
 		var system_array = array_length(part_system_array)
 		var type_array = array_length(part_type_array)
 		
-		u_coord	=	mask_start
 		div_v	=	1
 		div_u	=	1
 		i		=	0
-
+		particle_struct = {	}
+		emitter_struct = { }
+		
 		repeat(_amount)
 			{
-				var particle_struct = {	}
-				var emitter_struct = { }
+
 				// ----- Assigns where the particle will spawn in normalized space (u_coord)
 				//ASSIGN U COORDINATE
 				
-					particle_struct = __assign_u_coordinate(div_u,particle_struct)
+					__assign_u_coordinate(div_u,particle_struct)
 				
 				// ----- Stencil alters the V coordinate space, shaping it according to one or two Animation Curves
 				// STENCIL (animation curve shapes the length of the emitter along the form)
 				
 				//If there is an animation curve channel assigned, evaluate it.
 					
-					emitter_struct = __calculate_stencil(particle_struct,emitter_struct)
+					__calculate_stencil(particle_struct,emitter_struct)
 
 				// ----- Assigns how far the particle spawns from the origin point both in pixels (length) and normalized space (v_coord)
 				// ASSIGN V COORDINATE  and LENGTH (distance from origin)
 				
-					particle_struct = __assign_v_coordinate(div_v,particle_struct,emitter_struct)
+					__assign_v_coordinate(div_v,particle_struct,emitter_struct)
 				
 				// ----- Particle speed and life need to be known before launching the particle, so they can be calculated for form culling
 				//SPEED AND LIFE SETTINGS
 				
-					particle_struct = __assign_properties(particle_struct)
+					__assign_properties(particle_struct)
 
 				// ----- Determines the angles for the normal and transversal depending on the form (Path, Radius, Line)
 				// ----- and then calculates where will the particle will spawn in room space
 				// FORM (origin and normal)
 								
-					particle_struct = __set_normal_origin(particle_struct,x,y)
+					__set_normal_origin(particle_struct,x,y)
 				
 				// ----- Changes particle direction by adding a random range to the normal, or uses the particle's 'natural' range
 				// DIRECTION (angle) 
 				
-					particle_struct = __assign_direction(particle_struct)
+					__assign_direction(particle_struct)
 				// ----- Alter a whole set of particle properties based on a pre-processed sprite or surface
 				#region DISPLACEMENT MAP
 				
@@ -1118,7 +1116,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				// ----- Form culling changes the life or speed of the particle so it doesn't travel past a certain point
 				// FORM COLLIDE (speed/life change) Depending on direction change speed to conform to form
 
-					particle_struct = __check_form_collide(particle_struct,emitter_struct)
+					__check_form_collide(particle_struct,emitter_struct)
 
 				//APPLY LOCAL AND GLOBAL FORCES
 				if array_length(local_forces)>0

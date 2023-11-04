@@ -1,5 +1,5 @@
 /// feather ignore all
-
+/*
 function	__pulse_lookup_system(_name)
 {
 	var system_found = pulse_exists_system(_name)
@@ -547,10 +547,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		var angle = (direction_range[0]+direction_range[1])/2
 			draw_arrow(x+(ext_x/2),y,x,y,10)
 */
-
+/*
 	}
 	
-	
+
 	//Emit\Burst function 
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
 	{
@@ -582,7 +582,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					part_system.factor = (_current_particles/part_system.threshold)
 				}
 				*/
-				
+		/*		
 				//This method seems to be good only 
 				
 				if _amount_request >= part_system.threshold
@@ -617,7 +617,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				//path_res = 1
 			}
 		}*/
-		
+/*		
 		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
 		{
 			form_mode = PULSE_FORM.ELLIPSE
