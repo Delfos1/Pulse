@@ -487,7 +487,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	#endregion
 	
-	static	add_local_force			=	function(_force)
+	static	add_local_force		=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
 		{
@@ -496,7 +496,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
-	static	remove_local_force		=	function(_force)
+	static	remove_local_force	=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
 		{
@@ -511,7 +511,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	}
 	
-	static	draw_debug				=	function(x,y)
+	static	draw_debug			=	function(x,y)
 	{
 		// draw radiuses
 		var ext_x =  radius_external*scalex
@@ -550,355 +550,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 	}
 	
-	static __assign_u_coordinate	=	function(div_u,struct={})
-	{
-		//Chooses a u coord at random along the form (number between 0 and 1)
-
-		if mask_start==mask_end
-		{
-			struct.u_coord			=	mask_end;
-		}
-		else if distr_along_u_coord	== PULSE_RANDOM.RANDOM
-		{
-			//Use random to distribute along 
-					
-			struct.u_coord			=	random_range(mask_start,mask_end);
-		}
-		else if distr_along_u_coord	== PULSE_RANDOM.ANIM_CURVE
-		{
-			//use an animation curve to distribute the values
-					
-			struct.u_coord			=	lerp(mask_start,mask_end,animcurve_channel_evaluate(u_coord_channel,random(1)))
-		}
-		else if distr_along_u_coord	== PULSE_RANDOM.EVEN
-		{
-			//Distribute the u_coord evenly by particle amount and number of divisions_v
-			
-			struct.u_coord = lerp(mask_start, mask_end,div_u/divisions_u)
-		}
-		return struct
-	}
-						
-	static __calculate_stencil		=	function(_particle, _emitter){
-		
-			var eval, eval_a, eval_b;	
-			var dir_stencil = (abs(stencil_offset))+_particle.u_coord;
-			dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
-			
-			if ac_channel_a !=undefined
-			{
-				eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_a,dir_stencil),0,1);
-				eval	=	eval_a
-					
-				if ac_channel_b !=undefined
-				{
-					eval_b	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
-					eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
-				}
-			}
-			else if	ac_channel_b !=undefined
-			{
-				__pulse_show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
-				eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
-				eval	=	eval_a
-			} else { stencil_mode = PULSE_STENCIL.NONE }
-				
-			switch (stencil_mode)
-			{
-			case PULSE_STENCIL.NONE :
-			{
-				_emitter.ext		= 1
-				_emitter.int		= 1
-				_emitter.total		= 1
-			break
-			}	
-			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
-			{
-				_emitter.ext		= eval_a
-				_emitter.int		= eval_b
-				_emitter.total		= eval
-				break;
-			}
-			case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
-			{
-				_emitter.ext		= eval
-				_emitter.int		= 1
-				_emitter.total		= eval
-				break;
-			}
-			case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
-			{
-				_emitter.ext		= 1
-				_emitter.int		= eval
-				_emitter.total		= eval
-				break;
-			}
-			
-
-		}
-					
-			return _emitter
-	}
-	
-	static __assign_v_coordinate	=	function(div_v,_p,_e={}){
-		
-		if radius_internal==radius_external
-		{
-			// If the 2 radius are equal, then there is no need to randomize
-			_p.v_coord = _e.total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
-			_p.length		=	_e.total*radius_external;
-		}
-		else if distr_along_v_coord == PULSE_RANDOM.RANDOM
-		{
-			//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
-			_p.v_coord = random(1)
-			_p.length = lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
-		}
-		else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
-		{
-			//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
-
-			_p.v_coord = random(1)
-			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,animcurve_channel_evaluate(v_coord_channel,_p.v_coord))
-		}
-		else if distr_along_v_coord == PULSE_RANDOM.EVEN
-		{
-			//Distribute evenly
-			_p.v_coord =(div_v/divisions_v)
-			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
-					
-		}
-					
-		return _p
-	}
-	
-	static __assign_properties		=	function(_p){
-				
-			if part_type.speed[0]==part_type.speed[1]
-			{
-				_p.speed		=	part_type.speed[0]
-			}
-			else if distr_speed == PULSE_RANDOM.RANDOM
-			{
-				_p.speed		=	random_range(part_type.speed[0],part_type.speed[1])
-			}
-			else if distr_speed == PULSE_RANDOM.ANIM_CURVE
-			{
-				_p.speed		=	lerp(part_type.speed[0],part_type.speed[1],animcurve_channel_evaluate(speed_channel,random(1)))
-			}
-				
-			if part_type.life[0]==part_type.life[1]
-			{
-				_p.life		=	part_type.life[0]
-			}
-			else if distr_life == PULSE_RANDOM.RANDOM
-			{
-				_p.life		=	random_range(part_type.life[0],part_type.life[1])
-			}
-			else if distr_life == PULSE_RANDOM.ANIM_CURVE
-			{
-				_p.life		=	lerp(part_type.life[0],part_type.life[1],animcurve_channel_evaluate(life_channel,random(1)))
-			}
-				
-			if distr_orient == PULSE_RANDOM.ANIM_CURVE
-			{
-				_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],animcurve_channel_evaluate(orient_channel,random(1)))
-			}
-			
-			return _p
-	}
-	
-	static __set_normal_origin		=	function(_p,x,y){
-				
-				switch (form_mode)
-				{
-					case PULSE_FORM.PATH:
-					{
-						var j			= 1/path_res
-						_p.x_origin	= path_get_x(path_a,_p.u_coord)
-						_p.y_origin	= path_get_y(path_a,_p.u_coord)
-						var x1			= path_get_x(path_a,u_coord+j)
-						var y1			= path_get_y(path_a,u_coord+j)
-						_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
-							
-						// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-						//var x2	= path_get_x(path_a,u_coord+(j*2))
-						//var y2	= path_get_y(path_a,u_coord+(j*2))
-						//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
-
-						_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
-						
-						_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-						_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-							_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-						}
-						
-						break;
-					}
-					case PULSE_FORM.ELLIPSE:
-					{
-						_p.normal		=	(_p.u_coord*360)%360
-						
-						_p.x_origin	=	x
-						_p.y_origin	=	y
-						
-						if _p.v_coord != 0
-						{
-							_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-							_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						}
-							
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-						}
-
-						_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-	
-					break;
-					}
-					case PULSE_FORM.LINE:
-					{
-						_p.transv		= point_direction(x,y,x+line[0],y+line[1])
-						_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
-						_p.x_origin	= lerp(x,x+line[0],_p.u_coord)
-						_p.y_origin	= lerp(y,y+line[1],_p.u_coord)
-						
-						if _p.v_coord != 0
-						{
-							_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-							_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						}
-							
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-							_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-						}
-					}
-				}
-				
-					return _p
-				}
-	
-	static __assign_direction		=	function(_p){
-				
-		if alter_direction
-		{
-			if direction_range[0]!=direction_range[1]
-			{
-				_p.dir =	(_p.normal + random_range(direction_range[0],direction_range[1]))%360
-			}
-			else
-			{
-				_p.dir =	(_p.normal + direction_range[0])%360
-			}
-				
-			if _p.length<0		// Mirror angle if the particle is on the negative side of the emitter
-			{
-				_p.dir		= (_p.transv+angle_difference(_p.transv,_p.dir))%360
-			}
-								
-			if _p.speed<0		// If Speed is Negative flip the direction and make it positive
-			{
-				_p.dir		=	_p.dir+180%360
-				_p.speed*=-1
-			}
-		}
-		else
-		{
-			_p.dir = (random_range(part_type.direction[0],part_type.direction[1]))%360
-		}
-				
-	return _p
-	}
-	
-	static __check_form_collide		=	function(_p,_e){
-				
-		//If we wish to cull the particle to the "edge" , proceed
-		if force_to_edge == PULSE_TO_EDGE.NONE
-		{
-			return _p 
-		}
-		//First we define where the EDGE is, where our particle should stop
-					
-		if abs(angle_difference(_p.dir,_p.transv))<=30	or 	 abs(angle_difference(_p.dir,_p.transv-180))<=30//TRANSVERSAL
-		{
-			// Find half chord of the coordinate to the circle (distance to the edge)
-			var _length_to_edge	= sqrt(power(radius_external,2)-power(_p.length,2)) 
-						
-			//This second formula should work with any angle, but it doesn't work atm
-			//var _length_to_edge	= radius_external*sin(degtorad(dir-90))
-		}
-		else if abs(angle_difference(_p.dir,_p.normal))<=75	//NORMAL AWAY FROM CENTER
-		{	
-			//Edge is the distance remaining from the spawn point to the radius
-			if _p.length>=0
-			{
-				var _length_to_edge	=	_e.ext*radius_external-abs(_p.length)
-			}
-			else
-			{
-				var _length_to_edge	=	_e.int*radius_internal-abs(_p.length)
-			}
-		}
-		else											//NORMAL TOWARDS CENTER
-		{	
-			// If particle is going towards a focal point and thats the limit to be followed
-			if force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
-			{
-					var _length_to_edge	=	point_distance(x+x_focal_point,y+y_focal_point,_p.x_origin,_p.y_origin)
-			}
-			else
-			{
-				if radius_internal >= 0
-				{
-					var _length_to_edge	=	abs(_p.length)-(radius_internal*_e.int)
-				}
-				else
-				{
-					if length>=0
-					{
-						var _length_to_edge	=	abs(_p.length)
-					}
-					else
-					{
-						var _length_to_edge	=	abs(radius_internal*_e.int)
-					}
-				}	
-			}
-		}
-					
-		//Then we calculate the Total Displacement of the particle over its life
-		var _accel		=	part_type.speed[2]*_p.life
-		var _displacement = (_p.speed*_p.life)+_accel
-					
-		// If the particle moves beyond the edge of the radius, change either its speed or life
-		if	_displacement > _length_to_edge
-		{
-			if force_to_edge == PULSE_TO_EDGE.SPEED || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
-			{
-				_p.speed	=	(_length_to_edge-_accel)/_p.life
-			} 
-			else if force_to_edge == PULSE_TO_EDGE.LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE
-			{
-				_p.life	=	(_length_to_edge-_accel)/_p.speed
-			}
-			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
-			_p.to_edge	=	true
-		}
-				
-		return _p 		
-				
-	}
-	
 	
 	//Emit\Burst function 
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
@@ -920,6 +571,20 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
 			{
+				/* this method reduces the amount of particles too much, essentially killing the system
+				
+				var _current_particles =  part_particles_count(part_system.index)+(_request*part_system.factor*global.pulse.particle_factor)
+				if _current_particles > part_system.threshold
+				{
+					part_system.factor *= (part_system.threshold/_current_particles)
+				} else
+				{
+					part_system.factor = (_current_particles/part_system.threshold)
+				}
+				*/
+				
+				//This method seems to be good only 
+				
 				if _amount_request >= part_system.threshold
 				{
 					part_system.factor *= (part_system.threshold/_amount_request)
@@ -937,6 +602,22 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		var div_v,div_u,dir,dir_stencil,eval,eval_a,eval_b,length,_xx,_yy,i,j,x_origin,y_origin,x1,y1,normal,u_coord,transv,int,ext,total,r_h,g_s,b_v,_orient;
 
+		
+		/*  Right now this isnt doing anything, but it would differentiate between smooth and straight paths
+		if path_res ==-1 && path_a!= undefined && form_mode == PULSE_FORM.PATH
+		{
+			path_res = power(path_get_number(path_a)-1,path_get_precision(path_a))
+			
+			if path_get_kind(path_a) //SMOOTH
+			{
+				// 
+			}
+			else
+			{
+				//path_res = 1
+			}
+		}*/
+		
 		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
 		{
 			form_mode = PULSE_FORM.ELLIPSE
@@ -958,40 +639,287 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 		repeat(_amount)
 			{
-				var particle_struct = {	}
-				var emitter_struct = { }
-				// ----- Assigns where the particle will spawn in normalized space (u_coord)
-				//ASSIGN U COORDINATE
+				r_h			=	-1
+				g_s			=	-1
+				b_v			=	-1
+				eval		=	1;
+				eval_a		=	1;
+				eval_b		=	1;
+				total		=	1;
+				_size		=	undefined
+				_orient		=	undefined
+				var to_edge =	false
 				
-					particle_struct = __assign_u_coordinate(div_u,particle_struct)
+				// ----- Assigns where the particle will spawn in normalized space (u_coord)
+				#region ASSIGN U COORDINATE
+				//Chooses a u coord at random along the form (number between 0 and 1)
+
+				if mask_start==mask_end
+				{
+					u_coord			=	mask_end;
+				}
+				else if distr_along_u_coord	== PULSE_RANDOM.RANDOM
+				{
+					//Use random to distribute along 
+					
+					u_coord			=	random_range(mask_start,mask_end);
+				}
+				else if distr_along_u_coord	== PULSE_RANDOM.ANIM_CURVE
+				{
+					//use an animation curve to distribute the values
+					
+					u_coord			=	lerp(mask_start,mask_end,animcurve_channel_evaluate(u_coord_channel,random(1)))
+				}
+				else if distr_along_u_coord	== PULSE_RANDOM.EVEN
+				{
+					//Distribute the u_coord evenly by particle amount and number of divisions_v
+			
+					u_coord = lerp(mask_start, mask_end,div_u/divisions_u)
+				}
+
+				#endregion
 				
 				// ----- Stencil alters the V coordinate space, shaping it according to one or two Animation Curves
-				// STENCIL (animation curve shapes the length of the emitter along the form)
+				#region STENCIL (animation curve shapes the length of the emitter along the form)
 				
 				//If there is an animation curve channel assigned, evaluate it.
 					
-					emitter_struct = __calculate_stencil(particle_struct,emitter_struct)
-
+				if stencil_mode != PULSE_STENCIL.NONE
+				{
+					dir_stencil = (abs(stencil_offset))+u_coord;
+					dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
+					
+					if ac_channel_a !=undefined
+					{
+					
+						eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_a,dir_stencil),0,1);
+						eval	=	eval_a
+					
+						if ac_channel_b !=undefined
+						{
+							eval_b	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
+							eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
+						}
+					}
+					else if	ac_channel_b !=undefined
+					{
+						__pulse_show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
+						eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
+						eval	=	eval_a
+					}
+				
+					switch (stencil_mode)
+				{
+					case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
+					{
+						ext		= eval_a
+						int		= eval_b
+						total	= eval
+						break;
+					}
+					case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
+					{
+						ext		= eval
+						int		= 1
+						total	= eval
+						break;
+					}
+					case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
+					{
+						ext		= 1
+						int		= eval
+						total	= eval
+						break;
+					}
+				}
+				}
+				
+				#endregion
+				
 				// ----- Assigns how far the particle spawns from the origin point both in pixels (length) and normalized space (v_coord)
-				// ASSIGN V COORDINATE  and LENGTH (distance from origin)
-				
-					particle_struct = __assign_v_coordinate(div_v,particle_struct,emitter_struct)
-				
-				// ----- Particle speed and life need to be known before launching the particle, so they can be calculated for form culling
-				//SPEED AND LIFE SETTINGS
-				
-					particle_struct = __assign_properties(particle_struct)
+				#region ASSIGN V COORDINATE  and LENGTH (distance from origin)
+		
+				if radius_internal==radius_external
+				{
+					// If the 2 radius are equal, then there is no need to randomize
+					var v_coord = total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
+					length		=	total*radius_external;
+				}
+				else if distr_along_v_coord == PULSE_RANDOM.RANDOM
+				{
+					//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
+					var v_coord = random(1)
+					length = lerp(int*radius_internal,ext*radius_external,v_coord)
+				}
+				else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
+				{
+					//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
 
+					var v_coord = random(1)
+					length		=	lerp(int*radius_internal,ext*radius_external,animcurve_channel_evaluate(v_coord_channel,v_coord))
+				}
+				else if distr_along_v_coord == PULSE_RANDOM.EVEN
+				{
+					//Distribute evenly
+					var v_coord =(div_v/divisions_v)
+					length		=	lerp(int*radius_internal,ext*radius_external,v_coord)
+					
+				}
+				
+				#endregion
+
+				// ----- Particle speed and life need to be known before launching the particle, so they can be calculated for form culling
+				#region SPEED AND LIFE SETTINGS
+				
+				var _speed, __life
+
+				if _speed_start[0]==_speed_start[1]
+				{
+					_speed		=	_speed_start[0]
+				}
+				else if distr_speed == PULSE_RANDOM.RANDOM
+				{
+					_speed		=	random_range(_speed_start[0],_speed_start[1])
+				}
+				else if distr_speed == PULSE_RANDOM.ANIM_CURVE
+				{
+					_speed		=	lerp(_speed_start[0],_speed_start[1],animcurve_channel_evaluate(speed_channel,random(1)))
+				}
+				
+				if _life[0]==_life[1]
+				{
+					__life		=	_life[0]
+				}
+				else if distr_life == PULSE_RANDOM.RANDOM
+				{
+					__life		=	random_range(_life[0],_life[1])
+				}
+				else if distr_life == PULSE_RANDOM.ANIM_CURVE
+				{
+					__life		=	lerp(_life[0],_life[1],animcurve_channel_evaluate(life_channel,random(1)))
+				}
+				
+				if distr_orient == PULSE_RANDOM.ANIM_CURVE
+				{
+					_orient		=	lerp(_orient_base[0],_orient_base[1],animcurve_channel_evaluate(orient_channel,random(1)))
+				}
+				
+				#endregion
+			
 				// ----- Determines the angles for the normal and transversal depending on the form (Path, Radius, Line)
 				// ----- and then calculates where will the particle will spawn in room space
-				// FORM (origin and normal)
-								
-					particle_struct = __set_normal_origin(particle_struct,x,y)
+				#region FORM (origin and normal)
+				
+				switch (form_mode)
+				{
+					case PULSE_FORM.PATH:
+					{
+						j			= 1/path_res
+						x_origin	= path_get_x(path_a,u_coord)
+						y_origin	= path_get_y(path_a,u_coord)
+						x1			= path_get_x(path_a,u_coord+j)
+						y1			= path_get_y(path_a,u_coord+j)
+						transv		= point_direction(x_origin,y_origin,x1,y1)
+							
+						// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
+						//var x2	= path_get_x(path_a,u_coord+(j*2))
+						//var y2	= path_get_y(path_a,u_coord+(j*2))
+						//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+
+						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+						
+						x_origin	+= (lengthdir_x(length,normal)*scalex);
+						y_origin	+= (lengthdir_y(length,normal)*scaley);
+						
+						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+						{
+							//then, the direction from the focal point to the origin
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
+						}
+						
+						break;
+					}
+					case PULSE_FORM.ELLIPSE:
+					{
+						normal		=	(u_coord*360)%360
+						
+						x_origin	=	x
+						y_origin	=	y
+						
+						if v_coord != 0
+						{
+							x_origin	+= (lengthdir_x(length,normal)*scalex);
+							y_origin	+= (lengthdir_y(length,normal)*scaley);
+						}
+							
+						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+						{
+							//then, the direction from the focal point to the origin
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+						}
+
+						transv		=	((normal-90)<0) ? normal+270 : normal-90;
+	
+					break;
+					}
+					case PULSE_FORM.LINE:
+					{
+						transv		= point_direction(x,y,x+line[0],y+line[1])
+						normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+						x_origin	= lerp(x,x+line[0],u_coord)
+						y_origin	= lerp(y,y+line[1],u_coord)
+						
+						if v_coord != 0
+						{
+							x_origin	+= (lengthdir_x(length,normal)*scalex);
+							y_origin	+= (lengthdir_y(length,normal)*scaley);
+						}
+							
+						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+						{
+							//then, the direction from the focal point to the origin
+							normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),x_origin,y_origin)
+							transv		=	((normal-90)<0) ? normal+270 : normal-90;
+						}
+					}
+				}
+				
+				#endregion
 				
 				// ----- Changes particle direction by adding a random range to the normal, or uses the particle's 'natural' range
-				// DIRECTION (angle) 
+				#region DIRECTION (angle) 
 				
-					particle_struct = __assign_direction(particle_struct)
+				if alter_direction
+				{
+					if direction_range[0]!=direction_range[1]
+					{
+						dir =	(normal + random_range(direction_range[0],direction_range[1]))%360
+					}
+					else
+					{
+						dir =	(normal + direction_range[0])%360
+					}
+				
+					if length<0		// Mirror angle if the particle is on the negative side of the emitter
+					{
+						dir		= (transv+angle_difference(transv,dir))%360
+					}
+								
+					if _speed<0		// If Speed is Negative flip the direction and make it positive
+					{
+						dir		=	dir+180%360
+						_speed*=-1
+					}
+				}
+				else
+				{
+					dir = (random_range(part_type.direction[0],part_type.direction[1]))%360
+				}
+				
+	
+				#endregion
+	
 				// ----- Alter a whole set of particle properties based on a pre-processed sprite or surface
 				#region DISPLACEMENT MAP
 				
@@ -1116,9 +1044,82 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				#endregion	
 	
 				// ----- Form culling changes the life or speed of the particle so it doesn't travel past a certain point
-				// FORM COLLIDE (speed/life change) Depending on direction change speed to conform to form
-
-					particle_struct = __check_form_collide(particle_struct,emitter_struct)
+				#region FORM CULLING (speed/life change) Depending on direction change speed to conform to form
+				
+				//If we wish to cull the particle to the "edge" , proceed
+				if force_to_edge != PULSE_TO_EDGE.NONE
+				{
+					//First we define where the EDGE is, where our particle should stop
+					
+					if abs(angle_difference(dir,transv))<=30	or 	 abs(angle_difference(dir,transv-180))<=30//TRANSVERSAL
+					{
+						// Find half chord of the coordinate to the circle (distance to the edge)
+						var _length_to_edge	= sqrt(power(radius_external,2)-power(length,2)) 
+						
+						//This second formula should work with any angle, but it doesn't work atm
+						//var _length_to_edge	= radius_external*sin(degtorad(dir-90))
+					}
+					else if abs(angle_difference(dir,normal))<=75	//NORMAL AWAY FROM CENTER
+					{	
+						//Edge is the distance remaining from the spawn point to the radius
+						if length>=0
+						{
+							var _length_to_edge	=	ext*radius_external-abs(length)
+						}
+						else
+						{
+							var _length_to_edge	=	int*radius_internal-abs(length)
+						}
+					}
+					else											//NORMAL TOWARDS CENTER
+					{	
+						// If particle is going towards a focal point and thats the limit to be followed
+						if force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
+						{
+								var _length_to_edge	=	point_distance(x+x_focal_point,y+y_focal_point,x_origin,y_origin)
+						}
+						else
+						{
+							if radius_internal >= 0
+							{
+								var _length_to_edge	=	abs(length)-(radius_internal*int)
+							}
+							else
+							{
+								if length>=0
+								{
+									var _length_to_edge	=	abs(length)
+								}
+								else
+								{
+									var _length_to_edge	=	abs(radius_internal*int)
+								}
+							}	
+						}
+					}
+					
+					//Then we calculate the Total Displacement of the particle over its life
+					var _accel		=	_speed_start[2]*__life
+					var _displacement = (_speed*__life)+_accel
+					
+					// If the particle moves beyond the edge of the radius, change either its speed or life
+					if	_displacement > _length_to_edge
+					{
+						if force_to_edge == PULSE_TO_EDGE.SPEED || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
+						{
+							_speed	=	(_length_to_edge-_accel)/__life
+						} 
+						else if force_to_edge == PULSE_TO_EDGE.LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE
+						{
+							__life	=	(_length_to_edge-_accel)/_speed
+						}
+						//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
+						to_edge	=	true
+					}
+				
+				}
+				
+				 #endregion
 
 				//APPLY LOCAL AND GLOBAL FORCES
 				if array_length(local_forces)>0
@@ -1140,7 +1141,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
 								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
-
 							// relative position of the particle to the force
 							var _x_relative = x_origin - __force_x
 							var _y_relative = y_origin - __force_y
@@ -1170,7 +1170,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
 								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
-
 							
 							var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
 							if _dist < local_forces[k].radius
@@ -1213,17 +1212,33 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					var _type	= _type+1	=type_array		? 0 : _type+1
 					var _sys	= _sys+1	=system_array	? 0 : _type+1
 					
-						particle_struct.part_system_index	=part_system_array[_sys].index
-						particle_struct.particle_index		=part_type_array[_type].index
+					var launch_struct ={
+						u_coord				:u_coord,	//Gets passed to the struct but not to the particle, for cache use
+						v_coord				:v_coord,	//Gets passed to the struct but not to the particle, for cache use
+						life				:__life,
+						speed				:_speed,
+						x_origin			:x_origin,
+						y_origin			:y_origin,
+						dir					:dir,
+						orient				:_orient,
+						size				:_size,
+						part_system_index	:part_system_array[_sys].index,
+						particle_index		:part_type_array[_type].index,
+						// exclussive Map variables :
+						r_h	: r_h,
+						g_s	: g_s,
+						b_v	: b_v,
+						color_mode			: map_color_mode,
+					}
 				
 					if _cache
 					{
-						cache[i]=particle_struct
+						cache[i]=launch_struct
 						i++
 					}
 					else
 					{
-						part_type_array[_type].launch(particle_struct)
+						part_type_array[_type].launch(launch_struct)
 					}
 				}
 				

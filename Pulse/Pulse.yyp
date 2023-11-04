@@ -33,13 +33,14 @@
   "isEcma": false,
   "LibraryEmitters": [],
   "MetaData": {
-    "IDEVersion": "2023.8.1.102",
+    "IDEVersion": "2023.8.2.108",
   },
   "resources": [
     {"id":{"name":"InstanceEmit","path":"objects/InstanceEmit/InstanceEmit.yy",},},
     {"id":{"name":"Test_Me_paths3","path":"objects/Test_Me_paths3/Test_Me_paths3.yy",},},
     {"id":{"name":"_64_strght__00023","path":"sprites/_64_strght__00023/_64_strght__00023.yy",},},
     {"id":{"name":"PS_Fire","path":"particles/PS_Fire/PS_Fire.yy",},},
+    {"id":{"name":"Pulse_copy","path":"scripts/Pulse_copy/Pulse_copy.yy",},},
     {"id":{"name":"Pulse_Default_config","path":"scripts/Pulse_Default_config/Pulse_Default_config.yy",},},
     {"id":{"name":"Pulse_handlers","path":"scripts/Pulse_handlers/Pulse_handlers.yy",},},
     {"id":{"name":"_64_strght__00005","path":"sprites/_64_strght__00005/_64_strght__00005.yy",},},

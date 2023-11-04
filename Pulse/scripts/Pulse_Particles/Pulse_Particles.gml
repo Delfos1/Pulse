@@ -778,28 +778,30 @@ function __pulse_particle			(_name) constructor
 	{
 		with(_struct)
 		{
-			part_type_life(particle_index,_life,_life);
-			part_type_speed(particle_index,_speed,_speed,other.speed[2],other.speed[3])
+			part_type_life(particle_index,life,life);
+			part_type_speed(particle_index,speed,speed,other.speed[2],other.speed[3])
 			part_type_direction(particle_index,dir,dir,other.direction[2],other.direction[3])
 		
-			if _size !=undefined
+			if _struct[$ "size"] !=undefined
 			{
-				part_type_size(particle_index,_size,_size,other.size[4],other.size[6])	
+				part_type_size(particle_index,size,size,other.size[4],other.size[6])	
 			}
-			if _orient !=undefined
+			if _struct[$ "orient"] !=undefined
 			{
-				part_type_orientation(particle_index,_orient,_orient,other.orient[2],other.orient[3],other.orient[4])	
-			}
-			
-			if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
-			{
-				part_type_color_rgb(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
-			} 
-			else if color_mode == PULSE_COLOR.A_TO_B_HSV
-			{
-				part_type_color_hsv(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
+				part_type_orientation(particle_index,orient,orient,other.orient[2],other.orient[3],other.orient[4])	
 			}
 			
+			if _struct[$ "color_mode"]  !=undefined
+			{
+				if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
+				{
+					part_type_color_rgb(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
+				} 
+				else if color_mode == PULSE_COLOR.A_TO_B_HSV
+				{
+					part_type_color_hsv(particle_index,r_h,r_h,g_s,g_s,b_v,b_v)
+				}
+			}
 			other.prelaunch(_struct)
 			
 			part_particles_create(part_system_index, x_origin,y_origin,particle_index, 1);

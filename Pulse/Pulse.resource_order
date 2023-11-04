@@ -21,6 +21,7 @@
     {"name":"Test_Me_paths3","order":2,"path":"objects/Test_Me_paths3/Test_Me_paths3.yy",},
     {"name":"_64_strght__00023","order":23,"path":"sprites/_64_strght__00023/_64_strght__00023.yy",},
     {"name":"PS_Fire","order":1,"path":"particles/PS_Fire/PS_Fire.yy",},
+    {"name":"Pulse_copy","order":10,"path":"scripts/Pulse_copy/Pulse_copy.yy",},
     {"name":"Pulse_Default_config","order":1,"path":"scripts/Pulse_Default_config/Pulse_Default_config.yy",},
     {"name":"Pulse_handlers","order":2,"path":"scripts/Pulse_handlers/Pulse_handlers.yy",},
     {"name":"_64_strght__00005","order":5,"path":"sprites/_64_strght__00005/_64_strght__00005.yy",},
