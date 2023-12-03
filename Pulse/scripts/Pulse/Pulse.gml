@@ -89,9 +89,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	path_a				=	undefined
 	path_b				=	undefined
 	path_res			=	-1
-	ac_channel_a		=	undefined
-	ac_channel_b		=	undefined
-	stencil_tween		=	undefined
+	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
+	{name:"a",type: animcurvetype_catmullrom , iterations : 8}, 
+	{name:"b",type: animcurvetype_catmullrom , iterations : 8} , 
+	{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
+	stencil_tween		=	0
 	radius_external		=	abs(_radius_external)	
 	radius_internal		=	0
 	mask_start			=	0
@@ -103,8 +105,13 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	y_focal_point		=	0
 	scalex				=	1
 	scaley				=	1
-	stencil_offset		=	.75
+	stencil_offset		=	0//.75
 	direction_range		=	[0,0]
+	
+	// collisions
+	collisions			=	[]
+	is_colliding		=	false
+	colliding_entities	=	[]
 	
 	//Distributions
 	distr_along_v_coord	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD
@@ -164,43 +171,33 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	//Forces, Groups, Colliders
 	local_forces		=	[]
 	
+	debug_col_rays =[]
 
 	#region EMITTER SETTINGS
 	
-	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=-1,_mode=PULSE_STENCIL.EXTERNAL)
+	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=0,_mode=PULSE_STENCIL.EXTERNAL)
 	{
-
-			if !is_string(_channel)
-			{
-				if ac_channel_a == undefined or ac_channel_b != undefined
-				{
-					_channel = "a"
-				}
-				else
-				{
-					_channel = "b"
-				}
-			}
-
-			switch (_channel)
-			{
-				case "a":
-					ac_channel_a		=	animcurve_get_channel(__ac_curve,__ac_channel)
-					break;
-				case "b":
-					ac_channel_b		=	animcurve_get_channel(__ac_curve,__ac_channel)
-					break;
-			}
+		if !animcurve_really_exists(__ac_curve)return self
+		if !animcurve_channel_exists(__ac_curve,__ac_channel) return self
+		
+	
+		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_channel,false)
+		
+		if _channel == 0
+		{
+			animcurve_channel_copy(stencil_profile,_channel,stencil_profile,2,false)
+		}
+						
+		stencil_mode= _mode
 			
-			stencil_mode= _mode
-			
-			return self
+		return self
+
 	}
 	
 	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
 	{
-		set_stencil(__ac_curve_a,_ac_channel_a,"a");
-		set_stencil(__ac_curve_b,_ac_channel_b,"b");
+		set_stencil(__ac_curve_a,_ac_channel_a,0);
+		set_stencil(__ac_curve_b,_ac_channel_b,1);
 
 		stencil_tween =	0;	
 		
@@ -277,7 +274,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	#endregion
 	
-	#region NONLINEAR INTERPOLATIONS
+	#region NONLINEAR DISTRIBUTIONS
 	
 	static set_distribution_speed	=  function (_mode=PULSE_RANDOM.RANDOM,anim_curve=undefined,channel=undefined)
 	{
@@ -518,8 +515,16 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		var int_x =  radius_internal*scalex
 		var ext_y =  radius_external*scaley
 		var int_y =  radius_internal*scaley
-		draw_ellipse(x-ext_x,y-ext_y,x+ext_x,y+ext_y,true)
-		draw_ellipse(x-int_x,y-int_y,x+int_x,y+int_y,true)
+		
+		if form_mode == PULSE_FORM.ELLIPSE
+		{
+			draw_ellipse(x-ext_x,y-ext_y,x+ext_x,y+ext_y,true)
+			draw_ellipse(x-int_x,y-int_y,x+int_x,y+int_y,true)
+		}
+		else if form_mode == PULSE_FORM.PATH
+		{
+			draw_path(path_a,x,y,true)
+		}
 		
 		//draw origin
 		draw_line_width_color(x-10,y,x+10,y,1,c_green,c_green)
@@ -531,6 +536,26 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			draw_line_width_color(x-10+x_focal_point,y+y_focal_point,x+10+x_focal_point,y+y_focal_point,3,c_yellow,c_yellow)
 			draw_line_width_color(x+x_focal_point,y-10+y_focal_point,x+x_focal_point,y+10+y_focal_point,3,c_yellow,c_yellow)
 		}
+		
+		if array_length(debug_col_rays) > 0
+		{
+			if is_colliding
+			{
+				draw_set_color(c_fuchsia)
+			}else
+			{
+				draw_set_color(c_yellow)
+			}
+			
+			for( var _i = 0 ; _i<array_length(debug_col_rays); _i++)
+			{
+				var _x = x+lengthdir_x(debug_col_rays[_i].value*ext_x,(debug_col_rays[_i].posx*360)%360)
+				var _y = y+lengthdir_y(debug_col_rays[_i].value*ext_y,(debug_col_rays[_i].posx*360)%360)
+				draw_circle(_x,_y,5,false)
+			}
+			draw_set_color(c_white)
+		}
+		
 		
 		//draw angle
 		/*
@@ -548,6 +573,13 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			draw_arrow(x+(ext_x/2),y,x,y,10)
 */
 
+	}
+	
+	static	add_collisions			=	function(_object)
+	{
+		array_push(collisions,_object)
+		
+		return self
 	}
 	
 	#region private methods
@@ -581,39 +613,40 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return struct
 	}
 						
-	static __calculate_stencil		=	function(_particle, _emitter){
+	static __calculate_stencil		=	function(_particle, _emitter={}){
 		
-			var eval, eval_a, eval_b;	
-			var dir_stencil = (abs(stencil_offset))+_particle.u_coord;
-			dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
+		var eval, eval_a, eval_b;
 			
-			if ac_channel_a !=undefined
-			{
-				eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_a,dir_stencil),0,1);
-				eval	=	eval_a
+		// early exit if there are no stencils
+		if stencil_mode == PULSE_STENCIL.NONE 
+		{
+			_emitter.ext		= 1
+			_emitter.int		= 1
+			_emitter.total		= 1
+			return _emitter
+		}
+			
+		var dir_stencil = (abs(stencil_offset))+_particle.u_coord;
+		dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
+		
+		if animcurve_channel_exists(stencil_profile,0)
+		{
+			var _channel_01 = animcurve_get_channel(stencil_profile,0)
+			eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+			eval	=	eval_a
 					
-				if ac_channel_b !=undefined
-				{
-					eval_b	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
-					eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
-				}
-			}
-			else if	ac_channel_b !=undefined
+			if animcurve_channel_exists(stencil_profile,1)
 			{
-				__pulse_show_debug_message("PULSE WARNING: Missing Shape A. Using Shape B instead")
-				eval_a	=	clamp(animcurve_channel_evaluate(ac_channel_b,dir_stencil),0,1);
-				eval	=	eval_a
-			} else { stencil_mode = PULSE_STENCIL.NONE }
 				
-			switch (stencil_mode)
-			{
-			case PULSE_STENCIL.NONE :
-			{
-				_emitter.ext		= 1
-				_emitter.int		= 1
-				_emitter.total		= 1
-			break
-			}	
+				var _channel_02 = animcurve_get_channel(stencil_profile,1)
+				eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
+				eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
+			}
+		}
+
+				
+		switch (stencil_mode)
+		{
 			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
 			{
 				_emitter.ext		= eval_a
@@ -635,11 +668,9 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_emitter.total		= eval
 				break;
 			}
-			
-
 		}
 					
-			return _emitter
+		return _emitter
 	}
 	
 	static __assign_v_coordinate	=	function(div_v,_p,_e={}){
@@ -647,28 +678,26 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		if radius_internal==radius_external
 		{
 			// If the 2 radius are equal, then there is no need to randomize
-			_p.v_coord = _e.total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
+			_p.v_coord		??=	_e.total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
 			_p.length		=	_e.total*radius_external;
 		}
 		else if distr_along_v_coord == PULSE_RANDOM.RANDOM
 		{
 			//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
-			_p.v_coord = random(1)
+			_p.v_coord		??= random(1)
 			_p.length = lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
 		}
 		else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
 		{
 			//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
-
-			_p.v_coord = random(1)
+			_p.v_coord		??= random(1)
 			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,animcurve_channel_evaluate(v_coord_channel,_p.v_coord))
 		}
 		else if distr_along_v_coord == PULSE_RANDOM.EVEN
 		{
 			//Distribute evenly
-			_p.v_coord =(div_v/divisions_v)
+			_p.v_coord		??=(div_v/divisions_v)
 			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
-					
 		}
 					
 		return _p
@@ -712,84 +741,82 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	static __set_normal_origin		=	function(_p,x,y){
 				
-				switch (form_mode)
+		switch (form_mode)
+		{
+			case PULSE_FORM.PATH:
+			{
+				var j			= 1/path_res
+				_p.x_origin	= path_get_x(path_a,_p.u_coord)
+				_p.y_origin	= path_get_y(path_a,_p.u_coord)
+				var x1			= path_get_x(path_a,_p.u_coord+j)
+				var y1			= path_get_y(path_a,_p.u_coord+j)
+				_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
+							
+				// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
+				//var x2	= path_get_x(path_a,u_coord+(j*2))
+				//var y2	= path_get_y(path_a,u_coord+(j*2))
+				//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+
+				_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
+						
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
+						
+				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 				{
-					case PULSE_FORM.PATH:
-					{
-						var j			= 1/path_res
-						_p.x_origin	= path_get_x(path_a,_p.u_coord)
-						_p.y_origin	= path_get_y(path_a,_p.u_coord)
-						var x1			= path_get_x(path_a,u_coord+j)
-						var y1			= path_get_y(path_a,u_coord+j)
-						_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
-							
-						// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-						//var x2	= path_get_x(path_a,u_coord+(j*2))
-						//var y2	= path_get_y(path_a,u_coord+(j*2))
-						//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
-
-						_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
-						
-						_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-						_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-							_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-						}
-						
-						break;
-					}
-					case PULSE_FORM.ELLIPSE:
-					{
-						_p.normal		=	(_p.u_coord*360)%360
-						
-						_p.x_origin	=	x
-						_p.y_origin	=	y
-						
-						if _p.v_coord != 0
-						{
-							_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-							_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						}
-							
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-						}
-
-						_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-	
-					break;
-					}
-					case PULSE_FORM.LINE:
-					{
-						_p.transv		= point_direction(x,y,x+line[0],y+line[1])
-						_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
-						_p.x_origin	= lerp(x,x+line[0],_p.u_coord)
-						_p.y_origin	= lerp(y,y+line[1],_p.u_coord)
-						
-						if _p.v_coord != 0
-						{
-							_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-							_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
-						}
-							
-						if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
-						{
-							//then, the direction from the focal point to the origin
-							_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
-							_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
-						}
-					}
+					//then, the direction from the focal point to the origin
+					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+					_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
 				}
-				
-					return _p
-				}
+						
+				break;
+			}
+			case PULSE_FORM.ELLIPSE:
+			{
+				_p.normal		=	(_p.u_coord*360)%360
+						
+				_p.x_origin	=	x
+				_p.y_origin	=	y
+						
+
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
 	
+							
+				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+				{
+					//then, the direction from the focal point to the origin
+					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+				}
+
+				_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
+	
+			break;
+			}
+			case PULSE_FORM.LINE:
+			{
+				_p.transv		= point_direction(x,y,x+line[0],y+line[1])
+				_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
+				_p.x_origin	= lerp(x,x+line[0],_p.u_coord)
+				_p.y_origin	= lerp(y,y+line[1],_p.u_coord)
+						
+				if _p.v_coord != 0
+				{
+					_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
+					_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
+				}
+							
+				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
+				{
+					//then, the direction from the focal point to the origin
+					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+					_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
+				}
+			}
+		}
+			return _p
+		}
+
 	static __assign_direction		=	function(_p){
 				
 		if alter_direction
@@ -895,12 +922,202 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			}
 			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
 			_p.to_edge	=	true
-		}
+		} else { _p.to_edge	=	false }
 				
 		return _p 		
 				
 	}
 	
+	static __check_forces			=	function(_p,x,y){
+		// For each local force, analyze reach and influence over particle
+		for (var k=0;k<array_length(local_forces);k++)
+		{
+			var _weight = 0;
+						
+			if local_forces[k].weight <= 0 continue //no weight, nothing to do here!
+						
+			if local_forces[k].range == PULSE_FORCE.RANGE_INFINITE
+			{
+				_weight = local_forces[k].weight //then weight is the force's full strength
+			}
+			else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
+			{
+				var __force_x,__force_y
+
+					__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
+					__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+
+				// relative position of the particle to the force
+				var _x_relative = _p.x_origin - __force_x
+				var _y_relative = _p.y_origin - __force_y
+							
+				//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
+				var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
+				var _coordy = _y_relative<0 ? local_forces[k].north : local_forces[k].south
+							
+				// if particle origin is within the area of influence OR the influence is infinite (==-1)
+				if (abs(_x_relative)< _coordx || _coordx==-1) 
+					&& (abs(_y_relative)< _coordy || _coordy==-1)
+				{
+					//within influence, calculate weight!
+					// If the influence is infinite, apply weight as defined
+					// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
+					var _weightx = _coordx==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_x_relative)/_coordx )
+					var _weighty = _coordy==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_y_relative)/_coordy )
+								
+					//Average of vertical and horizontal influences
+					_weight= (_weightx+_weighty)/2
+				}
+				else continue //not within influence. Byebye!
+			}
+			else if local_forces[k].range == PULSE_FORCE.RANGE_RADIAL
+			{
+				var __force_x,__force_y
+
+					__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
+					__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+
+							
+				var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
+				if _dist < local_forces[k].radius
+				{
+					_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
+				}
+				else continue //not within influence. 
+			}
+						
+			if (_weight==0) continue; //no weight, nothing to do here!
+						
+			if local_forces[k].type == PULSE_FORCE.DIRECTION
+			{
+				// convert to vectors
+				var _vec2 =[0,0];
+				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
+				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
+				// add force's vectors
+				_vec2[0] = _vec2[0]+(local_forces[k].vec[0]*_weight)
+				_vec2[1] = _vec2[1]+(local_forces[k].vec[1]*_weight)
+				// convert back to direction and speed
+				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
+				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
+			}
+			else if local_forces[k].type = PULSE_FORCE.POINT
+			{
+				var dir_force	=	(point_direction( (x+local_forces[k].x),(y+local_forces[k].y),x_origin,y_origin)+local_forces[k].direction)%360
+				_p.dir = lerp_angle(_p.dir,dir_force,local_forces[k].weight)
+			}
+						
+		}
+		return _p
+	}
+	
+	/**
+	 * @desc returns a modified stencil which adapts to colliding objects
+	 * @param {any} _collision_obj Any collideable element that can regularly be an argument for collision functions
+	 */
+	static check_stencil_collision = function(x,y,_collision_obj=collisions)
+	{
+		var _prec = false
+		if is_array(_collision_obj){
+		if array_length(_collision_obj)==0
+			exit
+		}
+		/// Check for collision of emitter by bbox
+		switch (form_mode)
+		{
+			case PULSE_FORM.PATH:
+			{
+				/// if path, find bounding box of path, then check with collision
+				var _bbox = path_get_bbox(path_a,radius_external,mask_start,mask_end)
+				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
+
+				break;
+			}
+			case PULSE_FORM.ELLIPSE:
+			{
+				if scalex != 1 or scaley != 1
+				{
+				
+					var _collision = collision_ellipse((radius_external-x)*scalex,(radius_external-y)*scaley,(radius_external+x)*scalex,(radius_external+y)*scaley,_collision_obj,_prec, false)
+				}
+				else
+				{
+					var _collision = collision_circle(x,y,radius_external,_collision_obj,_prec, false)
+				}
+			break;
+			}
+			case PULSE_FORM.LINE:
+			{
+				return;
+			}
+		}
+		if _collision == undefined || _collision == noone
+		{
+			if is_colliding
+			{
+				animcurve_channel_copy(stencil_profile, "c",stencil_profile, "a")
+				is_colliding = false
+			}
+			return
+		}
+		
+		is_colliding = true
+		//array_resize(colliding_entities,0)
+		
+		// Emit 32 rays and check for collisions
+		var _rays = 32
+		var _source =	animcurve_get_channel(stencil_profile, 2)
+		var _points	=	new animcurve_point_collection( animcurve_points_subdiv(_source,_rays),mask_start,mask_end)
+		var _ray	= {u_coord : 0 , v_coord : 0 , length : 0} 
+		var _fail	= 0
+		
+		for(var i =	0; i < _points.length ; i +=1)
+		{
+			_ray.u_coord	= _points.collection[i].posx
+			var _length		=	radius_external*_points.collection[i].value
+			_ray			= __set_normal_origin(_ray,x,y)
+
+			var _ray_collision	= raycast_hit_point_2d(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,false,true)
+			
+			if _ray_collision != noone
+			{
+				var _value = point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/(radius_external)
+				_points.new_point(_ray.u_coord,_value,true)
+				
+				/*if !array_contains(colliding_entities,_ray_collision.z)
+				{
+					array_push(colliding_entities,_ray_collision.z)		
+				}*/
+			}
+			else
+			{
+				_fail ++
+			}
+		}
+		if _fail = _points.length
+		{
+			if is_colliding
+			{
+				animcurve_channel_copy(stencil_profile, "c",stencil_profile, "a")
+				is_colliding = false
+			}
+			return
+		}
+		
+		_points = _points.export()
+
+		if stencil_mode == PULSE_STENCIL.NONE
+		{
+			stencil_mode = PULSE_STENCIL.EXTERNAL
+		} 
+
+		debug_col_rays = _points
+		
+		animcurve_points_set(stencil_profile,"a",_points)
+	
+		return
+	}
+
 	#endregion
 	
 	//Emit\Burst function 
@@ -915,29 +1132,24 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			}
 			else
 			{
-				__pulse_show_debug_message("PULSE ERROR: System is currently asleep!")
+				__pulse_show_debug_message("PULSE WARNING: System is currently asleep!")
 				exit
 			}
 		}
-		if !_cache
+		if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
 		{
-			if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
+			if _amount_request >= part_system.threshold
 			{
-				if _amount_request >= part_system.threshold
-				{
-					part_system.factor *= (part_system.threshold/_amount_request)
-				}
-				
-				time_source_reset(part_system.count)
-				time_source_start(part_system.count)
+				part_system.factor *= (part_system.threshold/_amount_request)
 			}
-			var _amount = floor(_amount_request*part_system.factor*global.pulse.particle_factor)
-			if _amount == 0 exit
+				
+			time_source_reset(part_system.count)
+			time_source_start(part_system.count)
 		}
-		else
-		{
-			var cache = array_create(_amount,0)
-		}
+		
+		var _amount = floor((_amount_request*part_system.factor)*global.pulse.particle_factor)
+		if _amount == 0 exit
+	
 		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
 
 		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
@@ -946,18 +1158,29 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		var map_color_mode	=	PULSE_COLOR.NONE
 
+		if stencil_profile ==undefined
+		{
+			stencil_mode = PULSE_STENCIL.NONE
+		}
+		
 		var system_array = array_length(part_system_array)
 		var type_array = array_length(part_type_array)
 		
 		div_v	=	1
 		div_u	=	1
 		i		=	0
-		particle_struct = {	}
-		emitter_struct = { }
+
+		var _check_forces = array_length(local_forces)>0 ? true : false
+		
+		if _cache
+		{
+			var cache = array_create(_amount,0)
+		}
 		
 		repeat(_amount)
 			{
-
+				var particle_struct = { v_coord	: undefined	}
+				var emitter_struct = { }
 				// ----- Assigns where the particle will spawn in normalized space (u_coord)
 				//ASSIGN U COORDINATE
 				
@@ -1119,88 +1342,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					__check_form_collide(particle_struct,emitter_struct)
 
 				//APPLY LOCAL AND GLOBAL FORCES
-				if array_length(local_forces)>0
+				if _check_forces
 				{
-					// For each local force, analyze reach and influence over particle
-					for (var k=0;k<array_length(local_forces);k++)
-					{
-						var _weight = 0;
-						
-						if local_forces[k].weight <= 0 continue //no weight, nothing to do here!
-						
-						if local_forces[k].range == PULSE_FORCE.RANGE_INFINITE
-						{
-							_weight = local_forces[k].weight //then weight is the force's full strength
-						}
-						else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
-						{
-							var __force_x,__force_y
-
-								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
-								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
-
-							// relative position of the particle to the force
-							var _x_relative = x_origin - __force_x
-							var _y_relative = y_origin - __force_y
-							
-							//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
-							var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
-							var _coordy = _y_relative<0 ? local_forces[k].north : local_forces[k].south
-							
-							// if particle origin is within the area of influence OR the influence is infinite (==-1)
-							if (abs(_x_relative)< _coordx || _coordx==-1) 
-								&& (abs(_y_relative)< _coordy || _coordy==-1)
-							{
-								//within influence, calculate weight!
-								// If the influence is infinite, apply weight as defined
-								// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
-								var _weightx = _coordx==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_x_relative)/_coordx )
-								var _weighty = _coordy==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_y_relative)/_coordy )
-								
-								//Average of vertical and horizontal influences
-								_weight= (_weightx+_weighty)/2
-							}
-							else continue //not within influence. Byebye!
-						}
-						else if local_forces[k].range == PULSE_FORCE.RANGE_RADIAL
-						{
-							var __force_x,__force_y
-
-								__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
-								__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
-
-							
-							var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
-							if _dist < local_forces[k].radius
-							{
-								_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
-							}
-							else continue //not within influence. 
-						}
-						
-						if (_weight==0) continue; //no weight, nothing to do here!
-						
-						if local_forces[k].type == PULSE_FORCE.DIRECTION
-						{
-							// convert to vectors
-							var _vec2 =[0,0];
-							_vec2[0] = lengthdir_x(_speed,dir);
-							_vec2[1] = lengthdir_y(_speed,dir);
-							// add force's vectors
-							_vec2[0] = _vec2[0]+(local_forces[k].vec[0]*_weight)
-							_vec2[1] = _vec2[1]+(local_forces[k].vec[1]*_weight)
-							// convert back to direction and speed
-							dir = point_direction(0,0,_vec2[0],_vec2[1])
-							_speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
-						}
-						else if local_forces[k].type = PULSE_FORCE.POINT
-						{
-							var dir_force	=	(point_direction( (x+local_forces[k].x),(y+local_forces[k].y),x_origin,y_origin)+local_forces[k].direction)%360
-							dir = lerp_angle(dir,dir_force,local_forces[k].weight)
-						}
-						
-					}
-				}				
+					__check_forces(particle_struct,x,y)
+				}
 				//CHECK FOR OCCLUDERS/COLLISIONS
 				
 				var _type	=	0

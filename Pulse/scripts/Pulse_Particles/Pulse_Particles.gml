@@ -1093,7 +1093,7 @@ function pulse_convert_particles	(part_system)
 	{
 		var target	=	pulse_make_particle(struct.emitters[l].name,false)
 		var src	=	struct.emitters[l].parttype
-		target.set_size(src.size_min,src.size_max,src.size_incr,src.size_wiggle)
+		target.set_size([src.size_xmin,src.size_ymin],[src.size_xmax,src.size_ymax],[src.size_xincr,src.size_yincr],[src.size_xwiggle,src.size_ywiggle])
 		target.set_scale(src.xscale,src.yscale)
 		target.set_life(src.life_min,src.life_max)
 		if src.death_type != -1
@@ -1118,7 +1118,7 @@ function pulse_convert_particles	(part_system)
 		}
 		else
 		{
-			target.set_sprite(src.sprite,src.animate,src.stretch,src.random)
+			target.set_sprite(src.sprite,src.animate,src.stretch,src.random,src.frame)
 		}
 	l++
 	}
