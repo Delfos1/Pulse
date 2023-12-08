@@ -49,10 +49,10 @@ global.pulse.part_types.particle.set_speed(1,5,-.002).set_life(20,50).set_size(0
 */				
 
 
-sys.set_radius(50,200)
+sys.set_radius(50,300)
 sys.force_to_edge=PULSE_TO_EDGE.LIFE
 
 sys.add_collisions(Object23)
 //sys.set_stencil(ac_empty,"curve1")
-//sys.set_stencil(ac_Shape,"Star")
-cache = sys.pulse(600,x,y,true)
+sys.set_stencil(ac_Shape,"Star")
+cache = sys.pulse(2000,x,y,true)

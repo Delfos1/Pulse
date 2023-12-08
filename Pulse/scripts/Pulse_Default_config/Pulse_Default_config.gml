@@ -103,7 +103,7 @@ function __pulse_show_debug_message(_message)
 
 //Default Pulse Emitter Properties
 
-#macro __PULSE_DEFAULT_EMITTER_STENCIL_MODE				PULSE_STENCIL.EXTERNAL
+#macro __PULSE_DEFAULT_EMITTER_STENCIL_MODE				PULSE_STENCIL.NONE
 
 #macro __PULSE_DEFAULT_EMITTER_FORM_MODE				PULSE_FORM.ELLIPSE
 

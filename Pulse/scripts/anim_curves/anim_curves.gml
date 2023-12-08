@@ -29,14 +29,16 @@ function animcurve_channel_exists(curve, channel) {
  */
 function animcurve_channel_copy(curve_src, channel_src,curve_dst,channel_dst,_rename = true) 
 {
-	var _source,_dest,_index,_name;
+	var _source,_dest,_index,_name,_curve_dest;
 	_source = animcurve_get_channel(curve_src, channel_src)
+	
+	_curve_dest = animcurve_get(curve_dst)
 	
 	// If destination doesn't exist, create it
 	if !animcurve_channel_exists(curve_dst, channel_dst)
 	{
 		_dest = animcurve_channel_new();
-		_index = 0
+		_index = array_length(_curve_dest.channels)
 		
 		if is_string(channel_dst)
 		{
@@ -75,10 +77,10 @@ function animcurve_channel_copy(curve_src, channel_src,curve_dst,channel_dst,_re
 	_dest.iterations =	_source.iterations
 	_dest.points=		_source.points
 	
-	var _new_channels = curve_dst.channels
+	var _new_channels = _curve_dest.channels
 	_new_channels[_index]=_dest
 	
-	curve_dst.channels=_new_channels
+	_curve_dest.channels=_new_channels
 	
 	return true
 }
@@ -106,6 +108,11 @@ function animcurve_point_collection(points = []) constructor
 		if length == 0
 		{
 			__make_point(0,posx,value)
+			length += 1
+		}
+		else if collection[length-1].posx < posx
+		{
+			__make_point(length-1,posx,value)
 			length += 1
 		}
 		else
@@ -412,6 +419,73 @@ function animcurve_points_normalize(points)
 	return points
 }
 
+function animcurve_points_find_closest(points,posx, above=  false)
+{
+			var length= array_length(points)
+			var _min = 0,
+			_max	= length,
+			_guess	= 0
+
+			while (_min < _max)
+			{
+				_guess = floor((_max + _min)/2);
+					
+				if _guess+1	== length 
+				break
+
+					
+				 if points[_guess].posx == posx || points[_guess].posx < posx && points[_guess+1].posx > posx
+				{
+					if (points[_guess].posx + points[_guess+1].posx )/2 < posx
+					_guess +=1;
+
+					break
+				}
+				else if points[_guess].posx > posx
+				{
+					_max	= _guess;
+				} else _min = _guess+1;
+				
+			}
+	
+	/*
+	var length= array_length(points)
+	
+		var _min = 0,
+		_max	= 1,
+		_middle	= 0,
+		_guess	= 0,
+		_index	= 0,
+		_len	= ceil(log2(length)) ;
+
+		repeat(_len)
+		{
+			_middle = _min + (_max - _min) * 0.5;
+			_guess = floor(length * _middle);
+					
+			if _guess < length 
+			{
+				if points[_guess].posx == position
+				{
+					break
+				}
+				else if points[_guess].posx < position && points[_guess+1].posx > position
+				{
+					if (points[_guess].posx + points[_guess+1].posx )/2 < position
+					_guess +=1;
+					break
+				}
+				else if points[_guess].posx > position
+				{
+					_max	= _middle;
+				} else _min = _middle;
+			}
+		}
+		*/
+		
+	return _guess
+}
+
 /**
  * add subdivisions to a points array. Returns points array
  * @param {Struct} channel_src the channel struct from animcurve_get_channel()
@@ -577,32 +651,33 @@ function path_get_bbox(_path,_padding=0,_from=0,_to=1)
 
 
 /* Binary search (something might be off though
-				var _min = 0,
-				_max	= 1,
-				_np		= 0,
-				_guess	= 0,
-				_index	= 0,
-				_len	= ceil(log2(length)) ;
+			var _min = 0,
+			_max	= length,
+			_guess	= 0,
 
-				repeat(_len)
+			while _min < _max
+			{
+				_guess = floor((_max + _min)/2);
+					
+				if collection[_guess].posx == posx
 				{
-					_np = _min + (_max - _min) * 0.5;
-					_guess = floor(length * _np);
-
-					if collection[_guess].posx == posx
+					if replace
 					{
-						if replace
-						{
-							array_delete(collection,_guess,1)
-							__make_point(_guess,posx,value)
-						}
-						break
+						array_delete(collection,_guess,1)
+						__make_point(_guess,posx,value)
 					}
-					else if collection[_guess].posx > posx
-					{
-						_max	= _np;
-					} else _min = _np;
+					break
 				}
-				__make_point(_guess,posx,value)
+				else if collection[_guess].posx < posx && collection[_guess+1].posx > posx
+				{
+					__make_point(_guess,posx,value)
+					length += 1
+					break
+				}
+				else if collection[_guess].posx > posx
+				{
+					_max	= _guess;
+				} else _min = _guess+1;
+				
 			}
 */
