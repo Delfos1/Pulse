@@ -93,6 +93,9 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	{name:"a",type: animcurvetype_catmullrom , iterations : 8}, 
 	{name:"b",type: animcurvetype_catmullrom , iterations : 8} , 
 	{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
+	_channel_01			=	animcurve_get_channel(stencil_profile,0)
+	_channel_02			=	animcurve_get_channel(stencil_profile,1)
+	_channel_03			=	animcurve_get_channel(stencil_profile,2)
 	stencil_tween		=	0
 	radius_external		=	abs(_radius_external)	
 	radius_internal		=	0
@@ -109,11 +112,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	scaley				=	1
 	stencil_offset		=	0
 	direction_range		=	[0,0]
-	
-	// collisions
-	collisions			=	[]
-	is_colliding		=	false
-	colliding_entities	=	[]
 	
 	//Distributions
 	distr_along_v_coord	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD
@@ -158,10 +156,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			orient_channel = animcurve_get_channel(interpolations,"life")
 		}
 	}
-	else
-	{
-		//interpolations = animcurve_create()
-	}
+
 	
 	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
 	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
@@ -172,6 +167,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 	//Forces, Groups, Colliders
 	local_forces		=	[]
+		// collisions
+	collisions			=	[]
+	is_colliding		=	false
+	colliding_entities	=	[]
 	
 	debug_col_rays =[]
 
@@ -179,10 +178,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=0,_mode=PULSE_STENCIL.EXTERNAL)
 	{
-		if !animcurve_really_exists(__ac_curve)return self
-		if !animcurve_channel_exists(__ac_curve,__ac_channel) return self
-		
-	
 		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_channel,false)
 		
 		if _channel == 0
@@ -210,7 +205,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	static	set_stencil_offset	=	function(_offset)
 	{
-		stencil_offset		=	_offset
+		stencil_offset		=	abs(_offset)%1
 		return self
 	}
 	
@@ -621,7 +616,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						
 	static __calculate_stencil		=	function(_particle, _emitter={}){
 		
-		var eval, eval_a, eval_b;
+		var eval, eval_a, eval_b, eval_c;
 			
 		// early exit if there are no stencils
 		if stencil_mode == PULSE_STENCIL.NONE 
@@ -632,18 +627,14 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			return _emitter
 		}
 			
-		var dir_stencil = (abs(stencil_offset))+_particle.u_coord;
-		dir_stencil=  dir_stencil>=1 ? dir_stencil-1 : dir_stencil
-
-		var _channel_01 = animcurve_get_channel(stencil_profile,0)
-		eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+		var dir_stencil = (stencil_offset+_particle.u_coord)%1;
+			
+		eval_c	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+		eval_a	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
 		eval	=	eval_a
 		
-
-		var _channel_02 = animcurve_get_channel(stencil_profile,1)
 		eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
 		eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
-
 				
 		switch (stencil_mode)
 		{
@@ -652,6 +643,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_emitter.ext		= eval_a
 				_emitter.int		= eval_b
 				_emitter.total		= eval
+				_emitter.edge		= eval_c
 				break;
 			}
 			case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
@@ -659,6 +651,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_emitter.ext		= eval
 				_emitter.int		= 1
 				_emitter.total		= eval
+				_emitter.edge		= eval_c
 				break;
 			}
 			case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
@@ -666,6 +659,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_emitter.ext		= 1
 				_emitter.int		= eval
 				_emitter.total		= eval
+				_emitter.edge		= 1
 				break;
 			}
 		}
@@ -685,8 +679,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
 			_p.v_coord		??= random(1)
-			//_p.length = lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
-			_p.length = lerp(radius_internal,radius_external,_p.v_coord)
+			_p.length = lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
+			//_p.length = lerp(radius_internal,radius_external,_p.v_coord)
 		}
 		else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
 		{
@@ -698,8 +692,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			//Distribute evenly
 			_p.v_coord		??=(div_v/divisions_v)
-			//_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
-			_p.length		=	lerp(radius_internal,radius_external,_p.v_coord)
+			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
+			//_p.length		=	lerp(radius_internal,radius_external,_p.v_coord)
 		}
 					
 		return _p
@@ -852,8 +846,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			_p.dir = (random_range(part_type.direction[0],part_type.direction[1]))%360
 			return _p
 		}
-				
-	
 	}
 	
 	static __check_form_collide		=	function(_p,_e){
@@ -870,7 +862,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		if to_transversal <=30	or 	 abs(to_transversal-180) <=30//TRANSVERSAL
 		{
 			// Find half chord of the coordinate to the circle (distance to the edge)
-			var _length_to_edge	= sqrt(power(edge_external,2)-power(_p.length,2)) 
+			var _a =power(_e.edge*edge_external,2)-power(_p.length,2)
+			var _length_to_edge	= sqrt(abs(_a)) 
 						
 			//This second formula should work with any angle, but it doesn't work atm
 			//var _length_to_edge	= radius_external*sin(degtorad(dir-90))
@@ -880,11 +873,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			//Edge is the distance remaining from the spawn point to the radius
 			if _p.length>=0
 			{
-				var _length_to_edge	=	(_e.ext*edge_external)-_p.length
+				var _length_to_edge	=	(_e.edge*edge_external)-_p.length
 			}
 			else
 			{
-				var _length_to_edge	=	(_e.int*edge_internal)+_p.length
+				var _length_to_edge	=	(_e.edge*edge_internal)+_p.length
 			}
 		}
 		else											//NORMAL TOWARDS CENTER
@@ -1028,11 +1021,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	 * @param {bool}_prec Whether the collision is precise (true, slow) or not (false, fast)
 	 * @param {real} _rays amount of rays emitted to create a stencil collision
 	 */
-	static check_stencil_collision = function(x,y,_collision_obj=collisions, _prec = false , _rays = 32)
+	static	check_stencil_collision = function(x,y,_collision_obj=collisions, _prec = false , _rays = 32)
 	{
 		if is_array(_collision_obj){
 		if array_length(_collision_obj)==0
-			exit
+			return undefined
 		}
 		/// Check for collision of emitter by bbox
 		switch (form_mode)
@@ -1040,7 +1033,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			case PULSE_FORM.PATH:
 			{
 				/// if path, find bounding box of path, then check with collision
-				var _bbox = path_get_bbox(path_a,radius_external,mask_start,mask_end)
+				var _bbox = path_get_bbox(path_a,edge_external,mask_start,mask_end)
 				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
 
 				break;
@@ -1059,6 +1052,29 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			}
 			case PULSE_FORM.LINE:
 			{
+				var transv		= point_direction(x,y,x+line[0],y+line[1])
+				var normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+				
+				var b	= [x+line[0],y+line[1]]
+				var a	= [x,y]
+				var c = [0,0]		
+				var d = [0,0]	
+				
+				var dir_x = (lengthdir_x(edge_external,normal)*scalex);
+				var dir_y = (lengthdir_y(edge_external,normal)*scaley);
+				
+				c[0] =	a[0] + dir_x
+				c[1] =	a[1] + dir_y
+				d[0] =	b[0] + dir_x
+				d[1] =	b[1] + dir_y
+				
+				var left	= min(a[0],b[0],c[0],d[0])
+				var right	= max(a[0],b[0],c[0],d[0])
+				var top		= min(a[1],b[1],c[1],d[1])
+				var bottom	= max(a[1],b[1],c[1],d[1])
+				
+				var _collision = collision_rectangle(left,top,right,bottom,_collision_obj,_prec,true)
+
 				return;
 			}
 		}
@@ -1081,10 +1097,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		 _points		=	new animcurve_point_collection( animcurve_points_subdiv(_source,_rays),mask_start,mask_end) ,
 		 _ray			= {u_coord : 0 , v_coord : 0 , length : 0} ,
 		 _fail			= 0 ,
-		 dir_stencil	= animcurve_points_find_closest(_points.collection, +stencil_offset%1,false),
+		 dir_stencil	= animcurve_points_find_closest(_points.collection, stencil_offset,false),
 		 _mod_i			= dir_stencil,
 		 _l				= _points.length,
-		 _rays_changed	= []
+		 //_rays_changed	= []
 		 
 		for(var i =	0; i < _l ; i +=1)
 		{
@@ -1098,9 +1114,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			
 			if _ray_collision != noone
 			{
-				array_push(_rays_changed,_ray.u_coord)
-				
-				var _value = point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/(edge_external)
+				var _value = (point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external) 
 				_points.new_point(_points.collection[_mod_i].posx,_value,true)
 				
 				// Add colliding entity to an array
@@ -1125,8 +1139,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			return undefined
 		}
 		
-		
-		
 		_points = _points.export()
 
 		if stencil_mode == PULSE_STENCIL.NONE
@@ -1144,7 +1156,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	//Emit\Burst function 
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
 	{
-		
+
 		if part_system.index = -1
 		{
 			if part_system.wake_on_emit
@@ -1193,7 +1205,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 		var _check_forces = array_length(local_forces)>0 ? true : false
 		
-		if _cache
+		if _cache != false
 		{
 			var cache = array_create(_amount,0)
 		}
@@ -1396,44 +1408,96 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				if div_u > divisions_u div_u=1
 			}
 		}
-		if _cache return new __pulse_cache(cache)
+		if _cache != false
+		{ 
+			if is_instanceof(_cache,__pulse_cache) 
+			{
+				_cache.add_particles(cache)
+			}
+			else
+			{
+				return new __pulse_cache(cache,self)
+			}
+		}
 	}
 }
 
-function __pulse_cache(_cache) : __pulse_launcher()  constructor
+function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 {
+	emitter = _emitter
 	index	= 0
 	shuffle = true
 	cache	= _cache
 	length	= array_length(_cache)
+	flag_stencil = false
 	
-	static	cached_pulse = function(_amount,x,y)
+	static add_particles = function(array)
+	{
+		cache = array_concat(cache,array)
+		length	= array_length(cache)
+	}
+	
+	static regen_stencil = function()
+	{
+		flag_stencil = true
+		index = 0
+	}
+	
+	static	__update_stencil	=	function(_index,_amount)
+	{
+		for(var _i =_index; _i < _amount ; _i++)
+		{
+			var _p	= cache[_i]
+			var _e	= emitter.__calculate_stencil(_p)
+				_p	= emitter.__assign_properties(_p)
+				_p	= emitter.__check_form_collide(_p,_e)
+		}
+	}
+	
+	static	pulse = function(_amount,x,y)
 	{
 		do{
 			if (index + _amount) >length
 			{
-				array_foreach(cache,__launch,index, length-index)
+
+				if flag_stencil {__update_stencil(index,length-index)}
+				
+				for(var _i = index ; _i < length-index ; _i++)
+				{
+					__launch(cache[_i],x,y)
+				}
+			
 				_amount -=  (length - index)
 				index = 0
 			}
 			else
 			{
-				array_foreach(cache,__launch,index, _amount)
+				if flag_stencil {__update_stencil(index,index+_amount)}
+				
+				for(var _i = index ; _i < index+_amount ; _i++)
+				{
+					__launch(cache[_i],x,y)
+				}
+				
 				index = (index + _amount) % length
 				_amount = 0
 			}
+			
+			if  index == 0
+			{
+				flag_stencil = false
+			
+			if shuffle array_shuffle(cache,irandom_range(0,floor(length/2)),length/2)
+			}
 		} until(_amount = 0)
 	
-		if shuffle && index == 0
-		{
-			array_shuffle(cache,0,length)
-		}
+		
 	}
 }
 
 function __pulse_launcher() constructor
 {
-	static	__launch		=	function(_struct)
+	static	__launch		=	function(_struct,x=0,y=0)
 	{
 		with(_struct)
 		{
@@ -1463,7 +1527,7 @@ function __pulse_launcher() constructor
 			}
 			particle.prelaunch(_struct)
 			
-			part_particles_create(part_system.index, x_origin,y_origin,particle.index, 1);
+			part_particles_create(part_system.index, x_origin+x,y_origin+y,particle.index, 1);
 		}		
 	}
 }

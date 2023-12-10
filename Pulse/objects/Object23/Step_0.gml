@@ -3,9 +3,20 @@ if move
 	x = mouse_x
 	y = mouse_y
 	
-	with Test_Me
+	if xprevious != x || yprevious != y
 	{
-		sys.check_stencil_collision(x,y)
+		with Test_Me
+		{
+			var col = sys.check_stencil_collision(x,y)
+			/*
+			if (col != undefined)
+			{
+				if array_contains(col,other.id)
+				{
+					sys.cache_update_collisions(cache)
+				}
+			}*/
+		}
 	}
 }
 

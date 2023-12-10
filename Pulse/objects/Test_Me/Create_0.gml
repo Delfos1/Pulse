@@ -55,4 +55,4 @@ sys.force_to_edge=PULSE_TO_EDGE.LIFE
 sys.add_collisions(Object23)
 //sys.set_stencil(ac_empty,"curve1")
 sys.set_stencil(ac_Shape,"Star")
-cache = sys.pulse(2000,x,y,true)
+cache = sys.pulse(300,0,0,true)
