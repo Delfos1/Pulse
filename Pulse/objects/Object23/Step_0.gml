@@ -7,7 +7,7 @@ if move
 	{
 		with Test_Me
 		{
-			var col = sys.check_stencil_collision(x,y)
+			var col = sys.check_collision(x,y)
 			/*
 			if (col != undefined)
 			{

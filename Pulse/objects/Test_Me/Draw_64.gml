@@ -12,3 +12,5 @@ draw_text(50,250,"Letter P assigns the letter P shape as an emitter")
 
 
 sys.draw_debug(x,y)
+
+	

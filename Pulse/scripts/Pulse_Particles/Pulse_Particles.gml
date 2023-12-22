@@ -777,11 +777,11 @@ function __pulse_particle			(_name) constructor
 	
 }
 
-function __pulse_instance_particle	(_object) constructor
+function __pulse_instance_particle	(_object,_name) constructor
 {
-	name			=	object_get_name(_object)
+	name			=	string(_name)
 	index			=	_object
-	size			=	__PULSE_DEFAULT_PART_SIZE
+	size			=	[1,1,1,1,0,0,0,0]
 	scale			=	__PULSE_DEFAULT_PART_SCALE
 	life			=	__PULSE_DEFAULT_PART_LIFE
 	color			=	__PULSE_DEFAULT_PART_COLOR
