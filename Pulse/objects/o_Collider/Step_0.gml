@@ -5,9 +5,9 @@ if move
 	
 	if xprevious != x || yprevious != y
 	{
-		with Test_Me
+		with ParticlesParent
 		{
-			var col = sys.check_collision(x,y)
+			var col = emit.check_collision(x,y)
 			
 			/*
 			if (col != undefined)

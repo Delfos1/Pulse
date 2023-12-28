@@ -18,7 +18,10 @@
     "name": "Examples",
     "path": "folders/Examples.yy",
   },
-  "parentObjectId": null,
+  "parentObjectId": {
+    "name": "ParticlesParent",
+    "path": "objects/ParticlesParent/ParticlesParent.yy",
+  },
   "persistent": false,
   "physicsAngularDamping": 0.1,
   "physicsDensity": 0.5,

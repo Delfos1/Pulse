@@ -1012,7 +1012,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			
 			#region color
 
-			if distr_color_mix != PULSE_DISTRIBUTION.NONE
+			if distr_color_mix != PULSE_DISTRIBUTION.NONE && distr_color_mix != PULSE_COLOR.COLOR_MAP
 			{
 				var _amount= 0;
 				
@@ -1326,8 +1326,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 							_p.r_h =  lerp(255,_color[0],color_map.color_blend)
 							_p.g_s =  lerp(255,_color[1],color_map.color_blend)
 							_p.b_v =  lerp(255,_color[2],color_map.color_blend)
-							_p.size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
-					
+							var _size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
+							_p.size = array_create(4,_size)
 				}
 	
 	static __apply_displacement		= function(_p,_e)
@@ -1490,7 +1490,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				
 				var _collision = collision_rectangle(left,top,right,bottom,_collision_obj,_prec,true)
 
-				return;
+				break;
 			}
 		}
 		if _collision == undefined || _collision == noone

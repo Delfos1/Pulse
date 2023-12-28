@@ -47,6 +47,7 @@
     {"name":"_64_strght__00025","order":25,"path":"sprites/_64_strght__00025/_64_strght__00025.yy",},
     {"name":"shd_Blob","order":11,"path":"shaders/shd_Blob/shd_Blob.yy",},
     {"name":"Smoke_up___200_200_","order":7,"path":"sprites/Smoke_up___200_200_/Smoke_up___200_200_.yy",},
+    {"name":"ParticlesParent","order":20,"path":"objects/ParticlesParent/ParticlesParent.yy",},
     {"name":"_64_strght__00004","order":4,"path":"sprites/_64_strght__00004/_64_strght__00004.yy",},
     {"name":"_64_strght__00007","order":7,"path":"sprites/_64_strght__00007/_64_strght__00007.yy",},
     {"name":"smoke","order":4,"path":"objects/smoke/smoke.yy",},

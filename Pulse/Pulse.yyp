@@ -70,6 +70,7 @@
     {"id":{"name":"_64_strght__00025","path":"sprites/_64_strght__00025/_64_strght__00025.yy",},},
     {"id":{"name":"shd_Blob","path":"shaders/shd_Blob/shd_Blob.yy",},},
     {"id":{"name":"Smoke_up___200_200_","path":"sprites/Smoke_up___200_200_/Smoke_up___200_200_.yy",},},
+    {"id":{"name":"ParticlesParent","path":"objects/ParticlesParent/ParticlesParent.yy",},},
     {"id":{"name":"_64_strght__00004","path":"sprites/_64_strght__00004/_64_strght__00004.yy",},},
     {"id":{"name":"_64_strght__00007","path":"sprites/_64_strght__00007/_64_strght__00007.yy",},},
     {"id":{"name":"smoke","path":"objects/smoke/smoke.yy",},},
