@@ -261,32 +261,9 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 			},[],-1)
 }
 
-function __pulse_particle			(_name) constructor
+function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 {
-	name			=	_name
-	index			=	part_type_create();
-	size			=	__PULSE_DEFAULT_PART_SIZE
-	scale			=	__PULSE_DEFAULT_PART_SCALE
-	life			=	__PULSE_DEFAULT_PART_LIFE
-	color			=	__PULSE_DEFAULT_PART_COLOR
-	color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
-	alpha			=	__PULSE_DEFAULT_PART_ALPHA
-	blend			=	__PULSE_DEFAULT_PART_BLEND
-	speed			=	__PULSE_DEFAULT_PART_SPEED
-	shape			=	__PULSE_DEFAULT_PART_SHAPE
-	sprite			=	undefined
-	orient			=	__PULSE_DEFAULT_PART_ORIENT
-	gravity			=	__PULSE_DEFAULT_PART_GRAVITY
-	direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	set_to_sprite	=	false
-	death_type		=	undefined
-	death_number	=	1
-	step_type		=	undefined
-	step_number		=	1
-	prelaunch		= function(_struct){}
-	time_factor		=	1
-	scale_factor	=	1
-	altered_acceleration = 0
+	
 
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
@@ -458,20 +435,40 @@ function __pulse_particle			(_name) constructor
 	}
 	static set_step_particle=	function(_number,_step)
 	{
-		
 		step_type	=	_step
 		step_number	=	_number
-		part_type_step(index,step_number,step_type)
+		if is_instanceof(step_type,__pulse_particle)
+		{
+			part_type_step(index,step_number,step_type.index)
+		}
+		else
+		{
+			part_type_step(index,step_number,step_type)
+		}
+
 		return self
 	}
-	static set_death_particle=	function(_number,_death)
+	static set_death_particle=	function(_amount,_death_particle)
 	{
-		
-		death_type		=	_death
-		death_number	=	_number
-		part_type_death(index,death_number,death_type)
+		death_type		=	_death_particle
+		death_number	=	_amount
+		if is_instanceof(death_type,__pulse_particle)
+		{
+			part_type_death(index,death_number,death_type.index)
+		}
+		else
+		{
+			part_type_death(index,death_number,death_type)
+		}
 		return self
 	}
+	static set_death_on_collision=	function(_amount,_death_particle)
+	{
+		subparticle = new __pulse_subparticle(self,_amount,_death_particle)
+		on_collision	= true
+		return self
+	}
+	
 #endregion
 /*
 	static add_dynamic = function(_condition_property,_min,_max,_property)
@@ -489,8 +486,6 @@ function __pulse_particle			(_name) constructor
 		return array_last(_dynamics)
 	}
 */
-
-
 	#region TRANSFORMATION HELPERS
 
 /// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
@@ -678,103 +673,46 @@ function __pulse_particle			(_name) constructor
 		
 	#endregion 
 
-	static reset	=	function()
-	{
-		time_factor		=	1
-		scale_factor	=	1
-		
-		part_type_scale(index,scale[0],scale[1]);
-		
-		if size[0]!=size[1] or size[2]!=size[3] or size[4]!=size[5] or size[6]!=size[7]
-		{
-			part_type_size_x(index,size[0],size[2],size[4],size[6])
-			part_type_size_y(index,size[1],size[3],size[5],size[7])
-		}
-		else
-		{
-			part_type_size(index,size[0],size[2],size[4],size[6])
-		}
-		
-		part_type_life(index,life[0],life[1])
-		
-		
-		switch(color_mode)
-		{
-		
-			case __PULSE_COLOR_MODE.COLOR :
-			{
-					var _color = array_length(color)
-					if _color==3
-					{
-						part_type_color3(index,color[0],color[1],color[2])
-					} else if _color==2
-					{
-						part_type_color2(index,color[0],color[1])
-					} else
-					{
-						part_type_color1(index,color[0])
-					}
-				break
-			}
-			case __PULSE_COLOR_MODE.RGB :
-			{
-				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
-				{
-					part_type_color_rgb(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
-				}
-				else
-				{
-					part_type_color_rgb(index,color[0],color[0],color[1],color[1],color[2],color[2])
-				}
-			break;
-			}
-			case __PULSE_COLOR_MODE.HSV :
-			{
-				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
-				{
-					part_type_color_hsv(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
-				}
-				else
-				{
-					part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
-				}
-			break;
-			}
-		
-		}
-
-		var _alpha = array_length(alpha)
-		if _alpha==3
-		{
-			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
-		} else if _alpha==2
-		{
-			part_type_alpha2(index,alpha[0],alpha[1])
-		} else
-		{
-			part_type_alpha1(index,alpha[0])
-		}
-				
-		part_type_blend(index,blend)
-		part_type_speed(index,speed[0],speed[1],speed[2],speed[3])
-		if !set_to_sprite
-		{
-			part_type_shape(index,shape)
-		}
-		else
-		{
-			part_type_sprite(index,sprite[0],sprite[1],sprite[2],sprite[3])
-		}
-		part_type_orientation(index,orient[0],orient[1],orient[2],orient[3],orient[4])
-		part_type_gravity(index,gravity[0],gravity[1])
-		part_type_direction(index,direction[0],direction[1],direction[2],direction[3])
-		
-		if step_type != undefined part_type_step(index,step_number,step_type)
-		if death_type != undefined part_type_death(index,death_number,death_type)
 	
-	}
 	reset()
 	
+}
+
+function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_particle_class("child") constructor
+{
+	parent	= _parent
+	index			=	part_type_create();
+
+	death_type		=	_death_particle
+	death_number	=	_number
+
+	static update = function()
+	{
+		size			=	parent.size
+		scale			=	parent.scale
+		life			=	parent.life
+		color			=	parent.color
+		color_mode		=	parent.color_mode
+		alpha			=	parent.alpha
+		blend			=	parent.blend
+		speed			=	parent.speed
+		shape			=	parent.shape
+
+		sprite			=	parent.sprite
+
+		orient			=	parent.orient
+		gravity			=	parent.gravity
+		direction		=	parent.direction
+
+		set_to_sprite	=	parent.set_to_sprite
+		step_type		=	parent.step_type
+		step_number		=	parent.step_number
+		subparticle		=	undefined
+		
+		reset()
+	}
+	
+	update()
 }
 
 function __pulse_instance_particle	(_object,_name) constructor
@@ -909,6 +847,161 @@ function __pulse_instance_particle	(_object,_name) constructor
 		{
 			instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,_struct.particle_index,_struct)	
 		}
+	}
+}
+
+function __pulse_particle_class		(_name) constructor
+{
+	name			=	_name
+	index			=	part_type_create();
+	size			=	__PULSE_DEFAULT_PART_SIZE
+	scale			=	__PULSE_DEFAULT_PART_SCALE
+	life			=	__PULSE_DEFAULT_PART_LIFE
+	color			=	__PULSE_DEFAULT_PART_COLOR
+	color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
+	alpha			=	__PULSE_DEFAULT_PART_ALPHA
+	blend			=	__PULSE_DEFAULT_PART_BLEND
+	speed			=	__PULSE_DEFAULT_PART_SPEED
+	shape			=	__PULSE_DEFAULT_PART_SHAPE
+	sprite			=	undefined
+	orient			=	__PULSE_DEFAULT_PART_ORIENT
+	gravity			=	__PULSE_DEFAULT_PART_GRAVITY
+	direction		=	__PULSE_DEFAULT_PART_DIRECTION
+	set_to_sprite	=	false
+	//
+	death_type		=	undefined
+	death_number	=	1
+	//
+	subparticle		=	undefined
+	on_collision	= false
+	step_type		=	undefined
+	step_number		=	1
+	//
+	time_factor		=	1
+	scale_factor	=	1
+	altered_acceleration = 0
+	subparticle = undefined
+	
+	prelaunch		= function(_struct){}
+	
+	static reset	=	function()
+	{
+		time_factor		=	1
+		scale_factor	=	1
+		
+		part_type_scale(index,scale[0],scale[1]);
+		
+		if size[0]!=size[1] or size[2]!=size[3] or size[4]!=size[5] or size[6]!=size[7]
+		{
+			part_type_size_x(index,size[0],size[2],size[4],size[6])
+			part_type_size_y(index,size[1],size[3],size[5],size[7])
+		}
+		else
+		{
+			part_type_size(index,size[0],size[2],size[4],size[6])
+		}
+		
+		part_type_life(index,life[0],life[1])
+		
+		
+		switch(color_mode)
+		{
+		
+			case __PULSE_COLOR_MODE.COLOR :
+			{
+					var _color = array_length(color)
+					if _color==3
+					{
+						part_type_color3(index,color[0],color[1],color[2])
+					} else if _color==2
+					{
+						part_type_color2(index,color[0],color[1])
+					} else
+					{
+						part_type_color1(index,color[0])
+					}
+				break
+			}
+			case __PULSE_COLOR_MODE.RGB :
+			{
+				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
+				{
+					part_type_color_rgb(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+				}
+				else
+				{
+					part_type_color_rgb(index,color[0],color[0],color[1],color[1],color[2],color[2])
+				}
+			break;
+			}
+			case __PULSE_COLOR_MODE.HSV :
+			{
+				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
+				{
+					part_type_color_hsv(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
+				}
+				else
+				{
+					part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
+				}
+			break;
+			}
+		
+		}
+
+		var _alpha = array_length(alpha)
+		if _alpha==3
+		{
+			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
+		} else if _alpha==2
+		{
+			part_type_alpha2(index,alpha[0],alpha[1])
+		} else
+		{
+			part_type_alpha1(index,alpha[0])
+		}
+				
+		part_type_blend(index,blend)
+		part_type_speed(index,speed[0],speed[1],speed[2],speed[3])
+		if !set_to_sprite
+		{
+			part_type_shape(index,shape)
+		}
+		else
+		{
+			part_type_sprite(index,sprite[0],sprite[1],sprite[2],sprite[3])
+		}
+		part_type_orientation(index,orient[0],orient[1],orient[2],orient[3],orient[4])
+		part_type_gravity(index,gravity[0],gravity[1])
+		part_type_direction(index,direction[0],direction[1],direction[2],direction[3])
+		
+		if step_type != undefined 
+		{
+			if is_instanceof(step_type,__pulse_particle)
+			{
+				part_type_step(index,step_number,step_type.index)
+			}
+			else
+			{
+				part_type_step(index,step_number,step_type)
+			}
+		}
+		if death_type != undefined 
+		{
+			if is_instanceof(death_type,__pulse_particle)
+			{
+				part_type_death(index,death_number,death_type.index)
+			}
+			else
+			{
+				part_type_death(index,death_number,death_type)
+			}
+		}
+		if subparticle != undefined
+		{
+			subparticle.update()
+		}
+	
 	}
 }
 

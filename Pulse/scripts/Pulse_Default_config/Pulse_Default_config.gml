@@ -1,6 +1,6 @@
-// Color mode use internally to set to particles
+
 enum __PULSE_COLOR_MODE
-{
+{// Color mode use internally to set to particles
 	COLOR,
 	RGB,
 	MIX,
@@ -19,15 +19,17 @@ enum PULSE_STENCIL
 	A_TO_B				=	12,
 	NONE				=	13,
 }
-enum PULSE_RANDOM
+enum PULSE_DISTRIBUTION
 {
 	RANDOM				=	20,
 	ANIM_CURVE			=	21,
 	EVEN				=	22,
+	LINKED				=	23,
+	NONE				=	24
 }
-// Color mode used by emitter
+
 enum PULSE_COLOR
-{
+{// Color mode used by emitter
 	A_TO_B_RGB			=30,
 	A_TO_B_HSV			=31,
 	COLOR_MAP			=32,
@@ -42,14 +44,15 @@ enum PULSE_TO_EDGE
 	FOCAL_SPEED = 43,
 	FOCAL_LIFE	= 44,
 }
-enum PULSE_PROPERTY
+enum PULSE_LINK_TO
 {
-	U_COORD,
+	U_COORD ,
 	V_COORD,
 	PATH_SPEED,
-	ORDER_OF_CREATION,
-	TO_EDGE,
+	SPEED,
+	DIRECTION,
 }
+
 enum PULSE_FORCE
 {
 	DIRECTION,
@@ -76,7 +79,7 @@ function __pulse_show_debug_message(_message)
 
 // Default Particle properties
 
-#macro __PULSE_DEFAULT_PART_SIZE		[.1,.1,.2,.2,0,0,0,0]
+#macro __PULSE_DEFAULT_PART_SIZE		[.1,.1,.2,.2,0,0,0,0] // minx, min y, max x, max y, acc x, acc y, wiggle x wiggle y
 
 #macro __PULSE_DEFAULT_PART_SCALE		[1,1]
 
@@ -108,17 +111,18 @@ function __pulse_show_debug_message(_message)
 #macro __PULSE_DEFAULT_EMITTER_FORM_MODE				PULSE_FORM.ELLIPSE
 
 //Distribution along the perpendicular (the radius of a circle, normal vector of a path)
-#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD		PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD		PULSE_DISTRIBUTION.RANDOM
 
 //Distribution along the transversal (along the path or perimeter)
-#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_U_COORD			PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_EMITTER_DISTR_ALONG_U_COORD		PULSE_DISTRIBUTION.RANDOM
 
 //Whether the emitter changes the direction of the particle is emitting
 #macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true
 
 #macro __PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE			PULSE_TO_EDGE.LIFE
 
-#macro __PULSE_DEFAULT_DISTR_PROPERTY				PULSE_RANDOM.RANDOM
+#macro __PULSE_DEFAULT_DISTR_PROPERTY					PULSE_DISTRIBUTION.RANDOM
 
 // Systems can reduce their particle count after a certain amount of frames.
 #macro __PULSE_DEFAULT_COUNT_TIMER		80
+

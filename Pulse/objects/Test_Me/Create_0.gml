@@ -1,4 +1,4 @@
-debug = true
+debug = false
 show_debug_overlay(debug)
 
 
@@ -13,11 +13,14 @@ system = pulse_make_system("sys_1")
 
 sys= new pulse_local_emitter("sys_1","particle")
 
+particle_on_death =  pulse_make_particle("on_death")
+
+particle_on_death.set_direction(0,360)
 // Particle/System ID s get allocated in global.pulse.systems and global.pulse.part_types respectively.
 // If unnamed they get a default name assigned. You can change default values in the Default_config script.
 // They can be accessed by their name with a dot accessor like this:
 
-global.pulse.part_types.particle.set_speed(1,5,-.002).set_life(20,50).set_size(0.1,0.35,-.002).set_color(c_yellow,c_lime)
+global.pulse.part_types.particle.set_speed(1,5,-.002).set_life(20,50).set_size(0.1,0.35,-.002).set_color(c_yellow,c_lime)//.set_death_on_collision(10,particle_on_death)
 
 
 
@@ -49,10 +52,11 @@ global.pulse.part_types.particle.set_speed(1,5,-.002).set_life(20,50).set_size(0
 */				
 
 
-sys.set_radius(50,300)
+sys.set_radius(50,300,50,800).set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION).set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.DIRECTION)
+
 sys.force_to_edge=PULSE_TO_EDGE.LIFE
 
-sys.add_collisions(Object23)
+sys.add_collisions(o_Collider)
 //sys.set_stencil(ac_empty,"curve1")
-sys.set_stencil(ac_Shape,"Star")
+//sys.set_stencil(ac_Shape,"Star")
 cache = sys.pulse(300,0,0,true)

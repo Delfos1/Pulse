@@ -11,8 +11,8 @@
   "managed": true,
   "overriddenProperties": [],
   "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+    "name": "Experiments",
+    "path": "folders/Examples/Experiments.yy",
   },
   "parentObjectId": null,
   "persistent": false,

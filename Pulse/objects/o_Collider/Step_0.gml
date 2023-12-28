@@ -8,6 +8,7 @@ if move
 		with Test_Me
 		{
 			var col = sys.check_collision(x,y)
+			
 			/*
 			if (col != undefined)
 			{

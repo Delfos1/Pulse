@@ -125,27 +125,27 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		
 		if animcurve_channel_exists(interpolations,"v_coord")
 		{
-			distr_along_v_coord	= PULSE_RANDOM.ANIM_CURVE
+			distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
 			v_coord_channel = animcurve_get_channel(interpolations,"v_coord")
 		}
 		if animcurve_channel_exists(interpolations,"u_coord")
 		{
-			distr_along_u_coord	= PULSE_RANDOM.ANIM_CURVE
+			distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
 			u_coord_channel = animcurve_get_channel(interpolations,"u_coord")
 		}
 		if animcurve_channel_exists(interpolations,"speed")
 		{
-			distr_speed	= PULSE_RANDOM.ANIM_CURVE
+			distr_speed	= PULSE_DISTRIBUTION.ANIM_CURVE
 			speed_channel = animcurve_get_channel(interpolations,"speed")
 		}
 		if animcurve_channel_exists(interpolations,"life")
 		{
-			distr_life	= PULSE_RANDOM.ANIM_CURVE
+			distr_life	= PULSE_DISTRIBUTION.ANIM_CURVE
 			life_channel = animcurve_get_channel(interpolations,"life")
 		}
 		if animcurve_channel_exists(interpolations,"orient")
 		{
-			distr_orient	= PULSE_RANDOM.ANIM_CURVE
+			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
 			orient_channel = animcurve_get_channel(interpolations,"life")
 		}
 	}
@@ -279,17 +279,17 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	#region NONLINEAR INTERPOLATIONS
 	
-	static set_distribution_speed	=  function (_mode=PULSE_RANDOM.RANDOM,anim_curve=undefined,channel=undefined)
+	static set_distribution_speed	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,anim_curve=undefined,channel=undefined)
 	{
 		switch(_mode)
 		{
-			case 	PULSE_RANDOM.ANIM_CURVE:
+			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
 			{
 				if animcurve_exists(anim_curve)
 				{
 					if animcurve_channel_exists(anim_curve,channel)
 					{
-						distr_speed = PULSE_RANDOM.ANIM_CURVE
+						distr_speed = PULSE_DISTRIBUTION.ANIM_CURVE
 						speed_channel = animcurve_get_channel(anim_curve,channel)
 						break
 					}
@@ -298,24 +298,24 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				break
 			}
 			default:
-				distr_speed = PULSE_RANDOM.RANDOM
+				distr_speed = PULSE_DISTRIBUTION.RANDOM
 		}
 		
 
 		return self
 	}
 	
-	static set_distribution_life	=  function (_mode=PULSE_RANDOM.RANDOM,anim_curve=undefined,channel=undefined)
+	static set_distribution_life	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,anim_curve=undefined,channel=undefined)
 		{
 			switch(_mode)
 			{
-				case 	PULSE_RANDOM.ANIM_CURVE:
+				case 	PULSE_DISTRIBUTION.ANIM_CURVE:
 				{
 					if animcurve_exists(anim_curve)
 					{
 						if animcurve_channel_exists(anim_curve,channel)
 						{
-							distr_life = PULSE_RANDOM.ANIM_CURVE
+							distr_life = PULSE_DISTRIBUTION.ANIM_CURVE
 							life_channel = animcurve_get_channel(anim_curve,channel)
 							break
 						}
@@ -324,24 +324,24 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					break
 				}
 				default:
-					distr_life = PULSE_RANDOM.RANDOM
+					distr_life = PULSE_DISTRIBUTION.RANDOM
 			}
 		
 
 			return self
 		}
 	
-	static set_distribution_orient	=  function (_mode=PULSE_RANDOM.RANDOM,anim_curve=undefined,channel=undefined)
+	static set_distribution_orient	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,anim_curve=undefined,channel=undefined)
 	{
 		switch(_mode)
 		{
-			case 	PULSE_RANDOM.ANIM_CURVE:
+			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
 			{
 				if animcurve_exists(anim_curve)
 				{
 					if animcurve_channel_exists(anim_curve,channel)
 					{
-						distr_orient = PULSE_RANDOM.ANIM_CURVE
+						distr_orient = PULSE_DISTRIBUTION.ANIM_CURVE
 						orient_channel = animcurve_get_channel(anim_curve,channel)
 						break
 					}
@@ -350,25 +350,25 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				break
 			}
 			default:
-				distr_orient = PULSE_RANDOM.RANDOM
+				distr_orient = PULSE_DISTRIBUTION.RANDOM
 		}
 		
 
 		return self
 	}
 	
-	static set_distribution_u		=  function (_mode=PULSE_RANDOM.RANDOM,_input=undefined)
+	static set_distribution_u		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
 		switch(_mode)
 		{
-			case 	PULSE_RANDOM.RANDOM:
+			case 	PULSE_DISTRIBUTION.RANDOM:
 			{
-				distr_along_u_coord		= PULSE_RANDOM.RANDOM
+				distr_along_u_coord		= PULSE_DISTRIBUTION.RANDOM
 			break
 			}
-			case 	PULSE_RANDOM.EVEN:
+			case 	PULSE_DISTRIBUTION.EVEN:
 			{
-				distr_along_u_coord		= PULSE_RANDOM.EVEN
+				distr_along_u_coord		= PULSE_DISTRIBUTION.EVEN
 				if is_real(_input)
 				{
 					divisions_u	= _input
@@ -380,7 +380,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				}
 			break
 			}
-			case 	PULSE_RANDOM.ANIM_CURVE:
+			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
 			{
 				if !is_array(_input)
 				{
@@ -391,7 +391,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				{
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
-						distr_along_u_coord	= PULSE_RANDOM.ANIM_CURVE
+						distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
 						u_coord_channel = animcurve_get_channel(_input[0],_input[1])
 						break
 					}
@@ -404,18 +404,18 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
-	static set_distribution_v		=  function (_mode=PULSE_RANDOM.RANDOM,_input=undefined)
+	static set_distribution_v		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
 		switch(_mode)
 		{
-			case 	PULSE_RANDOM.RANDOM:
+			case 	PULSE_DISTRIBUTION.RANDOM:
 			{
-				distr_along_v_coord		= PULSE_RANDOM.RANDOM
+				distr_along_v_coord		= PULSE_DISTRIBUTION.RANDOM
 			break
 			}
-			case 	PULSE_RANDOM.EVEN:
+			case 	PULSE_DISTRIBUTION.EVEN:
 			{
-				distr_along_v_coord		= PULSE_RANDOM.EVEN
+				distr_along_v_coord		= PULSE_DISTRIBUTION.EVEN
 				if is_real(_input)
 				{
 					divisions_v	= _input
@@ -427,7 +427,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				}
 			break
 			}
-			case 	PULSE_RANDOM.ANIM_CURVE:
+			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
 			{
 				if !is_array(_input)
 				{
@@ -438,7 +438,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				{
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
-						distr_along_v_coord	= PULSE_RANDOM.ANIM_CURVE
+						distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
 						v_coord_channel = animcurve_get_channel(_input[0],_input[1])
 						break
 					}
@@ -658,19 +658,19 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				{
 					u_coord			=	mask_end;
 				}
-				else if distr_along_u_coord	== PULSE_RANDOM.RANDOM
+				else if distr_along_u_coord	== PULSE_DISTRIBUTION.RANDOM
 				{
 					//Use random to distribute along 
 					
 					u_coord			=	random_range(mask_start,mask_end);
 				}
-				else if distr_along_u_coord	== PULSE_RANDOM.ANIM_CURVE
+				else if distr_along_u_coord	== PULSE_DISTRIBUTION.ANIM_CURVE
 				{
 					//use an animation curve to distribute the values
 					
 					u_coord			=	lerp(mask_start,mask_end,animcurve_channel_evaluate(u_coord_channel,random(1)))
 				}
-				else if distr_along_u_coord	== PULSE_RANDOM.EVEN
+				else if distr_along_u_coord	== PULSE_DISTRIBUTION.EVEN
 				{
 					//Distribute the u_coord evenly by particle amount and number of divisions_v
 			
@@ -745,20 +745,20 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					var v_coord = total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
 					length		=	total*radius_external;
 				}
-				else if distr_along_v_coord == PULSE_RANDOM.RANDOM
+				else if distr_along_v_coord == PULSE_DISTRIBUTION.RANDOM
 				{
 					//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
 					var v_coord = random(1)
 					length = lerp(int*radius_internal,ext*radius_external,v_coord)
 				}
-				else if distr_along_v_coord == PULSE_RANDOM.ANIM_CURVE
+				else if distr_along_v_coord == PULSE_DISTRIBUTION.ANIM_CURVE
 				{
 					//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
 
 					var v_coord = random(1)
 					length		=	lerp(int*radius_internal,ext*radius_external,animcurve_channel_evaluate(v_coord_channel,v_coord))
 				}
-				else if distr_along_v_coord == PULSE_RANDOM.EVEN
+				else if distr_along_v_coord == PULSE_DISTRIBUTION.EVEN
 				{
 					//Distribute evenly
 					var v_coord =(div_v/divisions_v)
@@ -777,11 +777,11 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				{
 					_speed		=	_speed_start[0]
 				}
-				else if distr_speed == PULSE_RANDOM.RANDOM
+				else if distr_speed == PULSE_DISTRIBUTION.RANDOM
 				{
 					_speed		=	random_range(_speed_start[0],_speed_start[1])
 				}
-				else if distr_speed == PULSE_RANDOM.ANIM_CURVE
+				else if distr_speed == PULSE_DISTRIBUTION.ANIM_CURVE
 				{
 					_speed		=	lerp(_speed_start[0],_speed_start[1],animcurve_channel_evaluate(speed_channel,random(1)))
 				}
@@ -790,16 +790,16 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				{
 					__life		=	_life[0]
 				}
-				else if distr_life == PULSE_RANDOM.RANDOM
+				else if distr_life == PULSE_DISTRIBUTION.RANDOM
 				{
 					__life		=	random_range(_life[0],_life[1])
 				}
-				else if distr_life == PULSE_RANDOM.ANIM_CURVE
+				else if distr_life == PULSE_DISTRIBUTION.ANIM_CURVE
 				{
 					__life		=	lerp(_life[0],_life[1],animcurve_channel_evaluate(life_channel,random(1)))
 				}
 				
-				if distr_orient == PULSE_RANDOM.ANIM_CURVE
+				if distr_orient == PULSE_DISTRIBUTION.ANIM_CURVE
 				{
 					_orient		=	lerp(_orient_base[0],_orient_base[1],animcurve_channel_evaluate(orient_channel,random(1)))
 				}

@@ -34,8 +34,8 @@
   "nineSlice": null,
   "origin": 4,
   "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+    "name": "Sprites",
+    "path": "folders/Examples/Sprites.yy",
   },
   "preMultiplyAlpha": false,
   "sequence": {

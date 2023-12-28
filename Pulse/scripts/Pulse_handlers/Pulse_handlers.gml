@@ -24,6 +24,10 @@ function pulse_destroy_all()
 		for(i=0;i==array_length(global.pulse.part_types);i++)
 		{
 			part_type_destroy(global.pulse.part_types[$part[i]].index)
+			if global.pulse.part_types[$part[i]].subparticle != undefined 
+			{
+				part_type_destroy(global.pulse.part_types[$part[i]].subparticle.index)
+			}
 		}
 		global.pulse.part_types={}
 		
@@ -72,7 +76,8 @@ function pulse_clone_particle(__name,__new_name=__name)
 	global.pulse.part_types[$__new_name]		=	variable_clone(global.pulse.part_types[$__name])
 	global.pulse.part_types[$__new_name].index	=	part_type_create();
 	global.pulse.part_types[$__new_name].reset()
-
+	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle")
+	global.pulse.part_types[$__new_name].subparticle= undefined
 	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
 	
 	return global.pulse.part_types[$__new_name]
@@ -101,6 +106,10 @@ function pulse_destroy_particle(_name)
 	if struct_exists(global.pulse.part_types,_name)
 	{
 		part_type_destroy(global.pulse.part_types[$_name].index)
+		if global.pulse.part_types[$_name].subparticle != undefined 
+		{
+			part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
+		}
 		variable_struct_remove(global.pulse.part_types,_name)
 	}
 

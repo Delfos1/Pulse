@@ -1,1 +1,0 @@
-mode = mode==5 ? 0 : mode+1

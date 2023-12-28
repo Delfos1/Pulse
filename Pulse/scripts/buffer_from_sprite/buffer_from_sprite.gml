@@ -52,7 +52,7 @@ function __buffered_sprite(buffer, w, h) constructor {
 		var r = buffer_peek(self.noise, ((x * self.height) + y) * 4, buffer_u8);
 		var array = [r,g,b,a]
 		return array
-       // return buffer_peek(self.noise, ((x * self.height) + y) * 4, buffer_u8);
+     
     };
             
     static GetNormalized = function(u, v) {

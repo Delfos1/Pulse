@@ -2,9 +2,9 @@ show_debug_overlay(true)
 
 particle = pulse_make_particle("fire")
 system = pulse_make_system("sys").set_draw(false)
-system.factor=.6
+
 system2 = pulse_make_system("sys2").set_draw(false)
-system2.factor=.6
+
 //--------- BIG FLAMES
 
 particle.set_life(40,60).set_speed(6,8)
