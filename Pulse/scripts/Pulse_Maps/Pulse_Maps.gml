@@ -1,6 +1,6 @@
 /// feather ignore all
 
-function __pulse_map(_map): __pulse_color_map(_map) constructor 
+function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor 
 {
 
 	position		=
@@ -8,14 +8,14 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	speed			=
 	{
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	life			=
 	{
@@ -36,14 +36,14 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	color_A_to_B	=false;
 	color_A			=-1;
 	color_B			=-1;
 		
 	
-	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (position)
 		{
@@ -56,7 +56,7 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		return self
 	}
 	
-	static	set_size		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_size		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (size)
 		{
@@ -69,7 +69,7 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		return self
 	}
 	
-	static	set_speed		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_speed		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (speed)
 		{
@@ -82,7 +82,7 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		return self
 	}
 	
-	static	set_orientation	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_orientation	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (orientation)
 		{
@@ -95,7 +95,7 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		return self
 	}
 	
-	static	set_life		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_life		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (life)
 		{
@@ -108,14 +108,14 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 		return self
 	}
 	
-	static	set_AB_color	=	function(_color_A,_color_B,_color_mode= PULSE_COLOR.A_TO_B_RGB,_blend=1)
+	static	set_color	=	function(_color_A,_color_B,_color_mode= PULSE_COLOR.A_TO_B_RGB,_blend=1)
 	{
 		if _color_mode== PULSE_COLOR.A_TO_B_RGB
 		{
 			color_A			= [color_get_red(_color_A),color_get_blue(_color_A),color_get_green(_color_A)]
 			color_B			= [color_get_red(_color_B),color_get_blue(_color_B),color_get_green(_color_B)]
 			color_A_to_B	= true
-			color_mode		= _color_mode
+			parent.distr_color_mix		= _color_mode
 			color_blend		= _blend
 			return self
 		}
@@ -125,7 +125,7 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 			color_A			= [color_get_hue(_color_A),color_get_saturation(_color_A),color_get_value(_color_A)]
 			color_B			= [color_get_hue(_color_B),color_get_saturation(_color_B),color_get_value(_color_B)]
 			color_A_to_B	= true
-			color_mode		= _color_mode
+			parent.distr_color_mix		= _color_mode
 			color_blend		= _blend
 			return self
 		}
@@ -139,20 +139,20 @@ function __pulse_map(_map): __pulse_color_map(_map) constructor
 	
 }
 
-function __pulse_color_map(_map) constructor
+function __pulse_color_map(_map,_parent) constructor
 {
+	parent			= _parent;
 	buffer			= _map;
 	scale_u			=	1;
 	scale_v			=	1;
 	offset_u		=	0;
 	offset_v		=	0;
-	color_mode		= PULSE_COLOR.NONE;
 	color_blend		=1;
 	
 
 	static	set_color_map	=	function(_blend=1)
 	{
-		color_mode= PULSE_COLOR.COLOR_MAP
+		parent.distr_color_mix = PULSE_COLOR.COLOR_MAP
 		color_blend		= _blend
 		return self
 	}

@@ -1,1 +1,0 @@
-emitter.pulse(x,y,10)

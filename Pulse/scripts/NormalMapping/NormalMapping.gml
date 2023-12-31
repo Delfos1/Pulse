@@ -129,9 +129,9 @@ function Init() {
 #macro RP_DIFFUSE 0
 #macro RP_NORMAL 1
 	global.renderPass = RP_DIFFUSE;
-#macro AMBIANCE_R 0 * 1.75
-#macro AMBIANCE_G 0 * 1.75
-#macro AMBIANCE_B 0 * 1.75
+#macro AMBIANCE_R 60 * 1.75
+#macro AMBIANCE_G 50 * 1.75
+#macro AMBIANCE_B 60 * 1.75
 	global.playerLightColors[0] = 255;
 	global.playerLightColors[1] = 255;
 	global.playerLightColors[2] = 255;

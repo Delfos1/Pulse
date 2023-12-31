@@ -7,7 +7,7 @@
   "bbox_right": 23,
   "bbox_top": 0,
   "bboxMode": 0,
-  "collisionKind": 1,
+  "collisionKind": 5,
   "collisionTolerance": 0,
   "DynamicTexturePage": false,
   "edgeFiltering": false,
@@ -48,8 +48,8 @@
   },
   "origin": 4,
   "parent": {
-    "name": "Examples",
-    "path": "folders/Examples.yy",
+    "name": "Sprites",
+    "path": "folders/Examples/Sprites.yy",
   },
   "preMultiplyAlpha": false,
   "sequence": {

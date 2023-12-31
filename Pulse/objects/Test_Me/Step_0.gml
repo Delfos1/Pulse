@@ -1,11 +1,7 @@
-//sys.x_focal_point = focal_point.x-x
-//sys.y_focal_point = focal_point.y-y
-//sys.pulse_from_cache(1500,0,0,buffer)
+sys.pulse(1,x,y,false)			// avg ~600
+//cache.pulse(127,x,y) // avg ~1500
 
-sys.pulse(100,x,y,false)
-
-sys.pulse(20,x,y,false)
-
-
+//sys.stencil_offset = (sys.stencil_offset+.001)%1
+//sys.check_collision(x,y,,false,64)
 
 

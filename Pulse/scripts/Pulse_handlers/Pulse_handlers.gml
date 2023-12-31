@@ -24,6 +24,10 @@ function pulse_destroy_all()
 		for(i=0;i==array_length(global.pulse.part_types);i++)
 		{
 			part_type_destroy(global.pulse.part_types[$part[i]].index)
+			if global.pulse.part_types[$part[i]].subparticle != undefined 
+			{
+				part_type_destroy(global.pulse.part_types[$part[i]].subparticle.index)
+			}
 		}
 		global.pulse.part_types={}
 		
@@ -72,7 +76,8 @@ function pulse_clone_particle(__name,__new_name=__name)
 	global.pulse.part_types[$__new_name]		=	variable_clone(global.pulse.part_types[$__name])
 	global.pulse.part_types[$__new_name].index	=	part_type_create();
 	global.pulse.part_types[$__new_name].reset()
-
+	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle")
+	global.pulse.part_types[$__new_name].subparticle= undefined
 	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
 	
 	return global.pulse.part_types[$__new_name]
@@ -101,6 +106,10 @@ function pulse_destroy_particle(_name)
 	if struct_exists(global.pulse.part_types,_name)
 	{
 		part_type_destroy(global.pulse.part_types[$_name].index)
+		if global.pulse.part_types[$_name].subparticle != undefined 
+		{
+			part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
+		}
 		variable_struct_remove(global.pulse.part_types,_name)
 	}
 
@@ -177,4 +186,57 @@ function pulse_exists_particle(_name)
 	}
 	
 	return particle_found
+}
+
+
+/// @function				pulse_convert_particles
+/// @description			   
+///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
+///							Particles are named after the emitter they are on.
+/// @param {Asset.GMParticleSystem}	part_system : The particle system asset you wish to convert.
+function pulse_convert_particles	(part_system)
+{
+	var struct = particle_get_info(part_system)
+	var length = array_length(struct.emitters)
+	
+	if length == 0
+	{
+		exit
+	}
+	
+	var l=0
+	
+	repeat (length)
+	{
+		var target	=	pulse_make_particle(struct.emitters[l].name,false)
+		var src	=	struct.emitters[l].parttype
+		target.set_size([src.size_xmin,src.size_ymin],[src.size_xmax,src.size_ymax],[src.size_xincr,src.size_yincr],[src.size_xwiggle,src.size_ywiggle])
+		target.set_scale(src.xscale,src.yscale)
+		target.set_life(src.life_min,src.life_max)
+		if src.death_type != -1
+		{
+			target.set_death_particle(src.death_number,src.death_type)
+		}
+		if src.step_type != -1
+		{
+			target.set_step_particle(src.step_number,src.step_type)
+		}
+		target.set_speed(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
+		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
+		target.set_gravity(src.grav_amount,src.grav_dir)
+		target.set_orient(src.ang_min,src.ang_max,src.ang_incr,src.ang_wiggle,src.ang_relative)
+		target.set_color(src.color1,src.color2,src.color3)
+		target.set_alpha(src.alpha1,src.alpha2,src.alpha3)
+		target.set_blend(src.additive)
+		
+		if src.sprite == -1
+		{
+			target.set_shape(src.shape)
+		}
+		else
+		{
+			target.set_sprite(src.sprite,src.animate,src.stretch,src.random,src.frame)
+		}
+	l++
+	}
 }
