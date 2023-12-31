@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "anim_curves",
+  "name": "Pulse_Emitters",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

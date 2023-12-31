@@ -8,14 +8,14 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	speed			=
 	{
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	life			=
 	{
@@ -36,14 +36,14 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		active		: false,
 		weight		:1,
 		range		:[0,0],
-		channels	:[1,1,1,1],
+		channels	:[1,1,1,0],
 	}
 	color_A_to_B	=false;
 	color_A			=-1;
 	color_B			=-1;
 		
 	
-	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_position	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (position)
 		{
@@ -56,7 +56,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		return self
 	}
 	
-	static	set_size		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_size		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (size)
 		{
@@ -69,7 +69,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		return self
 	}
 	
-	static	set_speed		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_speed		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (speed)
 		{
@@ -82,7 +82,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		return self
 	}
 	
-	static	set_orientation	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_orientation	=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (orientation)
 		{
@@ -95,7 +95,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		return self
 	}
 	
-	static	set_life		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,1])
+	static	set_life		=	function(_weight,_range=[0,1],_RGBA=[1,1,1,0])
 	{
 		with (life)
 		{
@@ -108,7 +108,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		return self
 	}
 	
-	static	set_AB_color	=	function(_color_A,_color_B,_color_mode= PULSE_COLOR.A_TO_B_RGB,_blend=1)
+	static	set_color	=	function(_color_A,_color_B,_color_mode= PULSE_COLOR.A_TO_B_RGB,_blend=1)
 	{
 		if _color_mode== PULSE_COLOR.A_TO_B_RGB
 		{

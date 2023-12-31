@@ -11,16 +11,16 @@ back.set_draw(false)
 
 emitter= new pulse_local_emitter("back","water")
 
-emitter.set_transform(1,.5).set_radius(30,50).set_focal_point(0,500).set_mask(0,.5)
+emitter.set_scale(1,.5).set_radius(30,50).set_focal_point(0,500).set_mask(0,.5)
 emitter.force_to_edge = PULSE_TO_EDGE.NONE
 
 emitter3= new pulse_local_emitter("front","water")
 
-emitter3.set_transform(1,.5).set_radius(30,50).set_focal_point(0,500).set_mask(.5,1)
+emitter3.set_scale(1,.5).set_radius(30,50).set_focal_point(0,500).set_mask(.5,1)
 emitter3.force_to_edge = PULSE_TO_EDGE.NONE
 
 emitter_2= new pulse_local_emitter("back","water_2")
-emitter_2.set_transform(1,.5).set_radius(50,50)
+emitter_2.set_scale(1,.5).set_radius(50,50)
 
 emitter_2.force_to_edge = PULSE_TO_EDGE.NONE
 

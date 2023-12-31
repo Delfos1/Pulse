@@ -7,7 +7,7 @@ if move
 	{
 		with ParticlesParent
 		{
-			var col = emit.check_collision(x,y)
+			var col = sys.check_collision(x,y)
 			
 			/*
 			if (col != undefined)

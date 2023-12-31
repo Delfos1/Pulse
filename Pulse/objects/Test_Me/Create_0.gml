@@ -1,4 +1,4 @@
-debug = false
+debug = true
 show_debug_overlay(debug)
 
 
@@ -52,7 +52,7 @@ global.pulse.part_types.particle.set_speed(1,5,-.002).set_life(20,50).set_size(0
 */				
 
 
-sys.set_radius(50,300,50,800).set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION).set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.DIRECTION)
+sys.set_radius(50,300,50,800)//.set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION).set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.DIRECTION)
 
 sys.force_to_edge=PULSE_TO_EDGE.LIFE
 

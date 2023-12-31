@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "buffer_from_sprite",
+  "name": "Pulse_Forces",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

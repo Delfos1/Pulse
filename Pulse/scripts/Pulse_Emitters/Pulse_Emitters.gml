@@ -47,7 +47,8 @@ function	__pulse_lookup_particle(_name)
 	}
 	
 }
-function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) : __pulse_launcher()  constructor
+
+function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) : __pulse_launcher()  constructor
 {
 	part_system_array = []
 	part_type_array  = []
@@ -83,10 +84,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		part_type_array[0]=part_type
 	}
 
-	//emitter form
+	#region Emitter Form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
 	form_mode			=	__PULSE_DEFAULT_EMITTER_FORM_MODE
-	path_a				=	undefined
+	path				=	undefined
 	path_res			=	-1
 	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
 							{name:"a",type: animcurvetype_catmullrom , iterations : 8}, 
@@ -104,15 +105,18 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	mask_end			=	1
 	line				=	[0,0]
 	
-	//emitter properties
+	#endregion
+	
+	#region Emitter properties
 	x_focal_point		=	0
 	y_focal_point		=	0
-	scalex				=	1
-	scaley				=	1
+	x_scale				=	1
+	y_scale				=	1
 	stencil_offset		=	0
 	direction_range		=	[0,0]
+	#endregion
 	
-	//Distributions
+	#region Distributions
 	distr_along_v_coord	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_V_COORD
 	distr_along_u_coord	=	__PULSE_DEFAULT_EMITTER_DISTR_ALONG_U_COORD
 	distr_speed			=	__PULSE_DEFAULT_DISTR_PROPERTY
@@ -123,26 +127,28 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	distr_frame			=	PULSE_DISTRIBUTION.NONE
 	divisions_v			=	1
 	divisions_u			=	1
-	//channels
-	v_coord_channel		=	undefined
-	u_coord_channel		=	undefined
-	speed_channel		=	undefined
-	life_channel		=	undefined
-	orient_channel		=	undefined
-	size_x_channel		=	undefined
-	size_y_channel		=	undefined
-	color_mix_chanel	=	undefined
-	frame_channel		=	undefined
+	#endregion
 	
-	speed_link			=	undefined
-	life_link			=	undefined
-	orient_link			=	undefined
-	size_link			=	undefined
-	color_mix_link		=	undefined
-	frame_link			=	undefined
+	#region Channels
+	__v_coord_channel		=	undefined
+	__u_coord_channel		=	undefined
+	__speed_channel			=	undefined
+	__life_channel			=	undefined
+	__orient_channel		=	undefined
+	__size_x_channel		=	undefined
+	__size_y_channel		=	undefined
+	__color_mix_chanel		=	undefined
+	__frame_channel			=	undefined
 	
-	color_mix_A			=	[0,0,0]
-	color_mix_B			=	[0,0,0]
+	__speed_link			=	undefined
+	__life_link				=	undefined
+	__orient_link			=	undefined
+	__size_link				=	undefined
+	__color_mix_link		=	undefined
+	__frame_link			=	undefined
+	
+	__color_mix_A			=	[0,0,0]
+	__color_mix_B			=	[0,0,0]
 	
 	if animcurve_really_exists(anim_curve)
 	{
@@ -151,30 +157,32 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		if animcurve_channel_exists(interpolations,"v_coord")
 		{
 			distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			v_coord_channel = animcurve_get_channel(interpolations,"v_coord")
+			__v_coord_channel = animcurve_get_channel(interpolations,"v_coord")
 		}
 		if animcurve_channel_exists(interpolations,"u_coord")
 		{
 			distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			u_coord_channel = animcurve_get_channel(interpolations,"u_coord")
+			__u_coord_channel = animcurve_get_channel(interpolations,"u_coord")
 		}
 		if animcurve_channel_exists(interpolations,"speed")
 		{
 			distr_speed	= PULSE_DISTRIBUTION.ANIM_CURVE
-			speed_channel = animcurve_get_channel(interpolations,"speed")
+			__speed_channel = animcurve_get_channel(interpolations,"speed")
 		}
 		if animcurve_channel_exists(interpolations,"life")
 		{
 			distr_life	= PULSE_DISTRIBUTION.ANIM_CURVE
-			life_channel = animcurve_get_channel(interpolations,"life")
+			__life_channel = animcurve_get_channel(interpolations,"life")
 		}
 		if animcurve_channel_exists(interpolations,"orient")
 		{
 			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
-			orient_channel = animcurve_get_channel(interpolations,"life")
+			__orient_channel = animcurve_get_channel(interpolations,"life")
 		}
 	}
 
+	#endregion
+	
 	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
 	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
 	
@@ -183,7 +191,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	color_map			=	undefined					
 
 	//Forces, Groups, Colliders
-	local_forces		=	[]
+	forces		=	[]
 		// collisions
 	collisions			=	[]
 	is_colliding		=	false
@@ -251,10 +259,10 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
-	static	set_transform		=	function(_scalex=scalex,_scaley=scaley)
+	static	set_scale			=	function(_x_scale=x_scale,_y_scale=y_scale)
 	{
-		scalex			=	_scalex
-		scaley			=	_scaley
+		x_scale			=	_x_scale
+		y_scale			=	_y_scale
 		
 		return self
 	}
@@ -273,8 +281,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	#region FORMS
 	static	form_path			=	function(_path)
 	{
-		path_a = _path
-		path_res = power(path_get_number(path_a)-1,path_get_precision(path_a))
+		path = _path
+		path_res = power(path_get_number(path)-1,path_get_precision(path))
 		form_mode = PULSE_FORM.PATH
 		
 		return self
@@ -310,8 +318,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_orient	=	_mode
-						orient_channel	=	animcurve_get_channel(_input[0],_input[1])
-						orient_link		=	_link_to
+						__orient_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__orient_link		=	_link_to
 						break
 					}
 				}
@@ -321,8 +329,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			default:
 				distr_orient = PULSE_DISTRIBUTION.RANDOM
 		}
-		
-
 		return self
 	}
 	
@@ -343,8 +349,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_life	=	_mode
-						life_channel	=	animcurve_get_channel(_input[0],_input[1])
-						life_link		=	_link_to
+						__life_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__life_link		=	_link_to
 						break
 					}
 				}
@@ -382,8 +388,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_speed	=	_mode
-						speed_channel	=	animcurve_get_channel(_input[0],_input[1])
-						speed_link		=	_link_to
+						__speed_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__speed_link		=	_link_to
 						break
 					}
 				}
@@ -413,12 +419,12 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_size		=	_mode
-						size_x_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__size_x_channel	=	animcurve_get_channel(_input[0],_input[1])
 						if array_length(_input)>1
 						{
-							size_y_channel	=	animcurve_get_channel(_input[0],_input[2])
+							__size_y_channel	=	animcurve_get_channel(_input[0],_input[2])
 						}
-						size_link		=	_link_to
+						__size_link		=	_link_to
 						break
 					}
 				}
@@ -433,15 +439,15 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
-	static set_distribution_color_mix=  function ( _color_A, _color_B,_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_color_mix=  function ( _color_A, _color_B,_mode,_input,_link_to = undefined)
 	{
-		color_mix_A[0] = color_get_blue(_color_A)
-		color_mix_A[1] = color_get_green(_color_A)
-		color_mix_A[2] = color_get_red(_color_A)
+		__color_mix_A[0] = color_get_blue(_color_A)
+		__color_mix_A[1] = color_get_green(_color_A)
+		__color_mix_A[2] = color_get_red(_color_A)
 		
-		color_mix_B[0] = color_get_blue(_color_B)
-		color_mix_B[1] = color_get_green(_color_B)
-		color_mix_B[2] = color_get_red(_color_B)
+		__color_mix_B[0] = color_get_blue(_color_B)
+		__color_mix_B[1] = color_get_green(_color_B)
+		__color_mix_B[2] = color_get_red(_color_B)
 		
 		switch(_mode)
 		{
@@ -459,7 +465,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					{
 						distr_color_mix		=	_mode
 						color_mix_channel	=	animcurve_get_channel(_input[0],_input[1])
-						color_mix_link		=	_link_to
+						__color_mix_link		=	_link_to
 						break
 					}
 				}
@@ -467,7 +473,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				break
 			}
 			default:
-				distr_size = PULSE_DISTRIBUTION.RANDOM
+				__pulse_show_debug_message("PULSE ERROR: Distribution Mode selected is not valid for Color Mix")	
 		}
 		
 
@@ -496,8 +502,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_frame		=	_mode
-						frame_channel	=	animcurve_get_channel(_input[0],_input[1])
-						frame_link		=	_link_to
+						__frame_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__frame_link		=	_link_to
 						with(part_type)
 						{
 							set_sprite(sprite[0],sprite[1],sprite[2],false,0)
@@ -510,7 +516,13 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				break
 			}
 			default:
-				distr_size = PULSE_DISTRIBUTION.RANDOM
+			{
+				distr_frame = PULSE_DISTRIBUTION.RANDOM
+				with(part_type)
+				{
+					set_sprite(sprite[0],sprite[1],sprite[2],true,0)
+				}
+			}
 		}
 		
 
@@ -552,7 +564,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-						u_coord_channel = animcurve_get_channel(_input[0],_input[1])
+						__u_coord_channel = animcurve_get_channel(_input[0],_input[1])
 						break
 					}
 				}
@@ -604,7 +616,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-						v_coord_channel = animcurve_get_channel(_input[0],_input[1])
+						__v_coord_channel = animcurve_get_channel(_input[0],_input[1])
 						break
 					}
 				}
@@ -654,23 +666,23 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	#endregion
 	
 	#region FORCES
-	static	add_local_force			=	function(_force)
+	static	add_force			=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
 		{
-			array_push(local_forces,_force)
+			array_push(forces,_force)
 		}
 		return self
 	}
 	
-	static	remove_local_force		=	function(_force)
+	static	remove_force		=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
 		{
-			var _i = array_get_index(local_forces,_force)
+			var _i = array_get_index(forces,_force)
 			if _i != -1
 			{
-				array_delete(local_forces,_i,1)
+				array_delete(forces,_i,1)
 			}
 		}
 		return self
@@ -680,11 +692,18 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	static	draw_debug				=	function(x,y)
 	{
 		// draw radiuses
-		var ext_x =  radius_external*scalex
-		var int_x =  radius_internal*scalex
-		var ext_y =  radius_external*scaley
-		var int_y =  radius_internal*scaley
+		var ext_x =  radius_external*x_scale
+		var int_x =  radius_internal*x_scale
+		var ext_y =  radius_external*y_scale
+		var int_y =  radius_internal*y_scale
 		
+		if is_colliding
+			{
+				draw_set_color(c_fuchsia)
+			}else
+			{
+				draw_set_color(c_yellow)
+			}
 		if form_mode == PULSE_FORM.ELLIPSE
 		{
 			draw_ellipse(x-ext_x,y-ext_y,x+ext_x,y+ext_y,true)
@@ -692,9 +711,9 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		else if form_mode == PULSE_FORM.PATH
 		{
-			draw_path(path_a,x,y,true)
+			draw_path(path,x,y,true)
 		}
-		
+		draw_set_color(c_white)
 		//draw origin
 		draw_line_width_color(x-10,y,x+10,y,1,c_green,c_green)
 		draw_line_width_color(x,y-10,x,y+10,1,c_green,c_green)
@@ -706,24 +725,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			draw_line_width_color(x+x_focal_point,y-10+y_focal_point,x+x_focal_point,y+10+y_focal_point,3,c_yellow,c_yellow)
 		}
 		
-		if array_length(debug_col_rays) > 0
-		{
-			if is_colliding
-			{
-				draw_set_color(c_fuchsia)
-			}else
-			{
-				draw_set_color(c_yellow)
-			}
-			for( var _i = 0 ; _i<array_length(debug_col_rays); _i++)
-			{
-				var _x = x+lengthdir_x(debug_col_rays[_i].value*ext_x,(debug_col_rays[_i].posx*360)%360)
-				var _y = y+lengthdir_y(debug_col_rays[_i].value*ext_y,(debug_col_rays[_i].posx*360)%360)
-				draw_circle(_x,_y,5,false)
-			}
-			draw_set_color(c_white)
-		}
-
 		//draw angle
 
 		var _anstart_x = x+lengthdir_x(ext_x,(mask_start*360)%360)
@@ -771,7 +772,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			//use an animation curve to distribute the values
 					
-			_p.u_coord			??=	lerp(mask_start,mask_end,animcurve_channel_evaluate(u_coord_channel,random(1)))
+			_p.u_coord			??=	lerp(mask_start,mask_end,animcurve_channel_evaluate(__u_coord_channel,random(1)))
 		}
 		else if distr_along_u_coord	== PULSE_DISTRIBUTION.EVEN
 		{
@@ -782,8 +783,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return _p
 	}
 						
-	static __calculate_stencil		=	function(_particle, _emitter={}){
-		
+	static __calculate_stencil		=	function(_particle, _emitter={})
+	{
 		var eval, eval_a, eval_b, eval_c;
 			
 		// early exit if there are no stencils
@@ -836,8 +837,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return _emitter
 	}
 	
-	static __assign_v_coordinate	=	function(div_v,_p,_e={}){
-		
+	static __assign_v_coordinate	=	function(div_v,_p,_e={})
+	{
 		if radius_internal==radius_external
 		{
 			// If the 2 radius are equal, then there is no need to randomize
@@ -855,7 +856,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
 			_p.v_coord		??= random(1)
-			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,animcurve_channel_evaluate(v_coord_channel,_p.v_coord))
+			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,animcurve_channel_evaluate(__v_coord_channel,_p.v_coord))
 		}
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.EVEN
 		{
@@ -868,201 +869,201 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return _p
 	}
 	
-	static __assign_properties		=	function(_p){
-				
-			function get_link_value(_link,_p)
+	static __assign_properties		=	function(_p)
+	{				
+		function get_link_value(_link,_p)
+		{
+			var _amount
+			switch( _link )
 			{
-				var _amount
-				switch( _link )
-				{
-					case PULSE_LINK_TO.DIRECTION:
-						_amount	=	_p.dir/360
-					break
-					case PULSE_LINK_TO.PATH_SPEED:
-						_amount	=	form_mode == PULSE_FORM.PATH ? path_get_speed(path_a,_p.u_coord)/100 : random(1)
-					break
-					case PULSE_LINK_TO.SPEED:
-						_amount	=	(_p.speed -part_type.speed[0])/(part_type.speed[1] - part_type.speed[0])
-					break
-					case PULSE_LINK_TO.U_COORD:
-						_amount	=	_p.u_coord
-					break
-					case PULSE_LINK_TO.V_COORD:
-						_amount	=	_p.v_coord
-					break
-				}
-				return _amount
-			}	
+				case PULSE_LINK_TO.DIRECTION:
+					_amount	=	_p.dir/360
+				break
+				case PULSE_LINK_TO.PATH_SPEED:
+					_amount	=	form_mode == PULSE_FORM.PATH ? path_get_speed(path,_p.u_coord)/100 : random(1)
+				break
+				case PULSE_LINK_TO.SPEED:
+					_amount	=	(_p.speed -part_type.speed[0])/(part_type.speed[1] - part_type.speed[0])
+				break
+				case PULSE_LINK_TO.U_COORD:
+					_amount	=	_p.u_coord
+				break
+				case PULSE_LINK_TO.V_COORD:
+					_amount	=	_p.v_coord
+				break
+			}
+			return _amount
+		}	
 				
-			#region SPEED
-			if distr_speed == PULSE_DISTRIBUTION.RANDOM
+		#region SPEED
+		if distr_speed == PULSE_DISTRIBUTION.RANDOM
+		{
+			if part_type.speed[0]==part_type.speed[1]
 			{
-				if part_type.speed[0]==part_type.speed[1]
-				{
-					_p.speed		=	part_type.speed[0]
-				}
-				else
-				{
-					_p.speed		=	random_range(part_type.speed[0],part_type.speed[1])
-				}
+				_p.speed		=	part_type.speed[0]
 			}
 			else
 			{
-				var _amount;
-				
-				if distr_speed == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(speed_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-				
-				_p.speed		=	lerp(part_type.speed[0],part_type.speed[1],animcurve_channel_evaluate(speed_channel,_amount))
+				_p.speed		=	random_range(part_type.speed[0],part_type.speed[1])
 			}
-			#endregion
+		}
+		else
+		{
+			var _amount;
+				
+			if distr_speed == PULSE_DISTRIBUTION.LINKED
+			{
+				_amount = get_link_value(__speed_link,_p)
+			}
+			else
+			{
+				_amount = random(1)
+			}
+				
+			_p.speed		=	lerp(part_type.speed[0],part_type.speed[1],animcurve_channel_evaluate(__speed_channel,_amount))
+		}
+		#endregion
 			
-			#region life
-			if distr_life == PULSE_DISTRIBUTION.RANDOM
+		#region life
+		if distr_life == PULSE_DISTRIBUTION.RANDOM
+		{
+			if part_type.life[0]==part_type.life[1]
 			{
-				if part_type.life[0]==part_type.life[1]
-				{
-					_p.life		=	part_type.life[0]
-				}
-				else
-				{
-					_p.life		=	random_range(part_type.life[0],part_type.life[1])
-				}
+				_p.life		=	part_type.life[0]
 			}
 			else
 			{
-				var _amount= 0;
-				
-				if distr_life == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(life_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-				
-				_p.life		=	lerp(part_type.life[0],part_type.life[1],animcurve_channel_evaluate(life_channel,_amount))
+				_p.life		=	random_range(part_type.life[0],part_type.life[1])
 			}
-			#endregion
+		}
+		else
+		{
+			var _amount= 0;
+				
+			if distr_life == PULSE_DISTRIBUTION.LINKED
+			{
+				_amount = get_link_value(__life_link,_p)
+			}
+			else
+			{
+				_amount = random(1)
+			}
+				
+			_p.life		=	lerp(part_type.life[0],part_type.life[1],animcurve_channel_evaluate(__life_channel,_amount))
+		}
+		#endregion
 		
-			#region orient
-			if distr_orient != PULSE_DISTRIBUTION.RANDOM && distr_orient != PULSE_DISTRIBUTION.NONE
+		#region orient
+		if distr_orient != PULSE_DISTRIBUTION.RANDOM && distr_orient != PULSE_DISTRIBUTION.NONE
+		{
+			var _amount= 0;
+				
+			if distr_orient == PULSE_DISTRIBUTION.LINKED
 			{
-				var _amount= 0;
-				
-				if distr_orient == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(orient_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-				
-				_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],animcurve_channel_evaluate(orient_channel,_amount))
+				_amount = get_link_value(__orient_link,_p)
 			}
-			#endregion
-			
-			#region size
-
-			if distr_size != PULSE_DISTRIBUTION.RANDOM && distr_size != PULSE_DISTRIBUTION.NONE
+			else
 			{
-				var _amount = 0;
-				
-				if distr_size == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(size_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-				
-				_p.size = array_create(4,0)
-				_p.size[0]		=	lerp(part_type.size[0],part_type.size[2],animcurve_channel_evaluate(size_x_channel,_amount))
-				_p.size[1]		=	lerp(part_type.size[1],part_type.size[3],animcurve_channel_evaluate(size_y_channel,_amount))
+				_amount = random(1)
 			}
-			#endregion
+				
+			_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],animcurve_channel_evaluate(__orient_channel,_amount))
+		}
+		#endregion
 			
-			#region frame
+		#region size
 
-			if distr_frame != PULSE_DISTRIBUTION.NONE
+		if distr_size != PULSE_DISTRIBUTION.RANDOM && distr_size != PULSE_DISTRIBUTION.NONE
+		{
+			var _amount = 0;
+				
+			if distr_size == PULSE_DISTRIBUTION.LINKED
 			{
-				var _amount= 0;
-				
-				if distr_frame == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(frame_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-				
-				_p.frame		=	lerp(0,sprite_get_number(part_type.sprite),animcurve_channel_evaluate(frame_channel,_amount))
+				_amount = get_link_value(__size_link,_p)
 			}
-			#endregion
-			
-			#region color
-
-			if distr_color_mix != PULSE_DISTRIBUTION.NONE && distr_color_mix != PULSE_COLOR.COLOR_MAP
+			else
 			{
-				var _amount= 0;
-				
-				if distr_color_mix == PULSE_DISTRIBUTION.LINKED
-				{
-					_amount = get_link_value(color_mix_link,_p)
-				}
-				else
-				{
-					_amount = random(1)
-				}
-					_amount = animcurve_channel_evaluate(color_mix_channel,_amount)
-					_p.r_h =  lerp(color_mix_A[2],color_mix_B[2],_amount)
-					_p.g_s =  lerp(color_mix_A[1],color_mix_B[1],_amount)
-					_p.b_v =  lerp(color_mix_A[0],color_mix_B[0],_amount)
-					_p.color_mode = PULSE_COLOR.A_TO_B_RGB
+				_amount = random(1)
 			}
-			#endregion
-
+				
+			_p.size = array_create(4,0)
+			_p.size[0]		=	lerp(part_type.size[0],part_type.size[2],animcurve_channel_evaluate(__size_x_channel,_amount))
+			_p.size[1]		=	lerp(part_type.size[1],part_type.size[3],animcurve_channel_evaluate(__size_y_channel,_amount))
+		}
+		#endregion
 			
-			return _p
+		#region frame
+
+		if distr_frame != PULSE_DISTRIBUTION.NONE
+		{
+			var _amount= 0;
+				
+			if distr_frame == PULSE_DISTRIBUTION.LINKED
+			{
+				_amount = get_link_value(__frame_link,_p)
+			}
+			else
+			{
+				_amount = random(1)
+			}
+				
+				
+			_p.frame		=	animcurve_channel_evaluate(__frame_channel,_amount)
+		}
+		#endregion
+			
+		#region color
+
+		if distr_color_mix == PULSE_DISTRIBUTION.LINKED || distr_color_mix == PULSE_DISTRIBUTION.ANIM_CURVE
+		{
+			var _amount= 0;
+				
+			if distr_color_mix == PULSE_DISTRIBUTION.LINKED
+			{
+				_amount = get_link_value(__color_mix_link,_p)
+			}
+			else
+			{
+				_amount = random(1)
+			}
+				_amount = animcurve_channel_evaluate(color_mix_channel,_amount)
+				_p.r_h =  lerp(__color_mix_A[2],__color_mix_B[2],_amount)
+				_p.g_s =  lerp(__color_mix_A[1],__color_mix_B[1],_amount)
+				_p.b_v =  lerp(__color_mix_A[0],__color_mix_B[0],_amount)
+				_p.color_mode = PULSE_COLOR.A_TO_B_RGB
+		}
+		#endregion
+
+		return _p
 	}
 	
-	static __set_normal_origin		=	function(_p,x,y){
-				
+	static __set_normal_origin		=	function(_p,x,y)
+	{
 		switch (form_mode)
 		{
 			case PULSE_FORM.PATH:
 			{
 				var j			= 1/path_res
-				_p.x_origin	= path_get_x(path_a,_p.u_coord)
-				_p.y_origin	= path_get_y(path_a,_p.u_coord)
-				var x1			= path_get_x(path_a,_p.u_coord+j)
-				var y1			= path_get_y(path_a,_p.u_coord+j)
+				_p.x_origin	= path_get_x(path,_p.u_coord)
+				_p.y_origin	= path_get_y(path,_p.u_coord)
+				var x1			= path_get_x(path,_p.u_coord+j)
+				var y1			= path_get_y(path,_p.u_coord+j)
 				_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
 							
 				// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-				//var x2	= path_get_x(path_a,u_coord+(j*2))
-				//var y2	= path_get_y(path_a,u_coord+(j*2))
+				//var x2	= path_get_x(path,u_coord+(j*2))
+				//var y2	= path_get_y(path,u_coord+(j*2))
 				//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
 
 				_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
 						
-				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
 						
 				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 				{
 					//then, the direction from the focal point to the origin
-					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+					_p.normal		=	point_direction(x+(x_focal_point*x_scale),y+(y_focal_point*y_scale),_p.x_origin,_p.y_origin)
 					_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
 				}
 						
@@ -1076,14 +1077,14 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_p.y_origin	=	y
 						
 
-				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
 	
 							
 				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 				{
 					//then, the direction from the focal point to the origin
-					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+					_p.normal		=	point_direction(x+(x_focal_point*x_scale),y+(y_focal_point*y_scale),_p.x_origin,_p.y_origin)
 				}
 
 				_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
@@ -1099,14 +1100,14 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						
 				if _p.v_coord != 0
 				{
-					_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*scalex);
-					_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*scaley);
+					_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+					_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
 				}
 							
 				if x_focal_point!=0 || y_focal_point !=0 // if focal u_coord is in the center, the normal is equal to the angle from the center
 				{
 					//then, the direction from the focal point to the origin
-					_p.normal		=	point_direction(x+(x_focal_point*scalex),y+(y_focal_point*scaley),_p.x_origin,_p.y_origin)
+					_p.normal		=	point_direction(x+(x_focal_point*x_scale),y+(y_focal_point*y_scale),_p.x_origin,_p.y_origin)
 					_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
 				}
 			}
@@ -1114,8 +1115,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			return _p
 		}
 
-	static __assign_direction		=	function(_p){
-				
+	static __assign_direction		=	function(_p)
+	{
 		if alter_direction
 		{
 			if direction_range[0]!=direction_range[1]
@@ -1147,8 +1148,9 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 	}
 	
-	static __check_form_collide		=	function(_p,_e,x,y){
-				
+	static __check_form_collide		=	function(_p,_e,x,y)
+	{
+		_p.to_edge	=	false
 		//If we wish to cull the particle to the "edge" , proceed
 		if force_to_edge == PULSE_TO_EDGE.NONE
 		{
@@ -1210,8 +1212,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		//Then we calculate the Total Displacement of the particle over its life
 		var _accel		=	part_type.speed[2]*_p.life
 		var _displacement = (_p.speed*_p.life)+_accel
-		
-		_p.to_edge	=	false
+
 		// If the particle moves beyond the edge of the radius, change either its speed or life
 		if	_displacement > _length_to_edge
 		{
@@ -1232,32 +1233,33 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				
 	}
 	
-	static __check_forces			=	function(_p,x,y){
+	static __check_forces			=	function(_p,x,y)
+	{
 		// For each local force, analyze reach and influence over particle
-		for (var k=0;k<array_length(local_forces);k++)
+		for (var k=0;k<array_length(forces);k++)
 		{
 			var _weight = 0;
 						
-			if local_forces[k].weight <= 0 continue //no weight, nothing to do here!
+			if forces[k].weight <= 0 continue //no weight, nothing to do here!
 						
-			if local_forces[k].range == PULSE_FORCE.RANGE_INFINITE
+			if forces[k].range == PULSE_FORCE.RANGE_INFINITE
 			{
-				_weight = local_forces[k].weight //then weight is the force's full strength
+				_weight = forces[k].weight //then weight is the force's full strength
 			}
-			else if local_forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
+			else if forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
 			{
 				var __force_x,__force_y
 
-					__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
-					__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
+					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
 
 				// relative position of the particle to the force
 				var _x_relative = _p.x_origin - __force_x
 				var _y_relative = _p.y_origin - __force_y
 							
 				//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
-				var _coordx = _x_relative<0 ? local_forces[k].east : local_forces[k].west
-				var _coordy = _y_relative<0 ? local_forces[k].north : local_forces[k].south
+				var _coordx = _x_relative<0 ? forces[k].east : forces[k].west
+				var _coordy = _y_relative<0 ? forces[k].north : forces[k].south
 							
 				// if particle origin is within the area of influence OR the influence is infinite (==-1)
 				if (abs(_x_relative)< _coordx || _coordx==-1) 
@@ -1266,166 +1268,166 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					//within influence, calculate weight!
 					// If the influence is infinite, apply weight as defined
 					// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
-					var _weightx = _coordx==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_x_relative)/_coordx )
-					var _weighty = _coordy==-1? local_forces[k].weight : lerp(0,local_forces[k].weight,abs(_y_relative)/_coordy )
+					var _weightx = _coordx==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_x_relative)/_coordx )
+					var _weighty = _coordy==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_y_relative)/_coordy )
 								
 					//Average of vertical and horizontal influences
 					_weight= (_weightx+_weighty)/2
 				}
 				else continue //not within influence. Byebye!
 			}
-			else if local_forces[k].range == PULSE_FORCE.RANGE_RADIAL
+			else if forces[k].range == PULSE_FORCE.RANGE_RADIAL
 			{
 				var __force_x,__force_y
 
-					__force_x = local_forces[k].local ? (x+local_forces[k].x) : local_forces[k].x
-					__force_y = local_forces[k].local ? (y+local_forces[k].y) : local_forces[k].y
+					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
+					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
 
 							
 				var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
-				if _dist < local_forces[k].radius
+				if _dist < forces[k].radius
 				{
-					_weight= lerp(0,local_forces[k].weight,_dist/local_forces[k].radius )
+					_weight= lerp(0,forces[k].weight,_dist/forces[k].radius )
 				}
 				else continue //not within influence. 
 			}
 						
 			if (_weight==0) continue; //no weight, nothing to do here!
 						
-			if local_forces[k].type == PULSE_FORCE.DIRECTION
+			if forces[k].type == PULSE_FORCE.DIRECTION
 			{
 				// convert to vectors
 				var _vec2 =[0,0];
 				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
 				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
 				// add force's vectors
-				_vec2[0] = _vec2[0]+(local_forces[k].vec[0]*_weight)
-				_vec2[1] = _vec2[1]+(local_forces[k].vec[1]*_weight)
+				_vec2[0] = _vec2[0]+(forces[k].vec[0]*_weight)
+				_vec2[1] = _vec2[1]+(forces[k].vec[1]*_weight)
 				// convert back to direction and speed
 				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
 				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
 			}
-			else if local_forces[k].type = PULSE_FORCE.POINT
+			else if forces[k].type = PULSE_FORCE.POINT
 			{
-				var dir_force	=	(point_direction( (x+local_forces[k].x),(y+local_forces[k].y),x_origin,y_origin)+local_forces[k].direction)%360
-				_p.dir = lerp_angle(_p.dir,dir_force,local_forces[k].weight)
+				var dir_force	=	(point_direction( (x+forces[k].x),(y+forces[k].y),x_origin,y_origin)+forces[k].direction)%360
+				_p.dir = lerp_angle(_p.dir,dir_force,forces[k].weight)
 			}
 						
 		}
 		return _p
 	}
 	
-	static __apply_color_map		= function(_p,_e)
-				{
-					var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
-					u = u>1||u<0 ?  abs(frac(u)): u ;
-					var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
-					v = v>1||v<0 ?  abs(frac(v)): v ;
+	static __apply_color_map		=	function(_p,_e)
+	{
+		var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
+		u = u>1||u<0 ?  abs(frac(u)): u ;
+		var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
+		v = v>1||v<0 ?  abs(frac(v)): v ;
 					
-					var _color = color_map.buffer.GetNormalised(u,v)
-							_p.r_h =  lerp(255,_color[0],color_map.color_blend)
-							_p.g_s =  lerp(255,_color[1],color_map.color_blend)
-							_p.b_v =  lerp(255,_color[2],color_map.color_blend)
-							var _size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
-							_p.size = array_create(4,_size)
-				}
+		var _color = color_map.buffer.GetNormalised(u,v)
+				_p.r_h =  lerp(255,_color[0],color_map.color_blend)
+				_p.g_s =  lerp(255,_color[1],color_map.color_blend)
+				_p.b_v =  lerp(255,_color[2],color_map.color_blend)
+				var _size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
+				_p.size = array_create(4,_size)
+	}
 	
-	static __apply_displacement		= function(_p,_e)
+	static __apply_displacement		=	function(_p,_e)
+	{
+		var u = displacement_map.scale_u * (_p.u_coord+displacement_map.offset_u);
+		u = u>1||u<0 ?  abs(frac(u)): u ;
+		var v = displacement_map.scale_v * (_p.v_coord+displacement_map.offset_v);
+		v = v>1||v<0 ?  abs(frac(v)): v ;
+					
+		var pixel = displacement_map.buffer.GetNormalised(u,v)
+					
+		if is_array(pixel)
 		{
-			var u = displacement_map.scale_u * (_p.u_coord+displacement_map.offset_u);
-			u = u>1||u<0 ?  abs(frac(u)): u ;
-			var v = displacement_map.scale_v * (_p.v_coord+displacement_map.offset_v);
-			v = v>1||v<0 ?  abs(frac(v)): v ;
+			// if the returned value is an array we can use individual channels
+			pixel[0] =pixel[0]/255  //RED
+			pixel[1] =pixel[1]/255  //GREEN
+			pixel[2] =pixel[2]/255  //BLUE
+			pixel[3] =pixel[3]/255  //ALPHA
+			disp_value = mean(pixel[0],pixel[1],pixel[2])
+		}
+		else
+		{
+			//else you are probably using Dragonite's noise generator Macaw
+			var disp_value= pixel/255
+		}
 					
-			var pixel = displacement_map.buffer.GetNormalised(u,v)
-					
+		if displacement_map.position.active		&& displacement_map.position.weight	!=0
+		{
+			_p.length		=	lerp(_p.length,lerp(_e.int*radius_internal+_p.length,_e.ext*radius_external+_p.length,disp_value),displacement_map.position.weight)
+		}
+		if displacement_map.speed.active		&& displacement_map.speed.weight	!=0
+		{
+			var _displace = disp_value
 			if is_array(pixel)
 			{
-				// if the returned value is an array we can use individual channels
-				pixel[0] =pixel[0]/255  //RED
-				pixel[1] =pixel[1]/255  //GREEN
-				pixel[2] =pixel[2]/255  //BLUE
-				pixel[3] =pixel[3]/255  //ALPHA
-				disp_value = mean(pixel[0],pixel[1],pixel[2])
+				var _chan = displacement_map.speed.channels
+				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
+			}
+			_p.speed		=	lerp(_p.speed,lerp(displacement_map.speed.range[0],displacement_map.speed.range[1],_displace),displacement_map.speed.weight)
+		}
+		if displacement_map.life.active			&& displacement_map.life.weight		!=0
+		{
+			var _displace = disp_value
+			if is_array(pixel)
+			{
+				var _chan = displacement_map.life.channels
+				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
+			}
+			_p.life		=	lerp(_p.life,lerp(displacement_map.life.range[0],displacement_map.life.range[1],_displace),displacement_map.life.weight)
+		}
+		if displacement_map.orientation.active	&& displacement_map.orient.weight	!=0
+		{
+			_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],disp_value*displacement_map.orient.weight)
+		}
+		if displacement_map.color_A_to_B		&& distr_color_mix		!= PULSE_COLOR.COLOR_MAP
+		{
+			if is_array(pixel)
+			{
+				// lerping between the user-provided colors A and B , using the normalized pixel value for the coordinate (most usually between black (0) and white (1) )
+				//In this case, pixel is an array, so there are individual values for all channels
+				_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],pixel[0])
+				_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],pixel[1])
+				_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],pixel[2])
 			}
 			else
 			{
-				//else you are probably using Dragonite's noise generator Macaw
-				var disp_value= pixel/255
+				//While here, all channels are compressed into a single channel (Probably when generating a texture with Dragonite's Macaw)
+				_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],disp_value)
+				_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],disp_value)
+				_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],disp_value)
 			}
-					
-			if displacement_map.position.active		&& displacement_map.position.weight	!=0
-			{
-				_p.length		=	lerp(_p.length,lerp(_e.int*radius_internal+_p.length,_e.ext*radius_external+_p.length,disp_value),displacement_map.position.weight)
-			}
-			if displacement_map.speed.active		&& displacement_map.speed.weight	!=0
-			{
-				var _displace = disp_value
-				if is_array(pixel)
-				{
-					var _chan = displacement_map.speed.channels
-					_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-				}
-				_p.speed		=	lerp(_p.speed,lerp(displacement_map.speed.range[0],displacement_map.speed.range[1],_displace),displacement_map.speed.weight)
-			}
-			if displacement_map.life.active			&& displacement_map.life.weight		!=0
-			{
-				var _displace = disp_value
-				if is_array(pixel)
-				{
-					var _chan = displacement_map.life.channels
-					_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-				}
-				_p.life		=	lerp(_p.life,lerp(displacement_map.life.range[0],displacement_map.life.range[1],_displace),displacement_map.life.weight)
-			}
-			if displacement_map.orientation.active	&& displacement_map.orient.weight	!=0
-			{
-				_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],disp_value*displacement_map.orient.weight)
-			}
-			if displacement_map.color_A_to_B		&& distr_color_mix		!= PULSE_COLOR.COLOR_MAP
-			{
-				if is_array(pixel)
-				{
-					// lerping between the user-provided colors A and B , using the normalized pixel value for the coordinate (most usually between black (0) and white (1) )
-					//In this case, pixel is an array, so there are individual values for all channels
-					_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],pixel[0])
-					_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],pixel[1])
-					_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],pixel[2])
-				}
-				else
-				{
-					//While here, all channels are compressed into a single channel (Probably when generating a texture with Dragonite's Macaw)
-					_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],disp_value)
-					_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],disp_value)
-					_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],disp_value)
-				}
 
-				if parent.distr_color_mix == PULSE_COLOR.A_TO_B_RGB
-				{
-					// "Blend" here is refering to the blending if the particle sprite has colors. If its mixed with pure white it wont change.
-					_p.r_h =  lerp(255,r_h,displacement_map.color_blend)
-					_p.g_s =  lerp(255,g_s,displacement_map.color_blend)
-					_p.b_v =  lerp(255,b_v,displacement_map.color_blend)
-				}
-				else if displacement_map.color_mode == PULSE_COLOR.A_TO_B_HSV
-				{
-					//Same but for HSV
-					_p.r_h =  lerp(0,r_h,displacement_map.color_blend)
-					_p.g_s =  lerp(0,g_s,displacement_map.color_blend)
-					_p.b_v =  lerp(255,b_v,displacement_map.color_blend)
-				}
-			}
-			if displacement_map.size.active			&& displacement_map.size.weight		!=0
+			if distr_color_mix == PULSE_COLOR.A_TO_B_RGB
 			{
-				var _displace = disp_value
-						
-				if is_array(pixel)
-				{
-					var _chan = displacement_map.size.channels
-					_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-				}
-				_p.size = lerp(displacement_map.size.range[0],displacement_map.size.range[1],_displace)*displacement_map.size.weight
+				// "Blend" here is refering to the blending if the particle sprite has colors. If its mixed with pure white it wont change.
+				_p.r_h =  lerp(255,_p.r_h,displacement_map.color_blend)
+				_p.g_s =  lerp(255,_p.g_s,displacement_map.color_blend)
+				_p.b_v =  lerp(255,_p.b_v,displacement_map.color_blend)
 			}
+			else if distr_color_mix == PULSE_COLOR.A_TO_B_HSV
+			{
+				//Same but for HSV
+				_p.r_h =  lerp(0,_p.r_h,displacement_map.color_blend)
+				_p.g_s =  lerp(0,_p.g_s,displacement_map.color_blend)
+				_p.b_v =  lerp(255,_p.b_v,displacement_map.color_blend)
+			}
+		}
+		if displacement_map.size.active			&& displacement_map.size.weight		!=0
+		{
+			var _displace = disp_value
+						
+			if is_array(pixel)
+			{
+				var _chan = displacement_map.size.channels
+				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
+			}
+			_p.size = lerp(displacement_map.size.range[0],displacement_map.size.range[1],_displace)*displacement_map.size.weight
+		}
 	}
 	
 	#endregion
@@ -1448,16 +1450,16 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			case PULSE_FORM.PATH:
 			{
 				/// if path, find bounding box of path, then check with collision
-				var _bbox = path_get_bbox(path_a,edge_external,mask_start,mask_end)
+				var _bbox = path_get_bbox(path,edge_external,mask_start,mask_end)
 				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
 
 				break;
 			}
 			case PULSE_FORM.ELLIPSE:
 			{
-				if scalex != 1 or scaley != 1
+				if x_scale != 1 or y_scale != 1
 				{
-					var _collision = collision_ellipse((edge_external-x)*scalex,(edge_external-y)*scaley,(edge_external+x)*scalex,(edge_external+y)*scaley,_collision_obj,_prec, false)
+					var _collision = collision_ellipse((edge_external-x)*x_scale,(edge_external-y)*y_scale,(edge_external+x)*x_scale,(edge_external+y)*y_scale,_collision_obj,_prec, false)
 				}
 				else
 				{
@@ -1475,8 +1477,8 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				var c = [0,0]		
 				var d = [0,0]	
 				
-				var dir_x = (lengthdir_x(edge_external,normal)*scalex);
-				var dir_y = (lengthdir_y(edge_external,normal)*scaley);
+				var dir_x = (lengthdir_x(edge_external,normal)*x_scale);
+				var dir_y = (lengthdir_y(edge_external,normal)*y_scale);
 				
 				c[0] =	a[0] + dir_x
 				c[1] =	a[1] + dir_y
@@ -1515,17 +1517,16 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		 _dir_stencil	= animcurve_points_find_closest(_points.collection, stencil_offset,false),
 		 _mod_i			= _dir_stencil,
 		 _l				= _points.length,
-		 //_rays_changed	= []
 		 
 		for(var i =	0; i < _l ; i +=1)
 		{
 			_ray.u_coord	= _points.collection[i].posx
 			_mod_i = (i+_dir_stencil)%_l
 			
-			var _length		=	edge_external*_points.collection[_mod_i].value //_points.collection[dir_stencil].value
+			var _length		=	edge_external*_points.collection[_mod_i].value 
 			_ray			= __set_normal_origin(_ray,x,y)
 
-			var _ray_collision	= raycast_hit_point_2d(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
+			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
 			
 			if _ray_collision != noone
 			{
@@ -1561,8 +1562,6 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			stencil_mode = PULSE_STENCIL.EXTERNAL
 		} 
 
-		debug_col_rays = _points
-		
 		if _occlude		animcurve_points_set(stencil_profile,"a",_points)
 	
 		return colliding_entities
@@ -1600,7 +1599,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
 
-		if form_mode == PULSE_FORM.PATH && !path_really_exists(path_a)
+		if form_mode == PULSE_FORM.PATH && !path_really_exists(path)
 		{
 			form_mode = PULSE_FORM.ELLIPSE
 		}
@@ -1617,7 +1616,7 @@ function pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		div_u	=	1
 		i		=	0
 
-		var _check_forces = array_length(local_forces)>0 ? true : false
+		var _check_forces = array_length(forces)>0 ? true : false
 		
 		if _cache != false
 		{
@@ -1773,30 +1772,24 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 		do{
 			if (index + _amount) >length
 			{
-
 				if flag_stencil {__update_stencil(index,length-index)}
-				
 				for(var _i = index ; _i < length-index ; _i++)
 				{
 					__launch(cache[_i],x,y)
 				}
-			
 				_amount -=  (length - index)
 				index = 0
 			}
 			else
 			{
 				if flag_stencil {__update_stencil(index,index+_amount)}
-				
 				for(var _i = index ; _i < index+_amount ; _i++)
 				{
 					__launch(cache[_i],x,y)
 				}
-				
 				index = (index + _amount) % length
 				_amount = 0
 			}
-			
 			if  index == 0
 			{
 				flag_stencil = false
@@ -1804,8 +1797,6 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 			if shuffle array_shuffle(cache,irandom_range(0,floor(length/2)),length/2)
 			}
 		} until(_amount = 0)
-	
-		
 	}
 }
 
@@ -1824,6 +1815,7 @@ function __pulse_launcher() constructor
 				part_type_size_x(particle.index,size[0],size[2],particle.size[4],particle.size[6])	
 				part_type_size_y(particle.index,size[1],size[3],particle.size[4],particle.size[6])	
 			}
+			
 			if orient !=undefined
 			{
 				part_type_orientation(particle.index,orient,orient,particle.orient[2],particle.orient[3],particle.orient[4])	
@@ -1850,4 +1842,58 @@ function __pulse_launcher() constructor
 			part_particles_create(part_system.index, x_origin+x,y_origin+y,particle.index, 1);
 		}		
 	}
+}
+
+
+/// @desc Throws a vector until it hits an object. Returns Vector3(x, y, id) if it hits.
+/// @param {real} origin_x The ray x origin.
+/// @param {real} origin_y The ray y origin.
+/// @param {Id.GMObject} object The object id do check.
+/// @param {real} angle Ray angle.
+/// @param {real} distance Ray distance.
+/// @param {bool} precise Whether the check is based on precise collisions (true, which is slower) or its bounding box in general (false, faster).
+/// @param {bool} notme Whether the calling instance, if relevant, should be excluded (true) or not (false).
+/// @returns {struct} Description
+function __pulse_raycast(origin_x, origin_y, object, angle, distance, precise=true, notme=true) {
+	// original by: YellowAfterLife, https://yal.cc/gamemaker-collision-line-point/
+	// edited by FoxyOfJungle, adapted for Pulse
+//	var _dir = degtorad(angle),
+	var _x1 = origin_x,
+	_y1 = origin_y,
+	_x2 = origin_x + lengthdir_x(distance,angle), //+ cos(_dir)*distance,
+	_y2 = origin_y + lengthdir_y(distance,angle),//- sin(_dir)*distance,
+	
+	_col = collision_line(_x1, _y1, _x2, _y2, object, precise, notme),
+	_col2 = noone,
+	
+	_xo = _x1,
+	_yo = _y1;
+	
+	if (_col != noone) {
+		var _p0 = 0,
+		_p1 = 1,
+		_np = 0,
+		_px = 0,
+		_py = 0,
+		_nx = 0,
+		_ny = 0,
+		_len = ceil(log2(point_distance(_x1, _y1, _x2, _y2))) + 1;
+		repeat(_len) {
+			_np = _p0 + (_p1 - _p0) * 0.5;
+			_nx = _x1 + (_x2 - _x1) * _np;
+			_ny = _y1 + (_y2 - _y1) * _np;
+			_px = _x1 + (_x2 - _x1) * _p0;
+			_py = _y1 + (_y2 - _y1) * _p0;
+			_col2 = collision_line(_px, _py, _nx, _ny, object, precise, notme);
+			if (_col2 != noone) {
+				_col = _col2;
+				_xo = _nx;
+				_yo = _ny;
+				_p1 = _np;
+			} else _p0 = _np;
+		}
+		return {x: _xo, y: _yo, z: _col};
+	}
+	return noone
+	
 }
