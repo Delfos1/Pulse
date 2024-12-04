@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "NormalMapping",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "NormalMapTest",
-    "path": "folders/NormalMapTest.yy",
+  "$GMScript":"v1",
+  "%Name":"NormalMapping",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"NormalMapping",
+  "parent":{
+    "name":"NormalMapTest",
+    "path":"folders/NormalMapTest.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

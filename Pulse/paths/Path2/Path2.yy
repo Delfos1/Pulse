@@ -1,14 +1,14 @@
 {
-  "resourceType": "GMPath",
-  "resourceVersion": "1.0",
-  "name": "Path2",
-  "closed": false,
-  "kind": 1,
-  "parent": {
-    "name": "Rooms",
-    "path": "folders/Examples/Rooms.yy",
+  "$GMPath":"",
+  "%Name":"Path2",
+  "closed":false,
+  "kind":1,
+  "name":"Path2",
+  "parent":{
+    "name":"Rooms",
+    "path":"folders/Examples/Rooms.yy",
   },
-  "points": [
+  "points":[
     {"speed":100.0,"x":290.0,"y":355.24902,},
     {"speed":100.0,"x":262.25,"y":486.0,},
     {"speed":100.0,"x":428.0,"y":540.249,},
@@ -23,5 +23,7 @@
     {"speed":100.0,"x":461.3269,"y":102.20688,},
     {"speed":100.0,"x":626.25,"y":34.0,},
   ],
-  "precision": 4,
+  "precision":4,
+  "resourceType":"GMPath",
+  "resourceVersion":"2.0",
 }

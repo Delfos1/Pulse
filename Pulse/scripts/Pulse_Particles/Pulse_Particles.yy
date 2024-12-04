@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "Pulse_Particles",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Pulse",
-    "path": "folders/Pulse.yy",
+  "$GMScript":"v1",
+  "%Name":"Pulse_Particles",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pulse_Particles",
+  "parent":{
+    "name":"Pulse",
+    "path":"folders/Pulse.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

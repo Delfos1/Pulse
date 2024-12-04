@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "scr_anim_curves",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "AnimCurves_scripts",
-    "path": "folders/Pulse/AnimCurves_scripts.yy",
+  "$GMScript":"v1",
+  "%Name":"scr_anim_curves",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_anim_curves",
+  "parent":{
+    "name":"AnimCurves_scripts",
+    "path":"folders/Pulse/AnimCurves_scripts.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

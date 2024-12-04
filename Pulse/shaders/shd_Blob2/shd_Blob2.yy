@@ -1,10 +1,12 @@
 {
-  "resourceType": "GMShader",
-  "resourceVersion": "1.0",
-  "name": "shd_Blob2",
-  "parent": {
-    "name": "Pulse",
-    "path": "Pulse.yyp",
+  "$GMShader":"",
+  "%Name":"shd_Blob2",
+  "name":"shd_Blob2",
+  "parent":{
+    "name":"Pulse",
+    "path":"Pulse.yyp",
   },
-  "type": 1,
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
 }

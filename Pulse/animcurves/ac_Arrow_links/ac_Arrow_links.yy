@@ -1,9 +1,8 @@
 {
-  "resourceType": "GMAnimCurve",
-  "resourceVersion": "1.2",
-  "name": "ac_Arrow_links",
-  "channels": [
-    {"resourceType":"GMAnimCurveChannel","resourceVersion":"1.0","name":"frame","colour":4290799884,"points":[
+  "$GMAnimCurve":"",
+  "%Name":"ac_Arrow_links",
+  "channels":[
+    {"$GMAnimCurveChannel":"","%Name":"frame","colour":4290799884,"name":"frame","points":[
         {"th0":-0.1,"th1":0.1,"tv0":0.0,"tv1":0.0,"x":0.0,"y":0.0,},
         {"th0":1.0,"th1":-1.0,"tv0":0.0,"tv1":0.0,"x":0.08074056,"y":0.0,},
         {"th0":1.0,"th1":-1.0,"tv0":0.0,"tv1":0.0,"x":0.08687405,"y":1.0,},
@@ -28,11 +27,14 @@
         {"th0":-0.059883893,"th1":0.08115247,"tv0":-0.0256176,"tv1":0.03471604,"x":0.875,"y":7.0,},
         {"th0":1.0,"th1":-1.0,"tv0":0.0,"tv1":0.0,"x":0.999,"y":7.0,},
         {"th0":-0.125,"th1":0.1,"tv0":0.18506283,"tv1":0.0,"x":1.0,"y":0.0,},
-      ],"visible":true,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
   ],
-  "function": 0,
-  "parent": {
-    "name": "Linked Properties",
-    "path": "folders/Examples/Linked Properties.yy",
+  "function":0,
+  "name":"ac_Arrow_links",
+  "parent":{
+    "name":"Linked Properties",
+    "path":"folders/Examples/Linked Properties.yy",
   },
+  "resourceType":"GMAnimCurve",
+  "resourceVersion":"2.0",
 }
