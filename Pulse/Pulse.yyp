@@ -39,7 +39,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.8.1.171",
+    "IDEVersion":"2024.11.0.179",
   },
   "name":"Pulse",
   "resources":[
@@ -170,10 +170,10 @@
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
   "RoomOrderNodes":[
+    {"roomId":{"name":"Room_01_Start","path":"rooms/Room_01_Start/Room_01_Start.yy",},},
     {"roomId":{"name":"Room_LinkedProperties","path":"rooms/Room_LinkedProperties/Room_LinkedProperties.yy",},},
     {"roomId":{"name":"Room_Path","path":"rooms/Room_Path/Room_Path.yy",},},
     {"roomId":{"name":"Room_Performance","path":"rooms/Room_Performance/Room_Performance.yy",},},
-    {"roomId":{"name":"Room_01_Start","path":"rooms/Room_01_Start/Room_01_Start.yy",},},
     {"roomId":{"name":"Room_Experiment","path":"rooms/Room_Experiment/Room_Experiment.yy",},},
     {"roomId":{"name":"room_Fire","path":"rooms/room_Fire/room_Fire.yy",},},
     {"roomId":{"name":"Room_Path_SmartSmoke","path":"rooms/Room_Path_SmartSmoke/Room_Path_SmartSmoke.yy",},},

@@ -752,8 +752,8 @@ function __pulse_particle_class		(_name) constructor
 }
 
 /// @description			Use this to create a new particle. It returns a reference to the struct by default, but it will return the particle index if the last argument is true.
-/// @param {String}			name : Name your particle or leave empty to use the default name
-/// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
 /// @return {Struct}
 function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=false)
 {
@@ -783,9 +783,9 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 
 				
 /// @description			Use this to create a new Instance particle. It returns a reference to the struct
-/// @param {Asset.GMObject}	object : Object to make instances of.
-/// @param {String}			name : Name your particle or leave empty to use the default name
-/// @param {Real}			depth: Depth in which the instance will be created
+/// @param {Asset.GMObject}	_object : Object to make instances of.
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @param {Real}			_depth: Depth in which the instance will be created
 /// @return {Struct}
 function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
 {
@@ -796,7 +796,7 @@ function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
 		_name		=	$"{_name}_{l}";		
 	}
 	
-	global.pulse.part_types[$_name] = new __pulse_instance_particle(_object)
+	global.pulse.part_types[$_name] = new __pulse_instance_particle(_object,_name)
 	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
 	
 	return global.pulse.part_types[$_name]

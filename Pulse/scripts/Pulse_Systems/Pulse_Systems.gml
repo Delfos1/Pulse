@@ -141,7 +141,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("PULSE WARNING: System is asleep and can't be reset")
 			return self
 		}
 		if layer != -1
@@ -162,7 +162,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("PULSE WARNING: System is asleep and can't be updated")
 			exit
 		}
 		
@@ -182,14 +182,14 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		}
 	}
 	
-	static draw_it						= function(_blend = bm_normal)
+	static draw_it					= function()
 	{
 		if index == -1 
 		{
 			__pulse_show_debug_message("PULSE WARNING: System is asleep")
 			exit
 		}
-		
+	
 		part_system_drawit(index)	
 	}
 	
@@ -253,13 +253,13 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 			},[],-1)
 }
 
-/// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the particle index if the second argument is true.
-/// @param {String}			name : Name your particle or leave empty to use the default name
-/// @param {Bool}			return_index	: Whether to return the particle index or not (false by default)
+/// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the system index if the second argument is true.
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
 /// @param {ID.Layer}		_layer	: Which layer to place the system
-/// @param {Bool}			_persistent	: Whether to return the particle index or not (false by default)
+/// @param {Bool}			_persistent	: Whether to make the system persistent or not (true by default)
 /// @return {Struct}
-function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= undefined,_persistent=false)
+function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= undefined,_persistent=true)
 {
 	if _name		==__PULSE_DEFAULT_SYS_NAME
 	{

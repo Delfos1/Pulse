@@ -1,52 +1,9 @@
 /// feather ignore all
-
-function	__pulse_lookup_system(_name)
-{
-	var system_found = pulse_exists_system(_name)
-	
-	switch(system_found)
-	{
-		case 2:
-				return _name
-		break
-		case 1:
-				return global.pulse.systems[$_name];
-		break
-		case 0:
-				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system by that name")
-				return pulse_make_system(_name);
-		break
-		case -1:
-				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system with default name")
-				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
-		break
-	}
-	
+function _pulse_clamp_wrap(val, minn, maxx) {
+	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
+	return val;
 }
 
-function	__pulse_lookup_particle(_name)
-{
-	var particle_found = pulse_exists_particle(_name)
-	
-	switch(particle_found)
-	{
-		case 2:
-				return _name
-		break
-		case 1:
-				return global.pulse.part_types[$_name];
-		break
-		case 0:
-				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with that name")
-				return pulse_make_particle(_name);
-		break
-		case -1:
-				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with default name")
-				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
-		break
-	}
-	
-}
 
 function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) : __pulse_launcher()  constructor
 {
@@ -127,6 +84,8 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	distr_frame			=	PULSE_DISTRIBUTION.NONE
 	divisions_v			=	1
 	divisions_u			=	1
+	divisions_v_offset	=	0
+	divisions_u_offset	=	0
 	#endregion
 	
 	#region Channels
@@ -296,6 +255,12 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	static	form_ellipse			= function()
+	{
+		form_mode = PULSE_FORM.ELLIPSE
+		
+		return self
+	}
 	#endregion
 	
 	#region NONLINEAR DISTRIBUTIONS
@@ -632,6 +597,16 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	static set_distribution_u_offset=  function (_offset)
+	{
+		divisions_u_offset = _offset
+	}
+	
+	static set_distribution_v_offset=  function (_offset)
+	{
+		divisions_v_offset = _offset
+	}
+	
 	#endregion
 	
 	#region DISPLACEMENT MAP SETTERS
@@ -861,7 +836,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.EVEN
 		{
 			//Distribute evenly
-			_p.v_coord		??=(div_v/divisions_v)
+			_p.v_coord		??=	_pulse_clamp_wrap((div_v/divisions_v),0,1)
 			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
 			
 		}
@@ -1612,8 +1587,13 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		var system_array = array_length(part_system_array)
 		var type_array = array_length(part_type_array)
 		
-		div_v	=	1
-		div_u	=	1
+		/////////////////// CHANGES HERE AND AT THE END OF THE PULSE
+		div_v	=	1 +  divisions_v_offset
+		if div_v>2 div_v -= 1
+		
+		div_u	=	1 + divisions_u_offset
+		if div_u>2 div_u -= 1
+		
 		i		=	0
 
 		var _check_forces = array_length(forces)>0 ? true : false
@@ -1714,11 +1694,17 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			}
 				
 			div_v++
-			if div_v	>	divisions_v
+			if div_v	>	divisions_v+divisions_v_offset
 			{
-				div_v	=	1
+				div_v	=	1 + divisions_v_offset
+				if div_v>2 div_v -= 1
+		
 				div_u ++
-				if div_u > divisions_u div_u=1
+				if div_u > divisions_u + divisions_u_offset
+				{
+				 	div_u	=	1 + divisions_u_offset
+					if div_u>2 div_u -= 1
+				}
 			}
 		}
 		if _cache

@@ -1,3 +1,5 @@
+/// @desc Destroys all particle types, particle systems, and emitters
+
 function pulse_destroy_all()
 {	var sys, part, i
 	
@@ -21,7 +23,7 @@ function pulse_destroy_all()
 	
 	if array_length(part)>0
 	{
-		for(i=0;i==array_length(global.pulse.part_types);i++)
+		for(i=0;i==array_length(part);i++)
 		{
 			part_type_destroy(global.pulse.part_types[$part[i]].index)
 			if global.pulse.part_types[$part[i]].subparticle != undefined 
@@ -36,7 +38,10 @@ function pulse_destroy_all()
 	
 }	
 
-// Will create a new system and reference the previous struct
+/// @desc Duplicates the given system. Returns a reference to the system.
+/// @param {string} __name The name of the system to clone
+/// @param {string} __new_name Optional: The name of the cloned system. By default it appends "_copy" to the original name 
+/// @returns {Struct}
 function pulse_clone_system(__name,__new_name=__name)
 {
 	if  !struct_exists(global.pulse.systems,__name)
@@ -51,14 +56,18 @@ function pulse_clone_system(__name,__new_name=__name)
 	}
 		
 	global.pulse.systems[$__new_name]		=	variable_clone(global.pulse.systems[$__name])
-	global.pulse.systems[$__new_name].index	=	part_type_create();
+	global.pulse.systems[$__new_name].index	=	part_system_create()
 	global.pulse.systems[$__new_name].reset()
 
-	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
+	__pulse_show_debug_message($"PULSE SUCCESS: System {__name} cloned and named {__new_name}");
 	
 	return global.pulse.systems[$__new_name]
 }
-// Will create a new particle and reference the previous struct
+
+/// @desc Duplicates the given particle. Returns a reference to the particle.
+/// @param {string} __name The name of the particle to clone
+/// @param {string} __new_name Optional: The name of the cloned particle. By default it appends "_copy" to the original name 
+/// @returns {Struct}
 function pulse_clone_particle(__name,__new_name=__name)
 {
 
@@ -83,6 +92,10 @@ function pulse_clone_particle(__name,__new_name=__name)
 	return global.pulse.part_types[$__new_name]
 }
 
+
+/// @desc Destroys a system both from the GameMaker index as from Pulse's data
+/// @param {string} _name The name of the system to destroy
+/// @returns {Struct}
 function pulse_destroy_system(_name)
 {
 	if struct_exists(global.pulse.systems,_name)
@@ -101,6 +114,9 @@ function pulse_destroy_system(_name)
 
 }
 
+/// @desc Destroys a particle type both from the GameMaker index as from Pulse's data
+/// @param {string} _name The name of the particle to destroy
+/// @returns {Struct}
 function pulse_destroy_particle(_name)
 {
 	if struct_exists(global.pulse.part_types,_name)
@@ -188,8 +204,6 @@ function pulse_exists_particle(_name)
 	return particle_found
 }
 
-
-/// @function				pulse_convert_particles
 /// @description			   
 ///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
 ///							Particles are named after the emitter they are on.
@@ -239,4 +253,53 @@ function pulse_convert_particles	(part_system)
 		}
 	l++
 	}
+}
+
+
+function	__pulse_lookup_system(_name)
+{
+	var system_found = pulse_exists_system(_name)
+	
+	switch(system_found)
+	{
+		case 2:
+				return _name
+		break
+		case 1:
+				return global.pulse.systems[$_name];
+		break
+		case 0:
+				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system by that name")
+				return pulse_make_system(_name);
+		break
+		case -1:
+				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system with default name")
+				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
+		break
+	}
+	
+}
+
+function	__pulse_lookup_particle(_name)
+{
+	var particle_found = pulse_exists_particle(_name)
+	
+	switch(particle_found)
+	{
+		case 2:
+				return _name
+		break
+		case 1:
+				return global.pulse.part_types[$_name];
+		break
+		case 0:
+				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with that name")
+				return pulse_make_particle(_name);
+		break
+		case -1:
+				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with default name")
+				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
+		break
+	}
+	
 }
