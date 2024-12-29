@@ -1,1 +1,0 @@
-garbagio = gc_get_stats()

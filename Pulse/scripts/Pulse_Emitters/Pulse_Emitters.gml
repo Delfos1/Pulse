@@ -218,6 +218,15 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	static	set_mask_spread			=	function(_direction, _spread_angle)
+	{
+		_direction			= (_direction%360)/360
+		_spread_angle		= ((_spread_angle%360)/360)/2
+		mask_end			= _direction - _spread_angle
+		mask_start			= _direction + _spread_angle
+		return self
+	}
+	
 	static	set_scale			=	function(_x_scale=x_scale,_y_scale=y_scale)
 	{
 		x_scale			=	_x_scale

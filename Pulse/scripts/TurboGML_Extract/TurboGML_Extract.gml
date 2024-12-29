@@ -52,10 +52,11 @@
 /// @param {Real} val The value to check.
 /// @param {Real} minn The min value.
 /// @param {Real} maxx The max value.
+/*
 function _pulse_clamp_wrap(val, minn, maxx) {
 	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
 	return val;
-}
+}*/
 
 /// @desc Works like a lerp() but for angles, no rotation limits.
 /// @param {Real} a The first angle to check.
