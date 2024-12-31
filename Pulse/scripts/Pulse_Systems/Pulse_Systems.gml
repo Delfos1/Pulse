@@ -30,9 +30,14 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	update			=	true;
 	x				=	0;
 	y				=	0;
+	angle			=	0;
 	samples			=	1;
 	persistent		=	_persistent;
 	factor			=	1;
+	color			=	c_white
+	alpha			=	1
+	global_space	=	false
+	particle_amount =	0
 	
 	// wake-sleep rules
 	
@@ -123,6 +128,20 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		
 		return self
 	}
+	
+	static set_angle				= function(_angle)
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			return self
+		}
+		angle = _angle
+		
+		part_system_angle(index,angle)
+		
+		return self
+	}
 
 	static set_super_sampling		= function(_active, _samples)
 	{
@@ -135,6 +154,31 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		{
 			samples = 1
 		}
+	}
+	
+	static set_color				= function(_color,_alpha)
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			return self
+		}
+			color			=	_color
+			alpha			=	_alpha
+			part_system_color(index,_color,_alpha)
+		return self
+	}
+	
+	static set_global_space			= function(_enable)
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			return self
+		}
+			global_space	=	_enable
+			part_system_global_space(_enable)
+		return self
 	}
 	
 	static reset					= function()
@@ -153,9 +197,12 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 			part_system_depth(index, depth);
 		}
 		part_system_automatic_update(index,update);
-		part_system_automatic_draw(index,draw);
-		part_system_draw_order(index,draw_oldtonew);
-		part_system_position(index,x,y);
+		part_system_automatic_draw	(index,draw);
+		part_system_draw_order		(index,draw_oldtonew);
+		part_system_position		(index,x,y);
+		part_system_angle			(index,angle);
+		part_system_color			(index,color,alpha);
+		part_system_global_space	(global_space);
 	}
 	
 	static update_system			= function(_resample=1)
@@ -180,6 +227,18 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		{
 			part_system_update(index)
 		}
+	}
+	
+	static get_particle_count		= function()
+	{
+		if index == -1 
+		{
+			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			return 0
+		}
+		particle_amount =  part_particles_count(index)
+		
+		return particle_amount
 	}
 	
 	static draw_it					= function()
@@ -228,19 +287,19 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		{
 				if index != -1 && threshold > 0
 				{
-					var _current_particles =  part_particles_count(index)
+					particle_amount =  part_particles_count(index)
 								
 					// if there are more particles than desired threshold
-					if _current_particles-threshold > threshold*.1
+					if particle_amount-threshold > threshold*.1
 					{
-						factor *= (threshold/_current_particles)
+						factor *= (threshold/particle_amount)
 					} 
-					else if threshold-_current_particles > threshold*.1 && factor<1
+					else if threshold-particle_amount > threshold*.1 && factor<1
 					{
-						factor /= (_current_particles/threshold)
+						factor /= (particle_amount/threshold)
 						factor = min(1,factor)
 					}
-					else if _current_particles == 0
+					else if particle_amount == 0
 					{
 						time_source_stop(count)
 						if sleep_when_empty { make_asleep() }
