@@ -1,4 +1,7 @@
 /// feather ignore all
+
+//※∴∼↻⊙↺ ♇♋︎ ↯⭍ ⚡︎ ⁎∗⃰❆❄❅
+
 function _pulse_clamp_wrap(val, minn, maxx) {
 	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
 	return val;
@@ -60,6 +63,8 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	edge_internal		=	0
 	mask_start			=	0
 	mask_end			=	1
+	mask_v_start		=	0
+	mask_v_end			=	1
 	line				=	[0,0]
 	
 	#endregion
@@ -160,6 +165,15 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 
 	#region EMITTER SETTINGS
 	
+	
+	/// @description	Sets an animation curves as a stencil
+	/// @param {Asset.GMAnimCurve}	__ac_curve : Animation curve
+	/// @param {Real, String}		_ac_channel : Channel's string name or number
+	/// @param {Asset.GMAnimCurve}	__ac_curve_b : Animation curve B
+	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
+	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
+	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
+	/// @context pulse_local_emitter
 	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=0,_mode=PULSE_STENCIL.EXTERNAL)
 	{
 		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_channel,false)
@@ -174,7 +188,14 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 
 	}
-	
+	/// @description	Sets animation curves as stencils , that tween from A to B
+	/// @param {Asset.GMAnimCurve}	__ac_curve_a : Animation curve A
+	/// @param {Real, String}		_ac_channel_a : Channel's string name or number
+	/// @param {Asset.GMAnimCurve}	__ac_curve_b : Animation curve B
+	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
+	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
+	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
+	/// @context pulse_local_emitter
 	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
 	{
 		set_stencil(__ac_curve_a,_ac_channel_a,0);
@@ -187,20 +208,49 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	/// @description	Sets the offset of the stencil.
+	/// @param {Real}	__offset : A value from 0 to 1. If surpassed in either direction it self-corrects
+	/// @context pulse_local_emitter
 	static	set_stencil_offset	=	function(_offset)
 	{
+		if _offset < 0
+		{
+			_offset = 1- (abs(_offset)%1 )
+		}
+		
 		stencil_offset		=	abs(_offset)%1
 		return self
 	}
 	
-	static	set_mask			=	function(_mask_start,_mask_end)
+	/// @description	Sets the mask on the U axis.
+	/// @param {Real}	_mask_start : A value from 0 to 1
+	/// @param {Real}	_mask_end : A value from 0 to 1
+	/// @context pulse_local_emitter
+	static	set_u_mask			=	function(_mask_start,_mask_end)
 	{
 		mask_start			=	clamp(_mask_start,0,1);
 		mask_end			=	clamp(_mask_end,0,1);
 		
 		return self
 	}
-
+	
+	/// @description	Sets the mask on the V axis.
+	/// @param {Real}	_mask_start : Closer to the internal radius. A value from 0 to 1
+	/// @param {Real}	_mask_end : Closer to the external radius. A value from 0 to 1
+	/// @context pulse_local_emitter
+	static	set_v_mask			=	function(_mask_start,_mask_end)
+	{
+		mask_v_start			=	clamp(_mask_start,0,1);
+		mask_v_end				=	clamp(_mask_end,0,1);
+		
+		return self
+	}
+	/// @description			Sets the radius of the emitter. 0 equals the center of the emitter.
+	/// @param {Real}	_radius_internal : The internal radius in absolute terms, in pixels. All particles are created within internal and external radius
+	/// @param {Real}	_radius_external : The external radius in absolute terms, in pixels. All particles are created within internal and external radius
+	/// @param {Real}	[_edge_internal] : The internal edge of the emitter. Allows to feather particles going towards the center while still limiting them . DEFAULT : Equal to the internal radius (no feathering)
+	/// @param {Real}	[_edge_external] : The external edge of the emitter. Allows to feather particles going away of the center while still limiting them . DEFAULT : Equal to the external radius (no feathering)
+	/// @context pulse_local_emitter
 	static	set_radius			=	function(_radius_internal,_radius_external,_edge_internal = _radius_internal,_edge_external = _radius_external)
 	{
 		radius_internal	=	(_radius_internal != undefined) ? _radius_internal : radius_internal;
@@ -211,6 +261,11 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	/// @description			Sets the direction range of the emitter.
+	///							The emitter's direction determines whether the particles travel away from the center ( 0 ), transversal to the U axis (90) or towards the center (180)
+	/// @param {Real.Degree}	_direction_min : The minimum direction a particle will take. In degrees.
+	/// @param {Real.Degree}	[_direction_max] : The maximum direction a particle will take. In degrees. DEFAULT : Equal to the minimum, (no variation between particles)
+	/// @context pulse_local_emitter
 	static	set_direction_range	=	function(_direction_min,_direction_max=_direction_min)
 	{
 		direction_range	=	[_direction_min,_direction_max]
@@ -218,6 +273,10 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	/// @description	Sets the mask on the U axis as an even spread from a central axis in an elliptic emitter. 
+	/// @param {Real.Degree}	_direction : Central axis from which to measure the spread. In degrees.
+	/// @param {Real.Degree}	_spread_angle : Spread from the central direction, to either sides of it. In degrees.
+	/// @context pulse_local_emitter
 	static	set_mask_spread			=	function(_direction, _spread_angle)
 	{
 		_direction			= (_direction%360)/360
@@ -227,15 +286,30 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	/// @description	Sets the scale of the emitter. 1 == Notmal scale
+	/// @param {Real}	[_x_scale] : Scale for the X axis. If left empty, the scale in this axis remains unchanged
+	/// @param {Real}	[_y_scale] : Scale for the Y axis. If left empty, the scale in this axis remains unchanged
+	/// @context pulse_local_emitter
 	static	set_scale			=	function(_x_scale=x_scale,_y_scale=y_scale)
 	{
-		x_scale			=	_x_scale
-		y_scale			=	_y_scale
+		if is_real(_x_scale) && is_real(_y_scale)
+		{
+			x_scale			=	_x_scale
+			y_scale			=	_y_scale
+		}
+		else
+		{
+			__pulse_show_debug_message("Argument must be a Real. Scale was not changed",2)	
+		}
 		
 		return self
 	}
 	
-	//Focal Point's position is relative to the emitter's position
+	/// @description	Sets the Focal point of the emitter. The focal point's position is relative to the emitter's position.
+	///					By default the focal point is [0,0] , equivalent to the emitter's position.
+	/// @param {Real}	_x : X coordinate relative to the emitter's position
+	/// @param {Real}	_y : Y coordinate relative to the emitter's position
+	/// @context pulse_local_emitter
 	static	set_focal_point		=	function(_x,_y)
 	{
 		x_focal_point		=	_x
@@ -247,6 +321,10 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	#endregion
 	
 	#region FORMS
+	
+	/// @description	Sets the form of the emitter as a Path. It can be a path asset or a PathPlus. It will be converted to a PathPlus
+	/// @param {Asset.GMPath ,  Struct.PathPlus}	_path : Path asset or a PathPlus. It will be converted to a PathPlus
+	/// @context pulse_local_emitter
 	static	form_path			=	function(_path)
 	{
 		path = _path
@@ -255,7 +333,11 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		
 		return self
 	}
-	
+	/// @description	Sets the form of the emitter as a line. Point A is the emitter's position.
+	///					Point B is determined in the arguments, and it is a coordinate RELATIVE to the position of the emitter
+	/// @param {Real}	x_point_b : X coordinate of the Point B of the line, RELATIVE to the position of the emitter
+	/// @param {Real}	y_point_b : Y coordinate of the Point B of the line, RELATIVE to the position of the emitter
+	/// @context pulse_local_emitter
 	static	form_line			=	function(x_point_b,y_point_b)
 	{
 		line	=	[x_point_b,y_point_b]
@@ -264,6 +346,8 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return self
 	}
 	
+	/// @description	Sets the form of the emitter as an ellipse. It is the default shape of an emitter
+	/// @context pulse_local_emitter
 	static	form_ellipse			= function()
 	{
 		form_mode = PULSE_FORM.ELLIPSE
@@ -284,7 +368,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -297,7 +381,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
@@ -315,7 +399,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -328,7 +412,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
@@ -343,7 +427,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	{
 		if _link_to == PULSE_LINK_TO.SPEED
 		{
-			__pulse_show_debug_message("PULSE ERROR: Invalid link property. Speed can't link to Speed")	
+			__pulse_show_debug_message("Invalid link property. Speed can't link to Speed",2)	
 			return self
 		}
 
@@ -354,7 +438,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -367,7 +451,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
@@ -385,7 +469,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -394,7 +478,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 					{
 						distr_size		=	_mode
 						__size_x_channel	=	animcurve_get_channel(_input[0],_input[1])
-						if array_length(_input)>1
+						if array_length(_input)>2
 						{
 							__size_y_channel	=	animcurve_get_channel(_input[0],_input[2])
 						}
@@ -402,7 +486,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
@@ -430,7 +514,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -443,11 +527,11 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
-				__pulse_show_debug_message("PULSE ERROR: Distribution Mode selected is not valid for Color Mix")	
+				__pulse_show_debug_message("Distribution Mode selected is not valid for Color Mix",2)	
 		}
 		
 
@@ -458,7 +542,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	{
 		if !part_type.set_to_sprite
 		{
-			__pulse_show_debug_message($"PULSE ERROR: Particle {part_type.name} not set to sprite")	
+			__pulse_show_debug_message($"Particle {part_type.name} not set to sprite" ,2)	
 			return self	
 		}
 		switch(_mode)
@@ -468,7 +552,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -482,11 +566,11 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						{
 							set_sprite(sprite[0],sprite[1],sprite[2],false,0)
 						}
-						__pulse_show_debug_message($"PULSE WARNING: Sprite of particle {part_type.name} : Random set to False")	
+						__pulse_show_debug_message($"Sprite of particle {part_type.name} : Random set to False",1)	
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
 				break
 			}
 			default:
@@ -522,7 +606,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				else
 				{
 					divisions_u	= 1
-					__pulse_show_debug_message("PULSE ERROR: Distribution Even argument must be an real, Defaulted to 1")
+					__pulse_show_debug_message("Distribution Even argument must be an real, Defaulted to 1" ,1)
 				}
 			break
 			}
@@ -530,7 +614,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -542,12 +626,12 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")	
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)	
 			break
 			}
 			case 	PULSE_DISTRIBUTION.LINKED:
 			{
-				__pulse_show_debug_message("PULSE ERROR: Distribution Linked not allowed in U Coordinate")
+				__pulse_show_debug_message("Distribution Linked not allowed in U Coordinate",2)
 				break
 			}
 		}
@@ -574,7 +658,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				else
 				{
 					divisions_v	= 1
-					__pulse_show_debug_message("PULSE ERROR: Distribution Even argument must be an real, Defaulted to 1")
+					__pulse_show_debug_message("Distribution Even argument must be an real, Defaulted to 1",1)
 				}
 			break
 			}
@@ -582,7 +666,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			{
 				if !is_array(_input)
 				{
-					__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve argument must be an array [curve,channel]")	
+					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
 					break;
 				}
 				if animcurve_really_exists(_input[0])
@@ -594,12 +678,12 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 						break
 					}
 				}
-				__pulse_show_debug_message("PULSE ERROR: Distribution Anim Curve or channel not found")	
+				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)	
 			break
 			}
 			case 	PULSE_DISTRIBUTION.LINKED:
 			{
-				__pulse_show_debug_message("PULSE ERROR: Distribution Linked not allowed in V Coordinate")
+				__pulse_show_debug_message("Distribution Linked not allowed in V Coordinate",2)
 				break
 			}
 		}
@@ -629,7 +713,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		else
 		{		
-		__pulse_show_debug_message("PULSE ERROR: Displacement Map is a wrong format")
+		__pulse_show_debug_message("Displacement Map is a wrong format",2)
 		}
 	}
 	
@@ -642,7 +726,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		else
 		{
-		__pulse_show_debug_message("PULSE ERROR: Color Map is a wrong format")
+		__pulse_show_debug_message("Color Map is a wrong format",2)
 		}
 		return self
 	}
@@ -650,6 +734,10 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	#endregion
 	
 	#region FORCES
+	
+	/// @description	Adds a force to the current emitter. Force must be a Pulse Force
+	/// @param {Struct.pulse_force}	_force : Pulse force to be added to the emitter
+	/// @context pulse_local_emitter
 	static	add_force			=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
@@ -658,7 +746,9 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		return self
 	}
-	
+	/// @description	Removes a force already applied to the current emitter. Force must be a Pulse Force
+	/// @param {Struct.pulse_force}	_force : Pulse force to be removed from the emitter
+	/// @context pulse_local_emitter
 	static	remove_force		=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
@@ -832,14 +922,14 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.RANDOM
 		{
 			//Distribute along the v coordinate (across the radius in a circle) by randomizing, then adjusting by shape evaluation
-			_p.v_coord		??= random(1)
+			_p.v_coord		??= random_range(mask_v_start,mask_v_end)
 			_p.length = lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
 			
 		}
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.ANIM_CURVE
 		{
 			//Distribute along the radius by animation curve distribution, then adjusting by shape evaluation
-			_p.v_coord		??= random(1)
+			_p.v_coord		??= random_range(mask_v_start,mask_v_end)
 			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,animcurve_channel_evaluate(__v_coord_channel,_p.v_coord))
 		}
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.EVEN
@@ -1551,8 +1641,13 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		return colliding_entities
 	}
 	
-	//Emit\Burst function 
-	static	pulse				=	function(_amount_request,x,y,_cache=false)
+	/// @description	Emits the particles from the emitter. Result can be cached instead
+	/// @param {Real}	_amount_request : Amount of particles requested for creation. Actual amount might vary if the system has a limit.
+	/// @param {Real}	x : X coordinate in room space.
+	/// @param {Real}	y : Y coordinate in room space.
+	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not
+	/// @context pulse_local_emitter
+	static	pulse				=	function(_amount_request,x,y,_cache=undefined)
 	{
 
 		if part_system.index = -1
@@ -1563,7 +1658,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 			}
 			else
 			{
-				__pulse_show_debug_message("PULSE WARNING: System is currently asleep!")
+				__pulse_show_debug_message("System is currently asleep!", 1)
 				exit
 			}
 		}
@@ -1596,7 +1691,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		var system_array = array_length(part_system_array)
 		var type_array = array_length(part_type_array)
 		
-		/////////////////// CHANGES HERE AND AT THE END OF THE PULSE
+	
 		div_v	=	1 +  divisions_v_offset
 		if div_v>2 div_v -= 1
 		
@@ -1789,7 +1884,7 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 			{
 				flag_stencil = false
 			
-			if shuffle array_shuffle(cache,irandom_range(0,floor(length/2)),length/2)
+			if shuffle array_shuffle_ext(cache,irandom_range(0,floor(length/2)),length/2)
 			}
 		} until(_amount = 0)
 	}

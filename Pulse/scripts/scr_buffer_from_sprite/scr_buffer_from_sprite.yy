@@ -6,7 +6,7 @@
   "name":"scr_buffer_from_sprite",
   "parent":{
     "name":"BufferFromSprite_scripts",
-    "path":"folders/Pulse/BufferFromSprite_scripts.yy",
+    "path":"folders/Pulse/Dependencies/BufferFromSprite_scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

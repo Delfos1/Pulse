@@ -1,6 +1,8 @@
+__pulse_show_debug_message("∴ v 0.8.00 ∴",0)
+
 /*
-PULSE v 0.6.00
-2023.09.10
+PULSE v 0.8.00
+2025.MARCH
 
 
 Pulse is a Particle Library for GameMaker, made by Matias 'Delfos' Poggini
@@ -25,7 +27,7 @@ FoxyOfJungle, Juju Adams, Red
 
 MIT License
 
-Copyright (c) 2023 Matias 'Delfos' Poggini
+Copyright (c) 2025 Matias 'Delfos' Poggini
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal

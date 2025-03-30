@@ -6,7 +6,7 @@
   "name":"scr_anim_curves",
   "parent":{
     "name":"AnimCurves_scripts",
-    "path":"folders/Pulse/AnimCurves_scripts.yy",
+    "path":"folders/Pulse/Dependencies/AnimCurves_scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

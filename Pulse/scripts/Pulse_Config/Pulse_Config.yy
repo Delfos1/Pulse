@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_Default_config",
+  "%Name":"Pulse_Config",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_Default_config",
+  "name":"Pulse_Config",
   "parent":{
     "name":"Pulse",
     "path":"folders/Pulse.yy",

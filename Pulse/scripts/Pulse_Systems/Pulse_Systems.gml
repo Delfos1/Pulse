@@ -51,7 +51,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		part_system_depth(index, depth);
@@ -65,7 +65,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		part_system_automatic_update(index,update);
@@ -79,7 +79,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		draw	=	_bool;
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		
@@ -94,7 +94,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		part_system_layer(index,layer);
@@ -107,7 +107,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		draw_oldtonew	=	_bool;
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		part_system_draw_order(index,draw_oldtonew);
@@ -121,7 +121,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		y				=	_y;
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return self
 		}
 		part_system_position(index,x,y);
@@ -133,7 +133,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			__pulse_show_debug_message("System is asleep and properties can't be set",1)
 			return self
 		}
 		angle = _angle
@@ -160,7 +160,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			__pulse_show_debug_message("System is asleep and properties can't be set",1)
 			return self
 		}
 			color			=	_color
@@ -173,7 +173,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep and properties can't be set")
+			__pulse_show_debug_message("ystem is asleep and properties can't be set",1)
 			return self
 		}
 			global_space	=	_enable
@@ -185,7 +185,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep and can't be reset")
+			__pulse_show_debug_message("System is asleep and can't be reset",1)
 			return self
 		}
 		if layer != -1
@@ -209,7 +209,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep and can't be updated")
+			__pulse_show_debug_message("System is asleep and can't be updated",1)
 			exit
 		}
 		
@@ -233,7 +233,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			return 0
 		}
 		particle_amount =  part_particles_count(index)
@@ -245,7 +245,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is asleep")
+			__pulse_show_debug_message("System is asleep",1)
 			exit
 		}
 	
@@ -258,7 +258,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is already asleep")
+			__pulse_show_debug_message("System is already asleep",1)
 		}
 		part_system_destroy(index)
 		index = -1
@@ -268,7 +268,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 	{
 		if index != -1 
 		{
-			__pulse_show_debug_message("PULSE WARNING: System is already awake")
+			__pulse_show_debug_message("System is already awake",1)
 		}
 		
 		if layer != -1
@@ -329,7 +329,7 @@ function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false
 	if pulse_exists_system(_name) <= 0 
 	{
 		global.pulse.systems[$_name] = new __pulse_system(_name,_layer,_persistent);
-		__pulse_show_debug_message($"PULSE SUCCESS: Created system by the name {_name}");
+		__pulse_show_debug_message($"Created system by the name {_name}",3);
 	}
 	
 		if _return_index

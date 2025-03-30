@@ -131,7 +131,7 @@ function __pulse_map(_map,_parent): __pulse_color_map(_map,_parent) constructor
 		}
 		else
 		{
-			__pulse_show_debug_message("PULSE ERROR: Color mode needs to be A to B for displacement maps")
+			__pulse_show_debug_message("Color mode needs to be A to B for displacement maps",2)
 			return self
 		}
 		

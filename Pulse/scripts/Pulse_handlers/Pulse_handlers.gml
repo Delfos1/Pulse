@@ -18,7 +18,7 @@ function pulse_destroy_all()
 		}
 		global.pulse.systems={}
 		
-		__pulse_show_debug_message("PULSE SUCCESS: Systems destroyed");
+		__pulse_show_debug_message("Systems destroyed",3);
 	}
 	
 	if array_length(part)>0
@@ -33,7 +33,7 @@ function pulse_destroy_all()
 		}
 		global.pulse.part_types={}
 		
-		__pulse_show_debug_message("PULSE SUCCESS: Particles destroyed");
+		__pulse_show_debug_message("Particles destroyed",3);
 	}
 	
 }	
@@ -46,7 +46,7 @@ function pulse_clone_system(__name,__new_name=__name)
 {
 	if  !struct_exists(global.pulse.systems,__name)
 	{
-		__pulse_show_debug_message($"PULSE ERROR: Couldn't find a particle by the name {__name}");
+		__pulse_show_debug_message($"Couldn't find a particle by the name {__name}",2);
 		exit;
 	}
 		
@@ -59,7 +59,7 @@ function pulse_clone_system(__name,__new_name=__name)
 	global.pulse.systems[$__new_name].index	=	part_system_create()
 	global.pulse.systems[$__new_name].reset()
 
-	__pulse_show_debug_message($"PULSE SUCCESS: System {__name} cloned and named {__new_name}");
+	__pulse_show_debug_message($"System {__name} cloned and named {__new_name}",1);
 	
 	return global.pulse.systems[$__new_name]
 }
@@ -73,7 +73,7 @@ function pulse_clone_particle(__name,__new_name=__name)
 
 	if  !struct_exists(global.pulse.part_types,__name)
 	{
-		__pulse_show_debug_message($"PULSE ERROR: Couldn't find a particle by the name {__name}");
+		__pulse_show_debug_message($"Couldn't find a particle by the name {__name}",2);
 		exit;
 	}
 		
@@ -87,7 +87,7 @@ function pulse_clone_particle(__name,__new_name=__name)
 	global.pulse.part_types[$__new_name].reset()
 	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle")
 	global.pulse.part_types[$__new_name].subparticle= undefined
-	__pulse_show_debug_message($"PULSE SUCCESS: Particle {__name} cloned and named {__new_name}");
+	__pulse_show_debug_message($"Particle {__name} cloned and named {__new_name}",3);
 	
 	return global.pulse.part_types[$__new_name]
 }
@@ -269,11 +269,11 @@ function	__pulse_lookup_system(_name)
 				return global.pulse.systems[$_name];
 		break
 		case 0:
-				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system by that name")
+				__pulse_show_debug_message($"System {_name} not found, creating system by that name",1)
 				return pulse_make_system(_name);
 		break
 		case -1:
-				__pulse_show_debug_message($"PULSE WARNING: System {_name} not found, creating system with default name")
+				__pulse_show_debug_message($"System {_name} not found, creating system with default name",1)
 				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
 		break
 	}
@@ -293,11 +293,11 @@ function	__pulse_lookup_particle(_name)
 				return global.pulse.part_types[$_name];
 		break
 		case 0:
-				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with that name")
+				__pulse_show_debug_message($"particle {_name} not found, creating particle with that name",1)
 				return pulse_make_particle(_name);
 		break
 		case -1:
-				__pulse_show_debug_message($"PULSE WARNING: particle {_name} not found, creating particle with default name")
+				__pulse_show_debug_message($"particle {_name} not found, creating particle with default name" ,1)
 				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
 		break
 	}

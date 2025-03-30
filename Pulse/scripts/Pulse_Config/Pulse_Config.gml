@@ -62,11 +62,28 @@ enum PULSE_FORCE
 	RANGE_DIRECTIONAL,
 }
 
-function __pulse_show_debug_message(_message)
+function __pulse_show_debug_message(_message,_type = 0)
 {
 	if __PULSE_SHOW_DEBUG == false exit;
 	
-	show_debug_message(_message);
+	var _pre = ""
+	switch (_type)
+	{
+		case 0 : // Normal message
+			_pre = "███ ♋ PULSE  ███ : "
+		break
+		case 1 : // Warning
+			_pre = "███⚠ ↯ PULSE WARNING ⚠███ : "
+		break
+		case 2: // Error
+			_pre = "███⚠ ↯ PULSE ERROR ⚠███ : "
+		break
+		case 3: // Success
+			_pre = "███※ ↯ PULSE SUCCESS ※███ : "
+		break
+	}
+	
+	show_debug_message($"{_pre} + {_message}");
 }
 
 //Shows messages on the Output

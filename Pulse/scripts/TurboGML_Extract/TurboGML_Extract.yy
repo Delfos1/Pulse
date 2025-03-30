@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"TurboGML_Extract",
   "parent":{
-    "name":"Pulse",
-    "path":"folders/Pulse.yy",
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

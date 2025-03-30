@@ -234,7 +234,7 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 */
 	#region TRANSFORMATION HELPERS
 
-/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower). The factor is relative to the current time factor of the particle.
 /// @param {Real}			_factor : factor to which to change the time scale of the particle, relative to the current factor
 		static scale_time		= function (_factor)
 		{
@@ -256,7 +256,7 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 		
 			return self
 		}
-/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
+/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower). The factor is absolute in relation to the original properties of the particle
 /// @param {Real}			_factor : factor to which to change the time scale of the particle in absolute terms	
 		static scale_time_abs	= function(_factor)
 		{
@@ -269,65 +269,81 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 		
 			return self
 		}
-/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
-/// @param {Real}			_factor : factor to which to change the time scale of the particle		
-		static scale_space		= function (_factor,_shrink_particle)
+/// @description			It changes Life, Speed and Gravity so the particle does a similar trajectory but scaled in space. The factor is relative to the current scale factor of the particle.
+/// @param {Real}			_factor : factor to which to change the space scale of the particle, relative to the current factor
+/// @param {Bool}			_shrink_particle : Whether to change the particle's size (true) or only it's trajectory (false)
+/// @param {Bool}			_gravity : Whether to change the particle's gravity
+		static scale_space		= function (_factor,_shrink_particle, _gravity = true)
 		{
 		
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
-			set_gravity(gravity[0]*_factor,gravity[1])
+			if _gravity = set_gravity(gravity[0]*_factor,gravity[1])
 			if _shrink_particle
 			{
 				set_size([size[0]*_factor,size[1]*_factor],[size[2]*_factor,size[3]*_factor],[size[4]*_factor,size[5]*_factor],[size[6]*_factor,size[7]*_factor])
 			}
-		
+			
+			scale_factor *= _factor
+
 			return self
 		}
-/// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower)
-/// @param {Real}			_factor : factor to which to change the time scale of the particle		
-		static scale_space_abs	= function(_factor,_shrink_particle)
+/// @description			It changes Life, Speed and Gravity so the particle does a similar trajectory but scaled in space. The factor is absolute in relation to the original properties of the particle
+/// @param {Real}			_factor : factor to which to change the space scale of the particle	in absolute terms	 	
+/// @param {Bool}			_shrink_particle : Whether to change the particle's size (true) or only it's trajectory (false)
+/// @param {Bool}			_gravity : Whether to change the particle's gravity
+		static scale_space_abs	= function(_factor,_shrink_particle,_gravity = true)
 		{
 			var _absolute_factor = _factor
 			_factor = _factor/space_factor
 			
-			scale_space(_factor,_shrink_particle)
+			scale_space(_factor,_shrink_particle,_gravity)
 			
-			space_factor = _absolute_factor
+			scale_factor = _absolute_factor
 		
 			return self
 		}
-/// @description			Change a particle's scale by using absolute pixel size instead of relative scale
-/// @param {Real}			_min : minimum size of the particle, in pixels, when created	
-/// @param {Real}			_max : maximum size of the particle, in pixels, when created
+/// @description			Change a particle's scale by using absolute pixel size instead of relative scale. 
+/// It accepts arrays including different min, max,incr and wiggle for the x and y coord
+/// @param {Real}			_min : Minimum size of the particle, in pixels, when created	
+/// @param {Real}			_max : Maximum size of the particle, in pixels, when created
 /// @param {Real}			_incr : +/- additive amount of pixels the particle can grow or shrink step to step	
 /// @param {Real}			_wiggle : +/- amount of pixels the particle can vary step to step	
 /// @param {Real}			_mode : 0 = average of width and height of sprite, 1 = use as reference the largest side, 2 = use the smallest side
 		static set_size_abs		=	function(_min,_max,_incr=0,_wiggle=0,_mode=0)
 		{
-			var _size
+			var _size , _height = 0,_width = 0
 			
+			// If particle is using some of the default "shapes" default size to 64
 			if !set_to_sprite
 			{
-				return self
+				_height = 64
+				_width = 64
+			}
+			else // Otherwise it is using a sprite
+			{
+				_height = sprite_get_height(sprite[0])
+				_width = sprite_get_width(sprite[0])
 			}
 		
-			if _mode == 0		// average of width and height
+			if _height = _width // Sprite is a square
 			{
-				var _size = mean(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+				_size = _height
+			}
+			else if _mode == 0		// average of width and height
+			{
+				_size = mean(_height,_width)
 			}
 			else if _mode == 1	// take the largest of the sprite sides
 			{
-				var _size = max(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+				_size = max(_height,_width)
 			}
 			else				// or take the smallest
 			{
-				var _size = min(sprite_get_height(sprite[0]),sprite_get_width(sprite[0]))
+				_size = min(_height,_width)
 			}
 
 			if is_array(_min) or is_array(_max) or is_array(_incr) or is_array(_wiggle)
 			{
-				var _height	=	sprite_get_height(sprite[0])
-				var _width	=	sprite_get_width(sprite[0])
 				
 				size[0]= is_array(_min) ? _min[0]/_width		: _min/_size
 				size[1]= is_array(_min) ? _min[1]/_height		: _min/_size
@@ -386,14 +402,60 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 			return self
 		}
 		
-		static change_current_speed	=	function(_final_speed, _steps ,_mode=0)
+/// @description			Choose a particle's final size by changing its rate of change, measured in pixels. The first argument can be an array [width,height] or a Real. 
+/// WARNING: This will change the behaviour of the particle to either separate or unified axis.
+/// @param {Real}			_final_size : Final size desired
+/// @param {Real}			_mode : 0 = apply in relation to smallest,shortest lived particle 1 = biggest, long-lived. 2 =  average of both
+/// @param {Real}			_steps : achieve the size in X amount of steps from birth instead.
+		static set_final_size	=	function(_final_size,_mode=0,_steps=undefined)
 		{
-			var _min_accel			=	speed[2]*life[0]
-			var _max_accel			=	speed[2]*life[1]
-			var _min_final_speed	=	speed[0]+min(_min_accel,_max_accel) // the slowest a particle can go
-			var _max_final_speed	=	speed[1]+max(_min_accel,_max_accel)	// the fastest a particle can go
+			var _incr_x , _incr_y ,
+				_min_life			=	_steps ?? life[0],
+				_max_life			=	_steps ?? life[1] ,
+				_separate			=	is_array(_final_size) 
 			
-			var _accel;
+			switch(_mode)
+			{
+				case 0: // min
+				{
+					_incr_x = (_final_size-size[0])/_min_life
+					_incr_y	= _separate ? (_final_size-size[1])/_min_life : _incr_x
+					
+					break
+				}
+				case 1: //max
+				{
+					_incr_x = (_final_size-size[2])/_max_life
+					_incr_y	= _separate ? (_final_size-size[3])/_max_life : _incr_x
+					
+					break
+				}
+				default ://avg
+					_incr_x = mean(((_final_size-size[0])/_min_life),((_final_size-size[2])/_max_life))
+					_incr_y = _separate ? mean(((_final_size-size[1])/_min_life),((_final_size-size[3])/_max_life)) : _incr_x
+			}
+			
+			if _separate
+			{
+				set_size([size[0],size[1]],[size[2],size[3]],[_incr_x,_incr_y],[size[6],size[7]])
+			}
+			else
+			{
+				set_size(size[0],size[2],_incr_x,size[6])
+			}
+			
+			return self
+		}
+		
+		/// @description			Choose a particle's total amount of spins by changing its rate of change, measured in angles
+/// @param {Real}			_revolutions : Total amount of revolutions (spins on its own axis)
+/// @param {Real}			_cw : Clockwise movement (true) or Counter-clockwise (false)
+/// @param {Real}			_mode : 0 = apply in relation to shortest lived particle 1 = longest-lived. 2 =  average of both
+/// @param {Real}			_steps : Revolutions over X amount of steps from birth instead of taking the whole ife of the particle into account.
+
+		static set_revolutions_over_life	=	function(_revolutions,_cw = false, _mode=0,_steps=undefined)
+		{
+			var _incr;
 			var _min_life			=	_steps ?? life[0]
 			var _max_life			=	_steps ?? life[1] 
 			
@@ -401,20 +463,24 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 			{
 				case 0: // min
 				{
-					_accel = (_final_speed-speed[0])/_min_life
+					_incr = (_revolutions*360)/_min_life
+
 					break
 				}
 				case 1: //max
 				{
-					_accel = (_final_speed-speed[1])/_max_life
+					_incr = (_revolutions*360)/_max_life
 					
 					break
 				}
-				default: //avg
-					_accel = mean(((_final_speed-speed[0])/_min_life),((_final_speed-speed[1])/_max_life))
+				default ://avg
+					_incr = mean(((_revolutions*360)/_min_life),((_revolutions*360)/_max_life))
 			}
 			
-			set_speed(speed[0],speed[1],_accel,speed[3])
+			_incr = _cw ? -_incr : _incr
+			
+			set_orient(orient[0],orient[1],_incr,orient[3],orient[4])
+			return self
 		}
 		
 	#endregion 
@@ -797,7 +863,7 @@ function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
 	}
 	
 	global.pulse.part_types[$_name] = new __pulse_instance_particle(_object,_name)
-	__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+	__pulse_show_debug_message($"Created particle by the name {_name}",3);
 	
 	return global.pulse.part_types[$_name]
 }
