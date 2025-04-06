@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Scr_PathPlus_Config",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Scr_PathPlus_Config",
+  "parent":{
+    "name":"PathPlus",
+    "path":"folders/PathPlus.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

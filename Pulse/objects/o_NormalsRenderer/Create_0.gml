@@ -15,7 +15,7 @@ p_smoke.set_sprite(Smoke_up___200_200_,true,true,true).set_speed(3,4).set_color(
 .set_life(200,200).set_direction(85,95).set_size(.6,.9,.003).set_orient(0,0,0,0,false)
 
 
-emitter = new pulse_local_emitter("Normals_Test","smoke")
+emitter = new pulse_emitter("Normals_Test","smoke")
 emitter.set_mask(.125,.375).set_radius(0,100)
 emitter.alter_direction=false
 emitter.force_to_edge=PULSE_TO_EDGE.NONE

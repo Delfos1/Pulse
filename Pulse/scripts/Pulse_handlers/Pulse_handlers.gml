@@ -270,11 +270,11 @@ function	__pulse_lookup_system(_name)
 		break
 		case 0:
 				__pulse_show_debug_message($"System {_name} not found, creating system by that name",1)
-				return pulse_make_system(_name);
+				return new pulse_system(_name);
 		break
 		case -1:
 				__pulse_show_debug_message($"System {_name} not found, creating system with default name",1)
-				return pulse_make_system(__PULSE_DEFAULT_SYS_NAME);
+				return new pulse_system(__PULSE_DEFAULT_SYS_NAME);
 		break
 	}
 	
@@ -293,12 +293,12 @@ function	__pulse_lookup_particle(_name)
 				return global.pulse.part_types[$_name];
 		break
 		case 0:
-				__pulse_show_debug_message($"particle {_name} not found, creating particle with that name",1)
-				return pulse_make_particle(_name);
+				__pulse_show_debug_message($"Particle {_name} not found, creating particle with that name",1)
+				return new pulse_particle(_name);
 		break
 		case -1:
-				__pulse_show_debug_message($"particle {_name} not found, creating particle with default name" ,1)
-				return pulse_make_particle(__PULSE_DEFAULT_PART_NAME);
+				__pulse_show_debug_message($"Particle argument is not a string or a Pulse Particle, creating particle with default name" ,1)
+				return new pulse_particle(__PULSE_DEFAULT_PART_NAME);
 		break
 	}
 	

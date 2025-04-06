@@ -7,10 +7,9 @@ global.pulse =
 }
 
 
-function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
+function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
 	
-
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
 		/// @desc    sets the size of the pulse particle
@@ -210,28 +209,13 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 	}
 	static set_death_on_collision=	function(_amount,_death_particle)
 	{
-		subparticle = new __pulse_subparticle(self,_amount,_death_particle)
+		subparticle		= new __pulse_subparticle(self,_amount,_death_particle)
 		on_collision	= true
 		return self
 	}
 	
 #endregion
-/*
-	static add_dynamic = function(_condition_property,_min,_max,_property)
-	{
-		var struct = {}
-		struct.condition = function(_condition_property,_min,_max)
-		{
-			if _condition_property> _min && _condition_property< _max
-			{return true}
-			else
-			{return false}			
-		}
-		struct.property =  _property
-		array_push(_dynamics,struct)
-		return array_last(_dynamics)
-	}
-*/
+
 	#region TRANSFORMATION HELPERS
 
 /// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower). The factor is relative to the current time factor of the particle.
@@ -566,7 +550,7 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 	update()
 }
 
-function __pulse_instance_particle	(_object,_name) constructor
+function pulse_instance_particle	(_object,_name) constructor
 {
 	name			=	string(_name)
 	index			=	_object
@@ -700,7 +684,7 @@ function __pulse_instance_particle	(_object,_name) constructor
 			instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,_struct.particle_index,_struct)	
 		}
 		}
-	}
+	
 }
 
 function __pulse_particle_class		(_name) constructor
@@ -862,51 +846,56 @@ function __pulse_particle_class		(_name) constructor
 /// @param {String}			_name : Name your particle or leave empty to use the default name
 /// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
 /// @return {Struct}
-function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=false)
+function pulse_store_particle		(_particle,_override = false)
 {
 	// If using the default name, count particles and rename so there are no repeated entries
+		/// Check if it is a Pulse Particle
+	if !is_instanceof(_particle,__pulse_particle_class)
+	{
+		__pulse_show_debug_message("Argument provided is not a Pulse Particle",3)
+		return
+	}
 	
-	if _name		==__PULSE_DEFAULT_PART_NAME
+	var _name =  _particle.name
+	
+	if _override
+	{
+		__pulse_show_debug_message($"Created particle by the name {_name}",3);
+		
+		global.pulse.part_types[$_name] = variable_clone(_particle)
+		return  global.pulse.part_types[$_name]
+	}
+	
+	if pulse_exists_particle(_name) > 0 
 	{
 		var l		=	struct_names_count(global.pulse.part_types)		
-		_name		=	$"{_name}_{l}";		
+		_name		=	$"{_name}_{l}";	
+		_particle.name = _name
 	}
 	
-	if pulse_exists_particle(_name) <= 0 // If it doesnt exist, create it
-	{
-		global.pulse.part_types[$_name] = new __pulse_particle(_name)
-		__pulse_show_debug_message($"Created particle by the name {_name}",3);
-	}
-	
-	if _return_index
-	{
-		return global.pulse.part_types[$_name].index
-	}
-	else
-	{
-		return global.pulse.part_types[$_name]
-	}
+	__pulse_show_debug_message($"Created system by the name {_name}",3);
+		global.pulse.part_types[$_name] = variable_clone(_particle)
+		return  global.pulse.part_types[$_name]
 }
 
-				
-/// @description			Use this to create a new Instance particle. It returns a reference to the struct
-/// @param {Asset.GMObject}	_object : Object to make instances of.
-/// @param {String}			_name : Name your particle or leave empty to use the default name
-/// @param {Real}			_depth: Depth in which the instance will be created
-/// @return {Struct}
-function pulse_make_instance_particle(_object,_name=__PULSE_DEFAULT_PART_NAME)
+function pulse_fetch_particle		(_name)
 {
-	// If using the default name, count particles and rename so there are no repeated entries
-	if _name		==__PULSE_DEFAULT_PART_NAME
+	/// Check if it is a Pulse System
+	if !is_string(_name)
 	{
-		var l		=	struct_names_count(global.pulse.part_types)		
-		_name		=	$"{_name}_{l}";		
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return
 	}
 	
-	global.pulse.part_types[$_name] = new __pulse_instance_particle(_object,_name)
-	__pulse_show_debug_message($"Created particle by the name {_name}",3);
+	if pulse_exists_particle(_name) > 0 
+	{
+		return global.pulse.part_type[$_name]
+	}
 	
-	return global.pulse.part_types[$_name]
+	__pulse_show_debug_message($"System named '{_name}' not found",3);
+	
+	return 
 }
+				
 
 

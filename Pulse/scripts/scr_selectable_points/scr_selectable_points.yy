@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_selectable_points",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_selectable_points",
+  "parent":{
+    "name":"Implementations",
+    "path":"folders/PathPlus/Implementations.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

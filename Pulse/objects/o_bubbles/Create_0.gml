@@ -11,8 +11,8 @@ bubble2.set_shape(pt_shape_circle).set_color(c_white).set_speed(3,5,.0003).set_a
 system = pulse_make_system("bubble_sys")
 
 ///
-emit = new pulse_local_emitter(system,"bubble")
-emit2 = new pulse_local_emitter(system,"bubble2")
+emit = new pulse_emitter(system,"bubble")
+emit2 = new pulse_emitter(system,"bubble2")
 emit.force_to_edge=PULSE_TO_EDGE.NONE
 emit.alter_direction=false
 emit2.force_to_edge=PULSE_TO_EDGE.NONE

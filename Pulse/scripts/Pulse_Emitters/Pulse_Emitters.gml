@@ -8,7 +8,7 @@ function _pulse_clamp_wrap(val, minn, maxx) {
 }
 
 
-function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined)  constructor // : __pulse_launcher()
+function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined)  constructor // : __pulse_launcher()
 {
 	part_system_array = []
 	part_type_array  = []
@@ -25,7 +25,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	else
 	{
 		part_system = 	 __pulse_lookup_system(__part_system)
-		part_system_array[0]=part_system
+		part_system_array[0]= part_system
 	}
 	
 	if is_array(__part_type)
@@ -173,7 +173,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
 	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
 	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=0,_mode=PULSE_STENCIL.EXTERNAL)
 	{
 		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_channel,false)
@@ -195,7 +195,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
 	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
 	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
 	{
 		set_stencil(__ac_curve_a,_ac_channel_a,0);
@@ -210,7 +210,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	/// @description	Sets the offset of the stencil.
 	/// @param {Real}	__offset : A value from 0 to 1. If surpassed in either direction it self-corrects
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_stencil_offset	=	function(_offset)
 	{
 		if _offset < 0
@@ -225,7 +225,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @description	Sets the mask on the U axis.
 	/// @param {Real}	_mask_start : A value from 0 to 1
 	/// @param {Real}	_mask_end : A value from 0 to 1
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_u_mask			=	function(_mask_start,_mask_end)
 	{
 		mask_start			=	clamp(_mask_start,0,1);
@@ -237,7 +237,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @description	Sets the mask on the V axis.
 	/// @param {Real}	_mask_start : Closer to the internal radius. A value from 0 to 1
 	/// @param {Real}	_mask_end : Closer to the external radius. A value from 0 to 1
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_v_mask			=	function(_mask_start,_mask_end)
 	{
 		mask_v_start			=	clamp(_mask_start,0,1);
@@ -250,7 +250,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @param {Real}	_radius_external : The external radius in absolute terms, in pixels. All particles are created within internal and external radius
 	/// @param {Real}	[_edge_internal] : The internal edge of the emitter. Allows to feather particles going towards the center while still limiting them . DEFAULT : Equal to the internal radius (no feathering)
 	/// @param {Real}	[_edge_external] : The external edge of the emitter. Allows to feather particles going away of the center while still limiting them . DEFAULT : Equal to the external radius (no feathering)
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_radius			=	function(_radius_internal,_radius_external,_edge_internal = _radius_internal,_edge_external = _radius_external)
 	{
 		radius_internal	=	(_radius_internal != undefined) ? _radius_internal : radius_internal;
@@ -265,7 +265,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	///							The emitter's direction determines whether the particles travel away from the center ( 0 ), transversal to the U axis (90) or towards the center (180)
 	/// @param {Real.Degree}	_direction_min : The minimum direction a particle will take. In degrees.
 	/// @param {Real.Degree}	[_direction_max] : The maximum direction a particle will take. In degrees. DEFAULT : Equal to the minimum, (no variation between particles)
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_direction_range	=	function(_direction_min,_direction_max=_direction_min)
 	{
 		direction_range	=	[_direction_min,_direction_max]
@@ -276,7 +276,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @description	Sets the mask on the U axis as an even spread from a central axis in an elliptic emitter. 
 	/// @param {Real.Degree}	_direction : Central axis from which to measure the spread. In degrees.
 	/// @param {Real.Degree}	_spread_angle : Spread from the central direction, to either sides of it. In degrees.
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_mask_spread			=	function(_direction, _spread_angle)
 	{
 		_direction			= (_direction%360)/360
@@ -289,7 +289,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @description	Sets the scale of the emitter. 1 == Notmal scale
 	/// @param {Real}	[_x_scale] : Scale for the X axis. If left empty, the scale in this axis remains unchanged
 	/// @param {Real}	[_y_scale] : Scale for the Y axis. If left empty, the scale in this axis remains unchanged
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_scale			=	function(_x_scale=x_scale,_y_scale=y_scale)
 	{
 		if is_real(_x_scale) && is_real(_y_scale)
@@ -309,7 +309,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	///					By default the focal point is [0,0] , equivalent to the emitter's position.
 	/// @param {Real}	_x : X coordinate relative to the emitter's position
 	/// @param {Real}	_y : Y coordinate relative to the emitter's position
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	set_focal_point		=	function(_x,_y)
 	{
 		x_focal_point		=	_x
@@ -324,12 +324,27 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	/// @description	Sets the form of the emitter as a Path. It can be a path asset or a PathPlus. It will be converted to a PathPlus
 	/// @param {Asset.GMPath ,  Struct.PathPlus}	_path : Path asset or a PathPlus. It will be converted to a PathPlus
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	form_path			=	function(_path)
 	{
-		path = _path
-		path_res = power(path_get_number(path)-1,path_get_precision(path))
-		form_mode = PULSE_FORM.PATH
+		if is_instanceof(_path,PathPlus)
+		{
+			path = _path
+			path_res = -100
+			form_mode = PULSE_FORM.PATH
+			__pulse_show_debug_message("PathPlus applied as form",4)
+		}
+		if path_exists(_path)
+		{
+			path = _path
+			path_res = power(path_get_number(path)-1,path_get_precision(path))
+			form_mode = PULSE_FORM.PATH
+			__pulse_show_debug_message("Path applied as form",4)
+		}
+		else
+		{
+			__pulse_show_debug_message("No Path was provided",3)
+		}
 		
 		return self
 	}
@@ -337,7 +352,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	///					Point B is determined in the arguments, and it is a coordinate RELATIVE to the position of the emitter
 	/// @param {Real}	x_point_b : X coordinate of the Point B of the line, RELATIVE to the position of the emitter
 	/// @param {Real}	y_point_b : Y coordinate of the Point B of the line, RELATIVE to the position of the emitter
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	form_line			=	function(x_point_b,y_point_b)
 	{
 		line	=	[x_point_b,y_point_b]
@@ -347,7 +362,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	}
 	
 	/// @description	Sets the form of the emitter as an ellipse. It is the default shape of an emitter
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	form_ellipse			= function()
 	{
 		form_mode = PULSE_FORM.ELLIPSE
@@ -737,7 +752,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	
 	/// @description	Adds a force to the current emitter. Force must be a Pulse Force
 	/// @param {Struct.pulse_force}	_force : Pulse force to be added to the emitter
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	add_force			=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
@@ -748,7 +763,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	}
 	/// @description	Removes a force already applied to the current emitter. Force must be a Pulse Force
 	/// @param {Struct.pulse_force}	_force : Pulse force to be removed from the emitter
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	remove_force		=	function(_force)
 	{
 		if is_instanceof(_force,pulse_force)
@@ -1117,20 +1132,31 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		{
 			case PULSE_FORM.PATH:
 			{
-				var j			= 1/path_res
-				_p.x_origin	= path_get_x(path,_p.u_coord)
-				_p.y_origin	= path_get_y(path,_p.u_coord)
-				var x1			= path_get_x(path,_p.u_coord+j)
-				var y1			= path_get_y(path,_p.u_coord+j)
-				_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
+				// path_res -100 is a PathPlus
+				if path_res != -100
+				{
+					var j			= 1/path_res
+					_p.x_origin	= path_get_x(path,_p.u_coord)
+					_p.y_origin	= path_get_y(path,_p.u_coord)
+					var x1			= path_get_x(path,_p.u_coord+j)
+					var y1			= path_get_y(path,_p.u_coord+j)
+					_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
 							
-				// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-				//var x2	= path_get_x(path,u_coord+(j*2))
-				//var y2	= path_get_y(path,u_coord+(j*2))
-				//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+					// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
+					//var x2	= path_get_x(path,u_coord+(j*2))
+					//var y2	= path_get_y(path,u_coord+(j*2))
+					//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
 
-				_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
-						
+					_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
+				}
+				else
+				{
+					var _path = path.SampleFromCache(_p.u_coord)
+					_p.x_origin	= _path.x
+					_p.y_origin	= _path.y
+					_p.transv	= _path.transversal
+					_p.normal	= _path.normal
+				}
 				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
 				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
 						
@@ -1299,7 +1325,6 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				_p.life	=	(_length_to_edge-_accel)/_p.speed
 			}
 			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
-		//	if	(_length_to_edge - _length_to_radius) < -20
 			_p.to_edge	=	true
 		}
 				
@@ -1646,7 +1671,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	/// @param {Real}	x : X coordinate in room space.
 	/// @param {Real}	y : Y coordinate in room space.
 	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not
-	/// @context pulse_local_emitter
+	/// @context pulse_emitter
 	static	pulse				=	function(_amount_request,x,y,_cache=undefined)
 	{
 
@@ -1819,7 +1844,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	}
 }
 
-function pulse_cache(_cache,_emitter) constructor
+function	pulse_cache(_cache,_emitter) constructor
 {
 	emitter = _emitter
 	index	= 0

@@ -70,16 +70,16 @@ function __pulse_show_debug_message(_message,_type = 0)
 	switch (_type)
 	{
 		case 0 : // Normal message
-			_pre = "███ ♋ PULSE  ███ : "
+			_pre = "███ ♋ PULSE  ███ : " 
 		break
 		case 1 : // Warning
-			_pre = "███⚠ ↯ PULSE WARNING ⚠███ : "
+			_pre = "▉╳▉ ↯ PULSE WARNING ▉╳▉ : "
 		break
 		case 2: // Error
-			_pre = "███⚠ ↯ PULSE ERROR ⚠███ : "
+			_pre = "▉╳▉ ↯ PULSE ERROR ▉╳▉ : "
 		break
 		case 3: // Success
-			_pre = "███※ ↯ PULSE SUCCESS ※███ : "
+			_pre = "███ ↯ PULSE SUCCESS ███ : "
 		break
 	}
 	

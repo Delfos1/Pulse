@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_Lasso_Selection",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_Lasso_Selection",
+  "parent":{
+    "name":"Implementations",
+    "path":"folders/PathPlus/Implementations.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

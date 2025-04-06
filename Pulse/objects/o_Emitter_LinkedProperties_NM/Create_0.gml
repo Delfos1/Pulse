@@ -17,7 +17,7 @@ arrow.set_sprite(p_arrow_diffuse,false,false,false).set_speed(.5,.5,0,0).set_lif
 
 system = pulse_make_system("system").set_draw(false)
 //Create the emitter
-emitter = new pulse_local_emitter("system","arrow")
+emitter = new pulse_emitter("system","arrow")
 
 //Simple emitter, no edge
 emitter.set_direction_range(180,180).set_radius(0,0)

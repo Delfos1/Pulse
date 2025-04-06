@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_record_path",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_record_path",
+  "parent":{
+    "name":"Implementations",
+    "path":"folders/PathPlus/Implementations.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

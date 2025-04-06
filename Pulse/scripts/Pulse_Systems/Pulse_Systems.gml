@@ -1,4 +1,11 @@
-function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
+
+/// @description			Use this constructor to create a new particle system.
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
+/// @param {ID.Layer}		_layer	: Which layer to place the system
+/// @param {Bool}			_persistent	: Whether to make the system persistent or not (true by default)
+/// @return {Struct}
+function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=true) constructor
 {
 	name = string(_name)
 	
@@ -312,32 +319,56 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 			},[],-1)
 }
 
-/// @description			Use this to create a new particle system. It returns a reference to the struct by default, but it will return the system index if the second argument is true.
-/// @param {String}			_name : Name your particle or leave empty to use the default name
-/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
-/// @param {ID.Layer}		_layer	: Which layer to place the system
-/// @param {Bool}			_persistent	: Whether to make the system persistent or not (true by default)
+/// @description			Store a system in Pulse's Global storage. If there is a system of the same name it will override it or change the name.
+/// @param {String}			_system : Pulse System to store
+/// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system.
 /// @return {Struct}
-function pulse_make_system			(_name=__PULSE_DEFAULT_SYS_NAME,_return_index=false,_layer= undefined,_persistent=true)
+function pulse_store_system			(_system,_override = false)
 {
-	if _name		==__PULSE_DEFAULT_SYS_NAME
+	/// Check if it is a Pulse System
+	if !is_instanceof(_system,pulse_system)
 	{
-		var l		=	struct_names_count(global.pulse.systems)		
-		_name		=	$"{_name}_{l}";		
-	}
-
-	if pulse_exists_system(_name) <= 0 
-	{
-		global.pulse.systems[$_name] = new __pulse_system(_name,_layer,_persistent);
-		__pulse_show_debug_message($"Created system by the name {_name}",3);
+		__pulse_show_debug_message("Argument provided is not a Pulse System",3)
+		return
 	}
 	
-		if _return_index
-		{
-			return global.pulse.systems[$_name].index
-		}
-		else
-		{
-			return global.pulse.systems[$_name]
-		}
+	var _name =  _system.name
+	
+	if _override
+	{
+		__pulse_show_debug_message($"Created system by the name {_name}",3);
+		
+		global.pulse.systems[$_name] = variable_clone(_system)
+		return  global.pulse.systems[$_name]
+	}
+	
+	if pulse_exists_system(_name) > 0 
+	{
+		var l		=	struct_names_count(global.pulse.systems)		
+		_name		=	$"{_name}_{l}";	
+		_system.name = _name
+	}
+	
+	__pulse_show_debug_message($"Created system by the name {_name}",3);
+	global.pulse.systems[$_name] = variable_clone(_system)
+	return  global.pulse.systems[$_name]
+}
+
+function pulse_fetch_system			(_name)
+{
+	/// Check if it is a Pulse System
+	if !is_string(_name)
+	{
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return
+	}
+	
+	if pulse_exists_system(_name) > 0 
+	{
+		return global.pulse.systems[$_name]
+	}
+	
+	__pulse_show_debug_message($"System named '{_name}' not found",3);
+	
+	return 
 }

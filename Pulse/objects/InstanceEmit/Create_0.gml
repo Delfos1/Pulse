@@ -10,7 +10,7 @@ particle = pulse_make_instance_particle(o_particle_example,"particle")
 system	= pulse_make_system("system",false,"Instances_1")
 
 
-emit = new pulse_local_emitter("system","particle",20)
+emit = new pulse_emitter("system","particle",20)
 
 
 emit.force_to_edge=PULSE_TO_EDGE.NONE
