@@ -177,7 +177,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 			return self
 		}
 			global_space	=	_enable
-			part_system_global_space(_enable)
+			part_system_global_space(index,_enable)
 		return self
 	}
 	
@@ -202,7 +202,7 @@ function __pulse_system				(_name,_layer= -1,_persistent=true) constructor
 		part_system_position		(index,x,y);
 		part_system_angle			(index,angle);
 		part_system_color			(index,color,alpha);
-		part_system_global_space	(global_space);
+		part_system_global_space	(index,global_space);
 	}
 	
 	static update_system			= function(_resample=1)

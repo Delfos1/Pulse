@@ -8,7 +8,7 @@ function _pulse_clamp_wrap(val, minn, maxx) {
 }
 
 
-function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined) : __pulse_launcher()  constructor
+function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined)  constructor // : __pulse_launcher()
 {
 	part_system_array = []
 	part_type_array  = []
@@ -66,7 +66,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	mask_v_start		=	0
 	mask_v_end			=	1
 	line				=	[0,0]
-	
+
 	#endregion
 	
 	#region Emitter properties
@@ -1650,6 +1650,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 	static	pulse				=	function(_amount_request,x,y,_cache=undefined)
 	{
 
+		
 		if part_system.index = -1
 		{
 			if part_system.wake_on_emit
@@ -1793,7 +1794,7 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 				}
 				else
 				{
-					__launch(particle_struct)
+					part_type.launch(particle_struct)
 				}
 			}
 				
@@ -1813,19 +1814,12 @@ function	pulse_local_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=
 		}
 		if _cache
 		{ 
-			if is_instanceof(_cache,__pulse_cache) 
-			{
-				_cache.add_particles(cache)
-			}
-			else
-			{
-				return new __pulse_cache(cache,self)
-			}
+				return cache
 		}
 	}
 }
 
-function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
+function pulse_cache(_cache,_emitter) constructor
 {
 	emitter = _emitter
 	index	= 0
@@ -1833,7 +1827,7 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 	cache	= _cache
 	length	= array_length(_cache)
 	flag_stencil = false
-	
+	part_type = emitter.part_type
 	static	add_particles = function(array)
 	{
 		cache = array_concat(cache,array)
@@ -1865,7 +1859,7 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 				if flag_stencil {__update_stencil(index,length-index)}
 				for(var _i = index ; _i < length-index ; _i++)
 				{
-					__launch(cache[_i],x,y)
+					part_type.launch(cache[_i],x,y)
 				}
 				_amount -=  (length - index)
 				index = 0
@@ -1875,7 +1869,7 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 				if flag_stencil {__update_stencil(index,index+_amount)}
 				for(var _i = index ; _i < index+_amount ; _i++)
 				{
-					__launch(cache[_i],x,y)
+					part_type.launch(cache[_i],x,y)
 				}
 				index = (index + _amount) % length
 				_amount = 0
@@ -1890,50 +1884,6 @@ function __pulse_cache(_cache,_emitter) : __pulse_launcher()  constructor
 	}
 }
 
-function __pulse_launcher() constructor
-{
-	static	__launch		=	function(_struct,x=0,y=0)
-	{
-		with(_struct)
-		{
-			part_type_life(particle.index,life,life);
-			part_type_speed(particle.index,speed,speed,particle.speed[2],particle.speed[3])
-			part_type_direction(particle.index,dir,dir,particle.direction[2],particle.direction[3])
-		
-			if size !=undefined
-			{
-				part_type_size_x(particle.index,size[0],size[2],particle.size[4],particle.size[6])	
-				part_type_size_y(particle.index,size[1],size[3],particle.size[4],particle.size[6])	
-			}
-			
-			if orient !=undefined
-			{
-				part_type_orientation(particle.index,orient,orient,particle.orient[2],particle.orient[3],particle.orient[4])	
-			}
-			
-			if frame != undefined
-			{
-				part_type_subimage(particle.index,frame)
-			}
-			
-			if color_mode  !=undefined
-			{
-				if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
-				{
-					part_type_color_rgb(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
-				} 
-				else if color_mode == PULSE_COLOR.A_TO_B_HSV
-				{
-					part_type_color_hsv(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
-				}
-			}
-			particle.prelaunch(_struct)
-			
-			part_particles_create(part_system.index, x_origin+x,y_origin+y,particle.index, 1);
-		}		
-	}
-}
-
 
 /// @desc Throws a vector until it hits an object. Returns Vector3(x, y, id) if it hits.
 /// @param {real} origin_x The ray x origin.
@@ -1944,6 +1894,7 @@ function __pulse_launcher() constructor
 /// @param {bool} precise Whether the check is based on precise collisions (true, which is slower) or its bounding box in general (false, faster).
 /// @param {bool} notme Whether the calling instance, if relevant, should be excluded (true) or not (false).
 /// @returns {struct} Description
+/// Modified from Foxy's TurboGML
 function __pulse_raycast(origin_x, origin_y, object, angle, distance, precise=true, notme=true) {
 	// original by: YellowAfterLife, https://yal.cc/gamemaker-collision-line-point/
 	// edited by FoxyOfJungle, adapted for Pulse

@@ -485,7 +485,46 @@ function __pulse_particle			(_name) : __pulse_particle_class(_name) constructor
 		
 	#endregion 
 
-	
+	static	launch		=	function(_struct,x=0,y=0)
+	{
+		with(_struct)
+		{
+			part_type_life(particle.index,life,life);
+			part_type_speed(particle.index,speed,speed,particle.speed[2],particle.speed[3])
+			part_type_direction(particle.index,dir,dir,particle.direction[2],particle.direction[3])
+		
+			if size !=undefined
+			{
+				part_type_size_x(particle.index,size[0],size[2],particle.size[4],particle.size[6])	
+				part_type_size_y(particle.index,size[1],size[3],particle.size[4],particle.size[6])	
+			}
+			
+			if orient !=undefined
+			{
+				part_type_orientation(particle.index,orient,orient,particle.orient[2],particle.orient[3],particle.orient[4])	
+			}
+			
+			if frame != undefined
+			{
+				part_type_subimage(particle.index,frame)
+			}
+			
+			if color_mode  !=undefined
+			{
+				if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
+				{
+					part_type_color_rgb(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
+				} 
+				else if color_mode == PULSE_COLOR.A_TO_B_HSV
+				{
+					part_type_color_hsv(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
+				}
+			}
+			particle.prelaunch(_struct)
+			
+			part_particles_create(part_system.index, x_origin+x,y_origin+y,particle.index, 1);
+		}		
+	}
 	reset()
 	
 }
@@ -630,26 +669,27 @@ function __pulse_instance_particle	(_object,_name) constructor
 	#endregion
 	
 	static launch		=	function(_struct)
-	{		 
-		if _struct._size == undefined
+	{	
+		
+		if _struct.size == undefined
 		{
-			_struct._size			=	size
+			_struct.size			=	size
 		}
-		if _struct._orient == undefined
+		if _struct.orient == undefined
 		{
-			_struct._orient			=	orient
+			_struct.orient			=	orient
 		}
-		_struct._scale			=	scale
+		_struct.scale			=	scale
 		_struct.color			=	color
-		_struct._alpha			=	alpha
-		_struct._blend			=	blend
+		_struct.alpha			=	alpha
+		_struct.blend			=	blend
 		//_struct._sprite			=	_sprite
 
-		_struct._gravity		=	gravity
-		_struct._death_type		=	death_type
-		_struct._death_number	=	death_number
-		_struct._step_type		=	step_type
-		_struct._step_number	=	step_number
+		_struct.gravity		=	gravity
+		_struct.death_type		=	death_type
+		_struct.death_number	=	death_number
+		_struct.step_type		=	step_type
+		_struct.step_number		=	step_number
 
 		if _struct.part_system.layer == -1
 		{
@@ -658,6 +698,7 @@ function __pulse_instance_particle	(_object,_name) constructor
 		else
 		{
 			instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,_struct.particle_index,_struct)	
+		}
 		}
 	}
 }
@@ -834,7 +875,7 @@ function pulse_make_particle		(_name=__PULSE_DEFAULT_PART_NAME,_return_index=fal
 	if pulse_exists_particle(_name) <= 0 // If it doesnt exist, create it
 	{
 		global.pulse.part_types[$_name] = new __pulse_particle(_name)
-		__pulse_show_debug_message($"PULSE SUCCESS: Created particle by the name {_name}");
+		__pulse_show_debug_message($"Created particle by the name {_name}",3);
 	}
 	
 	if _return_index
