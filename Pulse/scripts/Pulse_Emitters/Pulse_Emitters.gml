@@ -209,7 +209,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the offset of the stencil.
-	/// @param {Real}	__offset : A value from 0 to 1. If surpassed in either direction it self-corrects
+	/// @param {Real}	__offset : A value from 0 to 1.
 	/// @context pulse_emitter
 	static	set_stencil_offset	=	function(_offset)
 	{
@@ -222,7 +222,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
-	/// @description	Sets the mask on the U axis.
+	/// @description	Sets the mask on the U axis. A mask defines a range in which particles can spawn
 	/// @param {Real}	_mask_start : A value from 0 to 1
 	/// @param {Real}	_mask_end : A value from 0 to 1
 	/// @context pulse_emitter
@@ -234,7 +234,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
-	/// @description	Sets the mask on the V axis.
+	/// @description	Sets the mask on the V axis. A mask defines a range in which particles can spawn
 	/// @param {Real}	_mask_start : Closer to the internal radius. A value from 0 to 1
 	/// @param {Real}	_mask_end : Closer to the external radius. A value from 0 to 1
 	/// @context pulse_emitter
@@ -1615,7 +1615,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		 _fail			= 0 ,
 		 _dir_stencil	= animcurve_points_find_closest(_points.collection, stencil_offset,false),
 		 _mod_i			= _dir_stencil,
-		 _l				= _points.length,
+		 _l				= _points.length
 		 
 		for(var i =	0; i < _l ; i +=1)
 		{
@@ -1670,11 +1670,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Real}	_amount_request : Amount of particles requested for creation. Actual amount might vary if the system has a limit.
 	/// @param {Real}	x : X coordinate in room space.
 	/// @param {Real}	y : Y coordinate in room space.
-	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not
+	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not. If true, returns an array instead of emitting particles.
 	/// @context pulse_emitter
-	static	pulse				=	function(_amount_request,x,y,_cache=undefined)
+	static	pulse				=	function(_amount_request,x,y,_cache=false)
 	{
-
 		
 		if part_system.index = -1
 		{

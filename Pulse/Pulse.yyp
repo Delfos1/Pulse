@@ -1,5 +1,5 @@
 {
-  "$GMProject":"",
+  "$GMProject":"v1",
   "%Name":"Pulse",
   "AudioGroups":[
     {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
@@ -40,13 +40,14 @@
     {"$GMFolder":"","%Name":"BufferFromSprite_scripts","folderPath":"folders/Pulse/Dependencies/BufferFromSprite_scripts.yy","name":"BufferFromSprite_scripts","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Scripts","folderPath":"folders/Scripts.yy","name":"Scripts","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
+  "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"Macaw32.dll","CopyToMask":-1,"filePath":"datafiles","name":"Macaw32.dll","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.11.0.179",
+    "IDEVersion":"2024.13.1.193",
   },
   "name":"Pulse",
   "resources":[
@@ -119,7 +120,6 @@
     {"id":{"name":"scr_selectable_points","path":"scripts/scr_selectable_points/scr_selectable_points.yy",},},
     {"id":{"name":"Script12","path":"scripts/Script12/Script12.yy",},},
     {"id":{"name":"TGM_Collisions","path":"scripts/TGM_Collisions/TGM_Collisions.yy",},},
-    {"id":{"name":"TGM_Math","path":"scripts/TGM_Math/TGM_Math.yy",},},
     {"id":{"name":"TGM_Paths","path":"scripts/TGM_Paths/TGM_Paths.yy",},},
     {"id":{"name":"TGM_Raycasting","path":"scripts/TGM_Raycasting/TGM_Raycasting.yy",},},
     {"id":{"name":"TGM_Vector","path":"scripts/TGM_Vector/TGM_Vector.yy",},},

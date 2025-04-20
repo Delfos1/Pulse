@@ -3,7 +3,10 @@ show_debug_overlay(debug)
 
 
 // Welcome to Pulse!
+pulse_destroy_particle("a_particle_name")
 
+particle = get_open_filename(".txt","particle")
+particle = pulse_import_particle(particle)
 emitter= new pulse_emitter("sys_1","a_particle_name")
 system = pulse_fetch_system("sys_1")
 

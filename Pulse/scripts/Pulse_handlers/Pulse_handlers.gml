@@ -98,18 +98,29 @@ function pulse_clone_particle(__name,__new_name=__name)
 /// @returns {Struct}
 function pulse_destroy_system(_name)
 {
-	if struct_exists(global.pulse.systems,_name)
+	if is_string(_name)
 	{
-		// Destroy particle system
-		part_system_destroy(global.pulse.systems[$_name].index)
-		
-		// Destroy time_source
-		if time_source_exists(global.pulse.systems[$_name].count)
+		if struct_exists(global.pulse.systems,_name)
 		{
-			time_source_destroy(global.pulse.systems[$_name].count,true)
+			// Destroy particle system
+			part_system_destroy(global.pulse.systems[$_name].index)
+		
+			// Destroy time_source
+			if time_source_exists(global.pulse.systems[$_name].count)
+			{
+				time_source_destroy(global.pulse.systems[$_name].count,true)
+			}
+			//Remove from struct
+			variable_struct_remove(global.pulse.systems,_name)
 		}
-		//Remove from struct
-		variable_struct_remove(global.pulse.systems,_name)
+	} 
+		else if is_instanceof(_name,pulse_system)
+	{
+		part_system_destroy(_name.index)
+		if time_source_exists(_name.count)
+		{
+			time_source_destroy(_name.count,true)
+		}
 	}
 
 }
@@ -119,14 +130,25 @@ function pulse_destroy_system(_name)
 /// @returns {Struct}
 function pulse_destroy_particle(_name)
 {
-	if struct_exists(global.pulse.part_types,_name)
+	if is_string(_name)
 	{
-		part_type_destroy(global.pulse.part_types[$_name].index)
-		if global.pulse.part_types[$_name].subparticle != undefined 
+		if struct_exists(global.pulse.part_types,_name)
 		{
-			part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
+			part_type_destroy(global.pulse.part_types[$_name].index)
+			if global.pulse.part_types[$_name].subparticle != undefined 
+			{
+				part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
+			}
+			variable_struct_remove(global.pulse.part_types,_name)
 		}
-		variable_struct_remove(global.pulse.part_types,_name)
+	}
+	else if is_instanceof(_name,__pulse_particle_class)
+	{
+		part_type_destroy(_name.index)
+		if _name.subparticle != undefined 
+		{
+			part_type_destroy(_name.subparticle.index)
+		}
 	}
 
 }
@@ -141,18 +163,18 @@ function pulse_exists_system(_name)
 	{
 		if struct_exists(global.pulse.systems,_name)
 		{
-			system_found =  1 //found in struct
+			system_found =  1 //found in storage
 		}
 		else
 		{
 			system_found =  0 //create with provided name
 		}
 	}
-	else if  is_instanceof(_name,__pulse_system)
+	else if  is_instanceof(_name,pulse_system)
 	{
 		if struct_exists(global.pulse.systems,_name.name)
 		{
-			system_found =  2 //found in struct
+			system_found =  2 //found in storage
 		}
 		else
 		{
@@ -177,19 +199,19 @@ function pulse_exists_particle(_name)
 	{
 		if struct_exists(global.pulse.part_types,_name)
 		{
-			particle_found =  1 //found in struct
+			particle_found =  1 //found in storage
 		}
 		else
 		{
 			particle_found =  0 //create with provided name
 		}
 	}
-	else if  is_instanceof(_name,__pulse_particle)
+	else if  is_instanceof(_name,pulse_particle)
 	{
 		if struct_exists(global.pulse.part_types,_name.name)
 		{
 			_name = _name.name
-			particle_found =  2 //found in struct
+			particle_found =  2 //found in storage
 		}
 		else
 		{
@@ -253,6 +275,69 @@ function pulse_convert_particles	(part_system)
 		}
 	l++
 	}
+}
+
+
+function pulse_export_particle(_particle)
+{
+	var file;
+	file = get_save_filename("*.pulse", $"particle_{_particle.name}");
+	if (file != "")
+	{
+		var	 _stringy = json_stringify(_particle , true),
+		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+		buffer_write(_buff, buffer_text, _stringy);
+		buffer_save(_buff, file);
+		buffer_delete(_buff);
+	}
+}
+
+function pulse_import_particle(_particle_file, _overwrite = false)
+{
+	var _buffer = buffer_load(_particle_file),
+		_string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string,	,	false) 
+		buffer_delete(_buffer)
+		
+		var _exists = pulse_exists_particle(_parsed.name)
+		if  ( _exists == 0 && _overwrite ) or _exists == 1
+		{
+				var _new_part = new pulse_particle(_parsed.name)
+				with _new_part{
+					size			=	_parsed.size
+					scale			=	_parsed.scale
+					life			=	_parsed.life
+					color			=	_parsed.color
+					color_mode		=	_parsed.color_mode
+					alpha			=	_parsed.alpha
+					blend			=	_parsed.blend
+					speed			=	_parsed.speed
+					shape			=	_parsed.shape
+					sprite			=	_parsed.sprite
+					orient			=	_parsed.orient
+					gravity			=	_parsed.gravity
+					direction		=	_parsed.direction
+					set_to_sprite	=	_parsed.set_to_sprite
+					death_type		=	_parsed.death_type
+					death_number	=	_parsed.death_number
+					subparticle		=	_parsed.subparticle
+					on_collision	=  _parsed.on_collision
+					step_type		=	_parsed.step_type
+					step_number		=	_parsed.step_number
+					//
+					time_factor		=	_parsed.time_factor
+					scale_factor	=	_parsed.scale_factor
+					altered_acceleration = _parsed.altered_acceleration
+					subparticle		=_parsed.subparticle
+				}
+
+			_new_part.reset()
+			return  _new_part
+		}
+
+		// else return the existintg particle
+		return global.pulse.part_types[$ _parsed.name];
 }
 
 

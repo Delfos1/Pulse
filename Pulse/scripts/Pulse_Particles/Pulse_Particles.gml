@@ -6,18 +6,20 @@ global.pulse =
 	particle_factor:1,
 }
 
-
+/// @description			Use this to create a new particle
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @return {Struct}
 function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
 	
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
-		/// @desc    sets the size of the pulse particle
-		///          
-		/// @param   {Real} _min : Minimum size
-		/// @param   {Real} _max : Maximum size
-		/// @param   {Real} _incr : Size Increment
-		/// @param   {Real} _wiggle : Size wiggle range (frequency is fixed)
+		/// @desc    Sets the size of the particle, as a percentage of the sprite, 1 == 100%. 
+		///          The arguments can be arrays as a [x,y]. This will make the two axis independently random
+		/// @param   {Real,Array<Real>} _min : The minimum size a particle can start at. Can be an array as a [x,y]
+		/// @param   {Real,Array<Real>} _max : The maximum size a particle can start at. Can be an array as a [x,y]
+		/// @param   {Real,Array<Real>} [_incr] : How much the particle will increment or decrease per step. Can be an array as a [x,y] . DEFAULT : 0
+		/// @param   {Real,Array<Real>} [_wiggle] : How much should randomly be added or substracted per step (frequency is fixed at every step). Can be an array as a [x,y]. DEFAULT : 0
 		#endregion
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
 	{
@@ -43,29 +45,50 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 		}
 		return self
 	}
-	static set_scale		=	function(scalex,_scaley)
+		#region jsDoc
+		/// @desc    Sets the horizontal and vertical scale of the particle, regardless of the size of the particle.
+		/// @param   {Real} [_scalex] : Scale of the x axis.  DEFAULT = 0
+		/// @param   {Real} [_scaley] : Scale of the y axis.  DEFAULT = 0
+		#endregion
+	static set_scale		=	function(_scalex=1,_scaley=1)
 	{
-		scale			= [scalex,_scaley]
+		scale			= [_scalex,_scaley]
 		part_type_scale(index,scale[0],scale[1]);
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the range a particle will last, in amount of steps.
+			/// @param   {Real} _min : The minimum a particle will last.
+			/// @param   {Real} _max : The maximum a particle will last.
+		#endregion
 	static set_life			=	function(_min,_max)
 	{
+		_min = max(0,_min)
+		_max = max(0,_max)
 		life	=[_min,_max]
 		part_type_life(index,life[0],life[1])
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the color of a particle. It combines the regular color options for particles.
+			/// __PULSE_COLOR_MODE.COLOR will use one to three colors, and interpolate them throughout the particles life.
+			///  __PULSE_COLOR_MODE.RGB will use either three colors or three arrays, corresponding to the minimum and maximum values of the Red,Green and Blue components
+			///  __PULSE_COLOR_MODE.HSV will use either three colors or three arrays, corresponding to the minimum and maximum values of the Hue,Saturation and Value components
+			///  __PULSE_COLOR_MODE.MIX will use two colors, which will be mixed at random for each particle.
+			/// @param   {Real, Array<Real>} color1 : Can be a color, a Red value, a Hue value, or an array of minimum or maximum Red/Hue
+			/// @param   {Real, Array<Real>} [color2] : Can be a color, a Green value, a Saturation value, or an array of minimum or maximum Green/Saturation
+			/// @param   {Real, Array<Real>} [color3] : Can be a color, a Blue value, a Value component, or an array of minimum or maximum Blue/Value
+			/// @param   {Enum.__PULSE_COLOR_MODE} [_mode] :  The mode which will be used. Use the enum __PULSE_COLOR_MODE.
+		#endregion
 	static set_color		=	function(color1,color2=-1,color3=-1,_mode = __PULSE_COLOR_MODE.COLOR)
 	{
-		if color3 != -1
+		if color3 != -1 && color2 != -1
 		{
 			color=[color1,color2,color3]
 			
 			switch(_mode)
 			{
-				case __PULSE_COLOR_MODE.COLOR :
-					part_type_color3(index,color[0],color[1],color[2])
-				break
+
 				case __PULSE_COLOR_MODE.RGB :
 					if is_array(color1) && is_array(color2) && is_array(color3)
 					{
@@ -86,20 +109,23 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 						part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
 					}
 				break
+				default: 		//		case __PULSE_COLOR_MODE.COLOR :
+					part_type_color3(index,color[0],color[1],color[2])
+				break
 			}
 		}
-		else if color2 != -1
+		else if color2 != -1 && color3 == -1
 		{
 			color=[color1,color2]
 			
-			if _mode == __PULSE_COLOR_MODE.COLOR
+			 if _mode == __PULSE_COLOR_MODE.MIX
+			{
+				part_type_color_mix(index,color[0],color[1])
+			}else		// __PULSE_COLOR_MODE.COLOR
 			{
 				part_type_color2(index,color[0],color[1])
 			}
-			else if _mode == __PULSE_COLOR_MODE.MIX
-			{
-				part_type_color_mix(index,color[0],color[1])
-			}
+			
 			
 		}
 		else
@@ -111,37 +137,65 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 		color_mode		= _mode
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the alpha of a particle. It can use from one to three values.
+			/// @param   {Real} alpha1 : Alpha (transparency) value from 0 to 1
+			/// @param   {Real} [alpha2] : Alpha (transparency) value from 0 to 1
+			/// @param   {Real} [alpha3] : Alpha (transparency) value from 0 to 1
+		#endregion
 	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
 	{
 		if alpha3 != -1
 		{
+			alpha1 = clamp(alpha1,0,1)
+			alpha2 = clamp(alpha2,0,1)
+			alpha3 = clamp(alpha3,0,1)
+			
 			alpha=[alpha1,alpha2,alpha3]	
 			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
 		}
-		else if alpha2 != -1
+		else if alpha2 != -1 
 		{
+			alpha1 = clamp(alpha1,0,1)
+			alpha2 = clamp(alpha2,0,1)
 			alpha=[alpha1,alpha2]
 			part_type_alpha2(index,alpha[0],alpha[1])
 		}
 		else
 		{
+			alpha1 = clamp(alpha1,0,1)
 			alpha=[alpha1]
 			part_type_alpha1(index,alpha[0])
 		}
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the particle renders to be additive (true) or not (false)
+			/// @param   {Bool} _blend :  It sets the particle renders to be additive (true) or not (false)
+		#endregion
 	static set_blend		=	function(_blend)
 	{
 		blend	=	_blend
 		part_type_blend(index,blend)
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the minimum and maximum speed of a particle. A deaccelerating particle can only go up to speed 0 (completely static), not to negative nummbers.
+			/// @param   {Real} _min : The minimum starting speed of a particle, in pixels per game frame.
+			/// @param   {Real} _max : The maximum starting speed of a particle, in pixels per game frame.
+			/// @param   {Real} [_incr] : The acceleration of a particle. It can be a negative number, in pixels per game frame.
+			/// @param   {Real} [_wiggle] : The wiggle value of the speed, to change every frame.
+	#endregion
 	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		speed	=[_min,_max,_incr,_wiggle]
 		part_type_speed(index,speed[0],speed[1],speed[2],speed[3])
 		return self
 	}
+		#region jsDoc
+			/// @desc    Sets the image for the particle as one of the predifined shapes from GameMaker.
+			/// @param   {Constant.ParticleShape} _shape : The shape to use.
+	#endregion
 	static set_shape		=	function(_shape)
 	{
 		shape			=	_shape
@@ -149,6 +203,14 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 		part_type_shape(index,shape)
 		return self
 	}
+		#region jsDoc
+			/// @desc    Sets the image for the particle as one of the sprites loaded into the project.
+			/// @param   {Asset.GMSprite} _sprite : The sprite to use.
+			/// @param   {Bool} [_animate] : Whether to animate the sprite over time (true) or not. DEFAULT: FALSE
+			/// @param   {Bool} [_stretch] : Whether to stretch the animation over the particle's life (true) or loop over it (false). DEFAULT: FALSE
+			/// @param   {Bool} [_random] : Whether to pick a random starting frame (true) or not.
+			/// @param   {Real} [_subimg] : The sub image (frame number) to use as a starting point, if randomness is false.  DEFAULT: 0.
+	#endregion
 	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true,_subimg=0)
 	{
 		sprite			=	[_sprite,_animate,_stretch,_random,_subimg]
@@ -160,29 +222,54 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 		}
 		return self
 	}
+		#region jsDoc
+			/// @desc    It sets the minimum and maximum orientation of a particle.
+			/// @param   {Real} _min : The minimum starting orientation of a particle, in degrees.
+			/// @param   {Real} _max : The maximum starting orientation of a particle, in degrees.
+			/// @param   {Real} [_incr] : The increase in degrees per game frame. Positive is CounterClockwise,negative is Clockwise. DEFAULT: 0
+			/// @param   {Real} [_wiggle] : The wiggle value of the degrees, to change every frame, both CCW and CW. DEFAULT: 0
+			/// @param   {Bool} [_relative] : Wheter to set its angle relative to the direction of the particle's motion or not. DEFAULT: TRUE
+	#endregion
 	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
 	{
 		orient	=[_min,_max,_incr,_wiggle,_relative]
 		part_type_orientation(index,orient[0],orient[1],orient[2],orient[3],orient[4])
 		return self
 	}
+		#region jsDoc
+			/// @desc    Sets a force (usually the gravity) affecting the particle throughout its life. Its an acceleration added on top of the particle's acceleration.
+			/// @param   {Real} _amount : The amount of acceleration added every frame to the particle.
+			/// @param   {Real} _direction : The direction angle, in degrees, of that force.
+	#endregion
 	static set_gravity		=	function(_amount,_direction)
 	{
 		gravity	=[_amount,_direction]
 		part_type_gravity(index,gravity[0],gravity[1])
 		return self
 	}
+		#region jsDoc
+		/// @desc    Sets the initial direction of a particle, in degrees. In Pulse, this direction will often be replaced by the emitter's properties.
+		/// @param   {Real} _min : The minimum direction a particle can start at, in degrees.
+		/// @param   {Real} _max : The maximum direction a particle can start at, in degrees.
+		/// @param   {Real} [_incr] : How much the particle's direction will increment or decrease per step, in degrees. Can be negative or positive, and its the same (and simultaneous) for all particles. DEFAULT: 0
+		/// @param   {Real} [_wiggle] : How much should randomly be added or substracted per step (frequency is fixed at every step). Its the same (and simultaneous) for all particles. DEFAULT: 0
+		#endregion
 	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
 	{
 		direction	=[_min,_max,_incr,_wiggle]
 		part_type_direction(index,direction[0],direction[1],direction[2],direction[3])
 		return self
 	}
-	static set_step_particle=	function(_number,_step)
+		#region jsDoc
+			/// @desc    Sets a particle to be emitted every step.
+			/// @param   {Real} _amount : The amount of particles emitted per step
+			/// @param   {Struct.__pulse_particle_class} _step : The particle to emit every step
+		#endregion
+	static set_step_particle=	function(_amount,_step)
 	{
 		step_type	=	_step
-		step_number	=	_number
-		if is_instanceof(step_type,__pulse_particle)
+		step_number	=	_amount
+		if is_instanceof(step_type,pulse_particle)
 		{
 			part_type_step(index,step_number,step_type.index)
 		}
@@ -193,11 +280,16 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 
 		return self
 	}
+		#region jsDoc
+			/// @desc    Sets a particle to be emitted at death.
+			/// @param   {Real} _amount : The amount of particles emitted
+			/// @param   {Struct.__pulse_particle_class} _death_particle : The particle to emit
+	#endregion
 	static set_death_particle=	function(_amount,_death_particle)
 	{
 		death_type		=	_death_particle
 		death_number	=	_amount
-		if is_instanceof(death_type,__pulse_particle)
+		if is_instanceof(death_type,pulse_particle)
 		{
 			part_type_death(index,death_number,death_type.index)
 		}
@@ -207,6 +299,11 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 		}
 		return self
 	}
+		#region jsDoc
+			/// @desc    Sets a particle to be emitted at death when Pulse detects a collision with the emitter. This creates a subparticle that mirrors the parent particle, but with a death particle.
+			/// @param   {Real} _amount : The amount of particles emitted
+			/// @param   {Struct.__pulse_particle_class} _death_particle : The particle to emit
+	#endregion
 	static set_death_on_collision=	function(_amount,_death_particle)
 	{
 		subparticle		= new __pulse_subparticle(self,_amount,_death_particle)
@@ -513,6 +610,8 @@ function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_c
 	
 }
 
+/// @description			Private constructor used to create sub-particles, which are particles that share most properties with another particle to simulate more dynamic particles.
+/// @return {Struct}
 function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_particle_class("child") constructor
 {
 	parent	= _parent
@@ -520,7 +619,7 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 
 	death_type		=	_death_particle
 	death_number	=	_number
-
+/// @description			It updates the subparticle's properties to match the parent's properties.
 	static update = function()
 	{
 		size			=	parent.size
@@ -549,8 +648,11 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 	
 	update()
 }
-
-function pulse_instance_particle	(_object,_name) constructor
+/// @description			Use this to create a new instance particle 
+/// @param {GM.Object}		_object : Object that will be instantiated
+/// @param {String}			_name : Name your particle or leave empty to use the default name
+/// @return {Struct}
+function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) constructor
 {
 	name			=	string(_name)
 	index			=	_object
@@ -687,9 +789,12 @@ function pulse_instance_particle	(_object,_name) constructor
 	
 }
 
+/// @description			Private Particle Class used as a base for all other particles.
+/// @param {String}			_name : Name of the particle.
+/// @return {Struct}
 function __pulse_particle_class		(_name) constructor
 {
-	name			=	_name
+	name			=	string(_name)
 	index			=	part_type_create();
 	size			=	__PULSE_DEFAULT_PART_SIZE
 	scale			=	__PULSE_DEFAULT_PART_SCALE
@@ -721,6 +826,7 @@ function __pulse_particle_class		(_name) constructor
 	
 	prelaunch		= function(_struct){}
 	
+	/// @description		Sets the particle's properties to the ones saved by Pulse
 	static reset	=	function()
 	{
 		time_factor		=	1
@@ -842,9 +948,9 @@ function __pulse_particle_class		(_name) constructor
 	}
 }
 
-/// @description			Use this to create a new particle. It returns a reference to the struct by default, but it will return the particle index if the last argument is true.
-/// @param {String}			_name : Name your particle or leave empty to use the default name
-/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
+/// @description			Stores a Pulse Particle into the global struct. Allows the use of the particle by calling its name as a string. Returns a reference to the global struct.
+/// @param {Struct.__pulse_particle_class}	_particle : Pulse Particle to store.
+/// @param {Bool}							[_override] : If there is a particle by the same name, override it (true) or change the new particle's name (false).
 /// @return {Struct}
 function pulse_store_particle		(_particle,_override = false)
 {
@@ -877,7 +983,9 @@ function pulse_store_particle		(_particle,_override = false)
 		global.pulse.part_types[$_name] = variable_clone(_particle)
 		return  global.pulse.part_types[$_name]
 }
-
+/// @description			Fetches a Pulse Particle from the global struct. Returns a reference to the global struct.
+/// @param {String}	_particle : Pulse Particle name to fetch.
+/// @return {Struct}
 function pulse_fetch_particle		(_name)
 {
 	/// Check if it is a Pulse System

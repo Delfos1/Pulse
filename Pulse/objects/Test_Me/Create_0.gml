@@ -5,7 +5,10 @@ show_debug_overlay(debug)
 
 system = new pulse_system("sys_1")
 system = pulse_store_system(system)
-particle = new pulse_particle("a_particle_name")
+var _p = get_open_filename("*.pulse","")
+
+
+particle = pulse_import_particle(_p) /* new pulse_particle("a_particle_name")*/
 particle = pulse_store_particle(particle)
 
 emitter= new pulse_emitter("sys_1","a_particle_name")
@@ -25,3 +28,4 @@ emitter	.force_to_edge=PULSE_TO_EDGE.LIFE
 //sys.set_stencil(ac_empty,"curve1")
 //sys.set_stencil(ac_Shape,"Star")
 //cache = sys.pulse(300,0,0,true)
+//pulse_export_particle(particle)

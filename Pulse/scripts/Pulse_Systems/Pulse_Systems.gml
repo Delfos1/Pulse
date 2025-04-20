@@ -51,6 +51,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	wake_on_emit		= true
 	sleep_when_empty	= true
 	
+	#region jsDoc
+		/// @desc    Sets the draw depth of the system
+		/// @param   {Real} _depth : The depth for the system.
+	#endregion
 	static set_depth				= function(_depth=depth)
 	{
 		depth	=	_depth;
@@ -65,7 +69,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets whether the system is updating automatically every step or not. By default this is true.
+		/// @param   {Bool} _bool : Whether the system updates with every step automatically (true) or not (false)
+		#endregion
 	static set_update				= function(_bool)
 	{
 		update	=	_bool;
@@ -79,7 +86,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets whether the system is drawing automatically every step or not. By default this is true.
+		/// @param   {Bool} _bool : Whether the system draws with every step automatically (true) or not (false)
+		#endregion
 	static set_draw					= function(_bool)
 	{
 		
@@ -94,7 +104,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets the system on a defined layer to draw it onto.
+		/// @param   {Id.Layer} _layer : The layer to set the system to.
+		#endregion
 	static set_layer				= function(_layer)
 	{
 		layer	=	_layer;
@@ -108,7 +121,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets in which order particles are drawn.
+		/// @param   {Bool} _bool : Whether the system draws the new particles on top (true) or on the bottom (false)
+		#endregion
 	static set_draw_oldtonew		= function(_bool)
 	{
 		draw_oldtonew	=	_bool;
@@ -121,7 +137,11 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets the position of the system in room coordinates
+		/// @param   {Real} _x : X Room coordinate
+		/// @param   {Real} _y : Y Room coordinate
+		#endregion
 	static set_position				= function(_x,_y)
 	{
 		x				=	_x;
@@ -135,7 +155,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-	
+		#region jsDoc
+		/// @desc    Sets the angle of the system
+		/// @param   {Real} _angle : new angle of the system, in degrees
+		#endregion
 	static set_angle				= function(_angle)
 	{
 		if index == -1 
@@ -149,7 +172,11 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-
+		#region jsDoc
+		/// @desc    Turns super-sampling on or off. Super-Sampling allows to de-couple system ticks and game steps. WARNING: Super sampling turns auto-updating off.
+		/// @param   {Bool} _active : Whether to turn super sampling on or off.
+		/// @param   {Real} _samples : Amount of system ticks that will happen per step.
+		#endregion
 	static set_super_sampling		= function(_active, _samples)
 	{
 		if _active
@@ -161,8 +188,13 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		{
 			samples = 1
 		}
+		return self
 	}
-	
+		#region jsDoc
+		/// @desc   Sets the color and alpha of the whole system
+		/// @param   {Real} _color : Color for the system. c_white displays the system normally
+		/// @param   {Real} _alpha : Alpha for the system, from 0 (transparent) to 1 (opaque)
+		#endregion
 	static set_color				= function(_color,_alpha)
 	{
 		if index == -1 
@@ -175,7 +207,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			part_system_color(index,_color,_alpha)
 		return self
 	}
-	
+	#region jsDoc
+		/// @desc    Enables setting the particles to global space. By activating this, the particles already created will stay in global space instead of system space.
+		/// @param   {Bool} _enable : Whether the system's particles are in global space (true) or not (false)
+	#endregion
 	static set_global_space			= function(_enable)
 	{
 		if index == -1 
@@ -211,7 +246,10 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		part_system_color			(index,color,alpha);
 		part_system_global_space	(index,global_space);
 	}
-	
+	#region jsDoc
+	/// @desc    Updates the particle system manually
+	/// @param   {Real} _resample :
+	#endregion
 	static update_system			= function(_resample=1)
 	{
 		if index == -1 
@@ -235,7 +273,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			part_system_update(index)
 		}
 	}
-	
+	/// @desc    Draws the Particle System
 	static get_particle_count		= function()
 	{
 		if index == -1 
@@ -247,7 +285,9 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return particle_amount
 	}
-	
+	#region jsDoc
+	/// @desc    Draws the Particle System
+	#endregion
 	static draw_it					= function()
 	{
 		if index == -1 
@@ -260,7 +300,9 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	
 	//RESOURCE MANAGEMENT
-	
+	#region jsDoc
+	/// @desc    Makes the system asleep. This frees the system from memory but doesn't detroy its configuration.
+	#endregion
 	static make_asleep				= function()
 	{
 		if index == -1 
@@ -270,7 +312,9 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		part_system_destroy(index)
 		index = -1
 	}
-	
+	#region jsDoc
+	/// @desc    Makes the system awake. This makes the system available for changes and for emition.
+	#endregion
 	static make_awake				= function()
 	{
 		if index != -1 
