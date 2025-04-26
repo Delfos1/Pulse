@@ -340,6 +340,62 @@ function pulse_import_particle(_particle_file, _overwrite = false)
 		return global.pulse.part_types[$ _parsed.name];
 }
 
+function pulse_export_system(_system)
+{
+	var file;
+	file = get_save_filename("*.pulse", $"system_{_system.name}");
+	if (file != "")
+	{
+		var	 _stringy = json_stringify(_system , true),
+		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+		buffer_write(_buff, buffer_text, _stringy);
+		buffer_save(_buff, file);
+		buffer_delete(_buff);
+	}
+}
+
+function pulse_import_system(_system_file, _overwrite = false)
+{
+	var _buffer = buffer_load(_system_file),
+		_string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string,	,	false) 
+		buffer_delete(_buffer)
+		
+		var _exists = pulse_exists_system(_parsed.name)
+		if  ( _exists == 0 && _overwrite ) or _exists == 1
+		{
+				var _new_sys = new pulse_system(_parsed.name)
+				with _new_sys{
+					layer			=	_parsed.layer
+					depth			=	_parsed.depth
+					threshold		=	_parsed.threshold
+					draw			=	_parsed.draw
+					draw_oldtonew	=	_parsed.draw_oldtonew
+					update			=	_parsed.update
+					x				=	_parsed.x
+					y				=	_parsed.y
+					angle			=	_parsed.angle
+					samples			=	_parsed.samples
+					persistent		=	_parsed.persistent
+					factor			=	_parsed.factor
+					color			=	_parsed.color
+					alpha			=	_parsed.alpha
+					global_space	=	_parsed.global_space
+					particle_amount =	_parsed.particle_amount
+					wake_on_emit	=	_parsed.wake_on_emit
+					sleep_when_empty=	_parsed.sleep_when_empty
+				}
+
+			_new_sys.reset()
+			return  _new_sys
+		}
+
+		// else return the existintg particle
+		return global.pulse.systems[$ _parsed.name];
+}
+
+
 
 function	__pulse_lookup_system(_name)
 {

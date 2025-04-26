@@ -1852,12 +1852,16 @@ function	pulse_cache(_cache,_emitter) constructor
 	length	= array_length(_cache)
 	flag_stencil = false
 	part_type = emitter.part_type
+	
+	/// @desc Adds particles to the cache
+	/// @param {Array} array with the results of a pulse emit.
 	static	add_particles = function(array)
 	{
 		cache = array_concat(cache,array)
 		length	= array_length(cache)
 	}
 	
+	/// @desc Sets the flag for the cache to regenerate its stencil. This is useful for recalculating collisions.
 	static	regen_stencil = function()
 	{
 		flag_stencil = true
@@ -1875,6 +1879,10 @@ function	pulse_cache(_cache,_emitter) constructor
 		}
 	}
 	
+	/// @desc Emits the particles stored in the cache. X,Y coordinates are relative to the stored position.
+	/// @param {real} _amount    Amount of particles to emit
+	/// @param {real} x			X coordinate, relative to the stored position
+	/// @param {real} y			Y coordinate, relative to the stored position
 	static	pulse = function(_amount,x,y)
 	{
 		do{
