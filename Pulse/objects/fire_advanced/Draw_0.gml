@@ -1,6 +1,6 @@
 if emit_smaller.displacement_map == undefined
 {
-	_map = scr_buffer_from_sprite(_64_strght__00003,0)
+	_map = buffer_from_sprite(_64_strght__00003,0)
 	emit_smaller.set_displacement_map(_map)
 	emit_smaller.displacement_map.set_size(1,[0,.45]).set_speed(.2,[0,20])
 	emit.set_displacement_map(_map)

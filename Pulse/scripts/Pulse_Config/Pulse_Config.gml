@@ -123,6 +123,10 @@ function __pulse_show_debug_message(_message,_type = 0)
 
 //Default Pulse Emitter Properties
 
+
+//The default external radius for emitters
+#macro __PULSE_DEFAULT_EMITTER_RADIUS					50
+
 #macro __PULSE_DEFAULT_EMITTER_STENCIL_MODE				PULSE_STENCIL.NONE
 
 #macro __PULSE_DEFAULT_EMITTER_FORM_MODE				PULSE_FORM.ELLIPSE

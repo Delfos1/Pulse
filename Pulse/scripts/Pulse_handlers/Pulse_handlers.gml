@@ -42,7 +42,7 @@ function pulse_destroy_all()
 /// @param {string} __name The name of the system to clone
 /// @param {string} __new_name Optional: The name of the cloned system. By default it appends "_copy" to the original name 
 /// @returns {Struct}
-function pulse_clone_system(__name,__new_name=__name)
+function pulse_clone_system		(__name,__new_name=__name)
 {
 	if  !struct_exists(global.pulse.systems,__name)
 	{
@@ -68,7 +68,7 @@ function pulse_clone_system(__name,__new_name=__name)
 /// @param {string} __name The name of the particle to clone
 /// @param {string} __new_name Optional: The name of the cloned particle. By default it appends "_copy" to the original name 
 /// @returns {Struct}
-function pulse_clone_particle(__name,__new_name=__name)
+function pulse_clone_particle	(__name,__new_name=__name)
 {
 
 	if  !struct_exists(global.pulse.part_types,__name)
@@ -96,7 +96,7 @@ function pulse_clone_particle(__name,__new_name=__name)
 /// @desc Destroys a system both from the GameMaker index as from Pulse's data
 /// @param {string} _name The name of the system to destroy
 /// @returns {Struct}
-function pulse_destroy_system(_name)
+function pulse_destroy_system	(_name)
 {
 	if is_string(_name)
 	{
@@ -128,7 +128,7 @@ function pulse_destroy_system(_name)
 /// @desc Destroys a particle type both from the GameMaker index as from Pulse's data
 /// @param {string} _name The name of the particle to destroy
 /// @returns {Struct}
-function pulse_destroy_particle(_name)
+function pulse_destroy_particle	(_name)
 {
 	if is_string(_name)
 	{
@@ -155,7 +155,7 @@ function pulse_destroy_particle(_name)
 
 /// Checks if a system exists with the name provided as string or if its a struct.
 /// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
-function pulse_exists_system(_name)
+function pulse_exists_system	(_name)
 {
 	var system_found =  1 /// 2 found, ref on a variable, 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name , 
 	
@@ -191,7 +191,7 @@ function pulse_exists_system(_name)
 
 /// Checks if a particle exists with the name provided as string or if its a struct.
 /// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
-function pulse_exists_particle(_name)
+function pulse_exists_particle	(_name)
 {
 	var particle_found =  1 /// 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
 	
@@ -230,7 +230,7 @@ function pulse_exists_particle(_name)
 ///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
 ///							Particles are named after the emitter they are on.
 /// @param {Asset.GMParticleSystem}	part_system : The particle system asset you wish to convert.
-function pulse_convert_particles	(part_system)
+function pulse_convert_particles(part_system)
 {
 	var struct = particle_get_info(part_system)
 	var length = array_length(struct.emitters)
@@ -278,14 +278,14 @@ function pulse_convert_particles	(part_system)
 }
 
 
-function pulse_export_particle(_particle)
+function pulse_export_particle	(_particle,name = undefined)
 {
-	var file;
-	file = get_save_filename("*.pulse", $"particle_{_particle.name}");
+	name ??= $"particle_{_particle.name}"
+	file = get_save_filename("*.pulse", $"{name}");
 	if (file != "")
 	{
 		var	 _stringy = json_stringify(_particle , true),
-		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+			 _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
 	
 		buffer_write(_buff, buffer_text, _stringy);
 		buffer_save(_buff, file);
@@ -293,61 +293,64 @@ function pulse_export_particle(_particle)
 	}
 }
 
-function pulse_import_particle(_particle_file, _overwrite = false)
-{
-	var _buffer = buffer_load(_particle_file),
-		_string = buffer_read(_buffer, buffer_string) ,
+function pulse_import_particle	(_particle_file, _overwrite = false)
+{	
+	file_text_open_read(_particle_file)
+	var _buffer = buffer_load(_particle_file)
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
 		_parsed = json_parse(_string,	,	false) 
 		buffer_delete(_buffer)
 		
 		var _exists = pulse_exists_particle(_parsed.name)
-		if  ( _exists == 0 && _overwrite ) or _exists == 1
+		if  ( _exists == 1 && _overwrite ) or _exists == 0
 		{
-				var _new_part = new pulse_particle(_parsed.name)
-				with _new_part{
-					size			=	_parsed.size
-					scale			=	_parsed.scale
-					life			=	_parsed.life
-					color			=	_parsed.color
-					color_mode		=	_parsed.color_mode
-					alpha			=	_parsed.alpha
-					blend			=	_parsed.blend
-					speed			=	_parsed.speed
-					shape			=	_parsed.shape
-					sprite			=	_parsed.sprite
-					orient			=	_parsed.orient
-					gravity			=	_parsed.gravity
-					direction		=	_parsed.direction
-					set_to_sprite	=	_parsed.set_to_sprite
-					death_type		=	_parsed.death_type
-					death_number	=	_parsed.death_number
-					subparticle		=	_parsed.subparticle
-					on_collision	=  _parsed.on_collision
-					step_type		=	_parsed.step_type
-					step_number		=	_parsed.step_number
-					//
-					time_factor		=	_parsed.time_factor
-					scale_factor	=	_parsed.scale_factor
-					altered_acceleration = _parsed.altered_acceleration
-					subparticle		=_parsed.subparticle
-				}
+			var _new_part = new pulse_particle(_parsed.name)
+			with _new_part
+			{
+				size					=	_parsed.size
+				scale					=	_parsed.scale
+				life					=	_parsed.life
+				color					=	_parsed.color
+				color_mode				=	_parsed.color_mode
+				alpha					=	_parsed.alpha
+				blend					=	_parsed.blend
+				speed					=	_parsed.speed
+				shape					=	_parsed.shape
+				sprite					=	_parsed.sprite
+				orient					=	_parsed.orient
+				gravity					=	_parsed.gravity
+				direction				=	_parsed.direction
+				set_to_sprite			=	_parsed.set_to_sprite
+				death_type				=	_parsed.death_type
+				death_number			=	_parsed.death_number
+				subparticle				=	_parsed.subparticle
+				on_collision			=   _parsed.on_collision
+				step_type				=	_parsed.step_type
+				step_number				=	_parsed.step_number
+				time_factor				=	_parsed.time_factor
+				scale_factor			=	_parsed.scale_factor
+				altered_acceleration	=	_parsed.altered_acceleration
+				subparticle				=	_parsed.subparticle
+			}
 
 			_new_part.reset()
 			return  _new_part
 		}
 
 		// else return the existintg particle
+		file_text_close(_particle_file)
 		return global.pulse.part_types[$ _parsed.name];
 }
 
-function pulse_export_system(_system)
+function pulse_export_system	(_system, name = undefined)
 {
-	var file;
-	file = get_save_filename("*.pulse", $"system_{_system.name}");
+	name ??= $"system_{_system.name}"
+	file = get_save_filename("*.pulse", $"{name}");
 	if (file != "")
 	{
 		var	 _stringy = json_stringify(_system , true),
-		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+			 _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
 	
 		buffer_write(_buff, buffer_text, _stringy);
 		buffer_save(_buff, file);
@@ -355,15 +358,17 @@ function pulse_export_system(_system)
 	}
 }
 
-function pulse_import_system(_system_file, _overwrite = false)
+function pulse_import_system	(_system_file, _overwrite = false)
 {
-	var _buffer = buffer_load(_system_file),
-		_string = buffer_read(_buffer, buffer_string) ,
+	file_text_open_read(_system_file)
+	var _buffer = buffer_load(_system_file)
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
 		_parsed = json_parse(_string,	,	false) 
 		buffer_delete(_buffer)
 		
 		var _exists = pulse_exists_system(_parsed.name)
-		if  ( _exists == 0 && _overwrite ) or _exists == 1
+		if  ( _exists == 1 && _overwrite ) or _exists == 0
 		{
 				var _new_sys = new pulse_system(_parsed.name)
 				with _new_sys{
@@ -391,13 +396,420 @@ function pulse_import_system(_system_file, _overwrite = false)
 			return  _new_sys
 		}
 
+		file_text_close(_system_file)
 		// else return the existintg particle
 		return global.pulse.systems[$ _parsed.name];
 }
 
+function pulse_export_emitter	(_emitter)
+{
+	var file;
+	file = get_save_filename("*.pulse", $"emitter_");
+	if (file != "")
+	{
+		// Export particle and system
+		var _dir = filename_path(file),
+		_fname = filename_name(file),
+		_fpartname = string_concat(_dir,_fname,"_particle",".pulse"),
+		_fsysname = string_concat(_dir,_fname,"_system",".pulse")
+		
+		pulse_export_particle(_emitter.part_type,_fpartname)
+		pulse_export_system(_emitter.part_system,_fsysname)
+		
+		var	 _stringy = json_stringify(_emitter , true, function(key,value)
+		{
+			if key == "part_type_array" || key == "part_type" || key == "part_system_array" || key == "part_system"
+			{
+				return undefined
+			}
+			return value
+		}),
+		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+		buffer_write(_buff, buffer_text, _stringy)
+		buffer_save(_buff, file);
+		buffer_delete(_buff);
+	}
+}
 
+function pulse_import_emitter	(file, _overwrite = false)
+{
+	// Import Particle and System
+	
+		var _dir = filename_path(file),
+		_fname = filename_name(file),
+		_fpartname = string_concat(_dir,_fname,"_particle",".pulse"),
+		_fsysname = string_concat(_dir,_fname,"_system",".pulse")
 
-function	__pulse_lookup_system(_name)
+	var _parta =  pulse_import_particle	(_fpartname,false),
+	_part = pulse_store_particle(_parta) ,
+	_sysa =  pulse_import_system(_fsysname,false),
+	_sys = pulse_store_system(_sysa)
+
+	
+	var _buffer = buffer_load(file)
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string) 
+		buffer_delete(_buffer)
+		//file_text_close(file)
+		
+			var _new_emitter  = new pulse_emitter(_sys,_part)
+			with _new_emitter
+			{
+					#region Emitter Form
+	stencil_mode		=	_parsed.stencil_mode
+	form_mode			=	_parsed.form_mode
+	path				=	_parsed.path
+	path_res			=	_parsed.path_res
+	stencil_tween		=	_parsed.stencil_tween
+	radius_external		=	_parsed.radius_external
+	radius_internal		=	_parsed.radius_internal
+	edge_external		=	_parsed.edge_external
+	edge_internal		=	_parsed.edge_internal
+	mask_start			=	_parsed.mask_start
+	mask_end			=	_parsed.mask_end
+	mask_v_start		=	_parsed.mask_v_start
+	mask_v_end			=	_parsed.mask_v_end
+	line				=	_parsed.line
+
+	#endregion
+	
+	#region Emitter properties
+	x_focal_point		=	_parsed.x_focal_point
+	y_focal_point		=	_parsed.y_focal_point
+	x_scale				=	_parsed.x_scale
+	y_scale				=	_parsed.y_scale
+	stencil_offset		=	_parsed.stencil_offset
+	direction_range		=	_parsed.direction_range
+	#endregion
+	
+	#region Distributions
+	distr_along_v_coord	=	_parsed.distr_along_v_coord
+	distr_along_u_coord	=	_parsed.distr_along_u_coord
+	distr_speed			=	_parsed.distr_speed
+	distr_life			=	_parsed.distr_life
+	distr_orient		=	_parsed.distr_orient
+	distr_size			=	_parsed.distr_size
+	distr_color_mix		=	_parsed.distr_color_mix
+	distr_frame			=	_parsed.distr_frame
+	divisions_v			=	_parsed.divisions_v
+	divisions_u			=	_parsed.divisions_u
+	divisions_v_offset	=	_parsed.divisions_v_offset
+	divisions_u_offset	=	_parsed.divisions_u_offset
+	#endregion
+	
+	#region Channels
+
+	__color_mix_A		=	_parsed.__color_mix_A
+	__color_mix_B		=	_parsed.__color_mix_B
+	
+if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	undefined ||
+	_parsed.__speed_channel		!=	undefined  ||	_parsed.__life_channel		=	undefined ||
+	_parsed.__orient_channel	!=	undefined  ||	_parsed.__size_x_channel	!=	undefined ||
+	_parsed.__size_y_channel	!=	undefined  || 	_parsed.__color_mix_chanel	!=	undefined ||
+	_parsed.__frame_channel		!=	undefined
+	{
+		interpolations = animcurve_really_create( {curve_name : "interpolations" , channels : []})
+		var _channels = []
+		var _last = -1
+		if _parsed.__v_coord_channel	!=	undefined
+		{
+		var current = _parsed.__v_coord_channel
+		var channel				=  animcurve_channel_new()
+			channel.name		= "v_coord"
+			channel.type		= current.type
+			channel.iterations	= current.iterations
+			
+			var points = current.points 
+			var _l = array_length(points)
+			var _new_channel = []
+			for(_i = 0 ;_i<_l ;_i++)
+			{
+				animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+			}
+				
+			channel.points = _new_channel
+			
+			array_push(_channels,channel)
+
+		}
+		if _parsed.__u_coord_channel	!=	undefined
+		{
+			var current = _parsed.__u_coord_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "u_coord"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__speed_channel		!=	undefined
+		{
+			var current = _parsed.__speed_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "speed"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__life_channel		!=	undefined
+		{
+			var current = _parsed.__life_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "life"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__orient_channel		!=	undefined
+		{
+			var current = _parsed.__orient_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "orient"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__size_x_channel		!=	undefined
+		{
+			var current = _parsed.__size_x_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "size_x"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__size_y_channel		!=	undefined
+		{
+			var current = _parsed.__size_y_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "size_y"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__color_mix_channel	!=	undefined
+		{
+			var current = _parsed.__color_mix_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "color_mix"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _parsed.__frame_channel		!=	undefined
+		{
+			var current = _parsed.__frame_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "frame_channel"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(_i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+	
+		interpolations.channels = _channels
+		
+		if animcurve_channel_exists(interpolations,"v_coord")
+		{
+			distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__v_coord_channel = animcurve_get_channel(interpolations,"v_coord")
+		}
+		if animcurve_channel_exists(interpolations,"u_coord")
+		{
+			distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__u_coord_channel = animcurve_get_channel(interpolations,"u_coord")
+		}
+		if animcurve_channel_exists(interpolations,"speed")
+		{
+			distr_speed	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__speed_channel = animcurve_get_channel(interpolations,"speed")
+		}
+		if animcurve_channel_exists(interpolations,"life")
+		{
+			distr_life	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__life_channel = animcurve_get_channel(interpolations,"life")
+		}
+		if animcurve_channel_exists(interpolations,"orient")
+		{
+			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__orient_channel = animcurve_get_channel(interpolations,"orient")
+		}
+		if animcurve_channel_exists(interpolations,"size_x")
+		{
+			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__size_x_channel = animcurve_get_channel(interpolations,"size_x")
+		}
+		if animcurve_channel_exists(interpolations,"size_y")
+		{
+			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__size_y_channel = animcurve_get_channel(interpolations,"size_y")
+		}
+		if animcurve_channel_exists(interpolations,"color_mix")
+		{
+			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__color_mix_channel = animcurve_get_channel(interpolations,"color_mix")
+		}
+		if animcurve_channel_exists(interpolations,"frame")
+		{
+			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__frame_channel = animcurve_get_channel(interpolations,"frame")
+		}
+	}
+	
+	__speed_link			=	_parsed.__speed_link
+	__life_link				=	_parsed.__life_link	
+	__orient_link			=	_parsed.__orient_link
+	__size_link				=	_parsed.__size_link	
+	__color_mix_link		=	_parsed.__color_mix_link
+	__frame_link			=	_parsed.__frame_link	
+
+	#endregion
+	
+	force_to_edge		=	_parsed.force_to_edge
+	alter_direction		=	_parsed.alter_direction	
+	
+	//Image maps
+	displacement_map	=	_parsed.displacement_map
+	color_map			=	_parsed.color_map			
+
+	//Forces, Groups, Colliders
+	forces				=	_parsed.forces
+		// collisions
+	collisions			=	_parsed.collisions
+	is_colliding		=	_parsed.is_colliding
+	colliding_entities	=	_parsed.colliding_entities
+	
+	debug_col_rays		=	_parsed.debug_col_rays
+	
+	
+	/// Anim curve conversion
+	var points = _parsed.stencil_profile.channels[0].points ,
+	_l = array_length(points)
+	var _stencil_profile_a = []
+	for(var _i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_a,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"a",_stencil_profile_a)
+	
+	//------
+	var points = _parsed.stencil_profile.channels[1].points ,
+	_l = array_length(points)
+	var _stencil_profile_b = []
+	for(_i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"b",_stencil_profile_b)
+
+	//------
+	points = _parsed.stencil_profile.channels[2].points 
+	_l = array_length(points)
+	var _stencil_profile_c = []
+	for(_i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"c",_stencil_profile_c)
+
+	_channel_01			=	animcurve_get_channel(stencil_profile,0)
+	_channel_02			=	animcurve_get_channel(stencil_profile,1)
+	_channel_03			=	animcurve_get_channel(stencil_profile,2)
+			
+
+			}
+	return  _new_emitter
+}
+
+function __pulse_lookup_system	(_name)
 {
 	var system_found = pulse_exists_system(_name)
 	
@@ -421,7 +833,7 @@ function	__pulse_lookup_system(_name)
 	
 }
 
-function	__pulse_lookup_particle(_name)
+function __pulse_lookup_particle(_name)
 {
 	var particle_found = pulse_exists_particle(_name)
 	

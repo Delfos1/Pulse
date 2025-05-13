@@ -16,7 +16,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
-    "path":"folders/Examples/Objects.yy",
+    "path":"folders/Examples/Linked Properties/Objects.yy",
   },
   "parentObjectId":null,
   "persistent":false,

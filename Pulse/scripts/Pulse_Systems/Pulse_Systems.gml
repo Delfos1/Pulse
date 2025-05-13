@@ -377,17 +377,10 @@ function pulse_store_system			(_system,_override = false)
 	}
 	
 	var _name =  _system.name
-	
-	if _override
+
+	if pulse_exists_system(_name) > 0 && !_override
 	{
-		__pulse_show_debug_message($"Created system by the name {_name}",3);
-		
-		global.pulse.systems[$_name] = variable_clone(_system)
-		return  global.pulse.systems[$_name]
-	}
-	
-	if pulse_exists_system(_name) > 0 
-	{
+		/// Change name if the name already exists
 		var l		=	struct_names_count(global.pulse.systems)		
 		_name		=	$"{_name}_{l}";	
 		_system.name = _name
@@ -398,6 +391,9 @@ function pulse_store_system			(_system,_override = false)
 	return  global.pulse.systems[$_name]
 }
 
+/// @description			Fetches a Pulse System from the global struct. Returns a reference to the global struct.
+/// @param {String}	_name : Pulse System name to fetch, as a string.
+/// @return {Struct}
 function pulse_fetch_system			(_name)
 {
 	/// Check if it is a Pulse System

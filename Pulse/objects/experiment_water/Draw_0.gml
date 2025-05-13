@@ -1,7 +1,7 @@
 if emitter.displacement_map == undefined
 {
 
-	_map = scr_buffer_from_sprite(_64_pol,17)
+	_map = buffer_from_sprite(_64_pol,17)
 	var white = make_color_hsv(170,1,255)
 	var displ = emitter.set_displacement_map(_map)
 	displ.set_speed(1,[3,10]).set_life(.6,[7,40]).set_color(c_blue,white,PULSE_COLOR.A_TO_B_HSV)

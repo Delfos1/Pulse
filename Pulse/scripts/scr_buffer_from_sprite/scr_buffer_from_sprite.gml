@@ -1,5 +1,5 @@
-/// @function              buffer_from_sprite(_sprite,_subimage)
-/// @description           loads a sprite into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
+
+/// @description           Loads a sprite into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
 /// @param _sprite {Asset.GMSprite}  
 /// @param _subimage {real}
 /// @return {struct}
@@ -19,8 +19,8 @@ function buffer_from_sprite(_sprite,_subimage){
 	return new __buffered_sprite(buffer,_sw,_sh);
 }
 
-/// @function              buffer_from_surface(_surface)
-/// @description           loads a ssurface into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
+
+/// @description           Loads a surface into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
 /// @param _surface {Id.Surface}     
 /// @return {struct}
 function buffer_from_surface(_surface){

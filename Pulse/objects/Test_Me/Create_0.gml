@@ -5,18 +5,19 @@ show_debug_overlay(debug)
 
 system = new pulse_system("sys_1")
 system = pulse_store_system(system)
-var _p = get_open_filename("*.pulse","")
+//var _p = get_open_filename("*.pulse","")
 
-
-particle = pulse_import_particle(_p) /* new pulse_particle("a_particle_name")*/
+particle =  new pulse_particle("a_particle_name")
 particle = pulse_store_particle(particle)
 
 emitter= new pulse_emitter("sys_1","a_particle_name")
 
-particle.set_speed(1,6,-.002)
-			.set_life(20,50)
-			.set_size(0.1,0.35,-.002)
-			.set_color(c_yellow,c_lime)//.set_death_on_collision(10,particle_on_death)
+particle.set_sprite(s_hand)
+		.set_speed(1,6,-.002)
+		.set_life(20,50)
+		.set_size(1,1.35,-.002)
+		.set_color(c_yellow,c_lime)//.set_death_on_collision(10,particle_on_death)
+		
 		
 emitter	.set_radius(50,300,50,800)
 		.set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION)
@@ -28,4 +29,4 @@ emitter	.force_to_edge=PULSE_TO_EDGE.LIFE
 //sys.set_stencil(ac_empty,"curve1")
 //sys.set_stencil(ac_Shape,"Star")
 //cache = sys.pulse(300,0,0,true)
-//pulse_export_particle(particle)
+pulse_export_emitter(emitter)

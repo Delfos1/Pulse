@@ -2,13 +2,15 @@
 
 //※∴∼↻⊙↺ ♇♋︎ ↯⭍ ⚡︎ ⁎∗⃰❆❄❅
 
-function _pulse_clamp_wrap(val, minn, maxx) {
+function	_pulse_clamp_wrap(val, minn, maxx) {
 	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
 	return val;
 }
-
-
-function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,_radius_external=50,anim_curve = undefined)  constructor // : __pulse_launcher()
+	/// @description	Creates a Pulse emitter, which is stored in a variable.
+	/// @param {String , Struct.pulse_system}			__part_system : A pulse System, or the name as a string if the system has been stored. By default it creates a new system with the default name.
+	/// @param {String , Struct.__pulse_particle_class}	__part_type : A pulse Particle, or the name as a string if the particle has been stored. By default it creates a new particle with the default name.
+	/// @param {Asset.GMAniCurve}						anim_curve : An animation curve that contains one of the following channels: "v_coord" , "u_coord" , "speed", "life" , "orient", "size_x", "size_y" and "frame" . Setting this will make the property's distribution set to the animation curve.
+function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,anim_curve = undefined)  constructor
 {
 	part_system_array = []
 	part_type_array  = []
@@ -57,7 +59,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	_channel_02			=	animcurve_get_channel(stencil_profile,1)
 	_channel_03			=	animcurve_get_channel(stencil_profile,2)
 	stencil_tween		=	0
-	radius_external		=	abs(_radius_external)	
+	radius_external		=	__PULSE_DEFAULT_EMITTER_RADIUS
 	radius_internal		=	0
 	edge_external		=	radius_external
 	edge_internal		=	0
@@ -92,6 +94,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	divisions_v_offset	=	0
 	divisions_u_offset	=	0
 	#endregion
+
+	
 	
 	#region Channels
 	__v_coord_channel		=	undefined
@@ -101,7 +105,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	__orient_channel		=	undefined
 	__size_x_channel		=	undefined
 	__size_y_channel		=	undefined
-	__color_mix_chanel		=	undefined
+	__color_mix_channel		=	undefined
 	__frame_channel			=	undefined
 	
 	__speed_link			=	undefined
@@ -141,7 +145,22 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		if animcurve_channel_exists(interpolations,"orient")
 		{
 			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__orient_channel = animcurve_get_channel(interpolations,"life")
+			__orient_channel = animcurve_get_channel(interpolations,"orient")
+		}
+		if animcurve_channel_exists(interpolations,"size_x")
+		{
+			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__size_x_channel = animcurve_get_channel(interpolations,"size_x")
+		}
+		if animcurve_channel_exists(interpolations,"size_y")
+		{
+			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__size_y_channel = animcurve_get_channel(interpolations,"size_y")
+		}
+		if animcurve_channel_exists(interpolations,"frame")
+		{
+			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
+			__frame_channel = animcurve_get_channel(interpolations,"frame")
 		}
 	}
 
@@ -370,10 +389,14 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	#endregion
-	
+
 	#region NONLINEAR DISTRIBUTIONS
 	
-	
+	/// @description	Sets the type of distribution for the orientation of the particles. 
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_orient	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
 	{
 		switch(_mode)
@@ -392,7 +415,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					{
 						distr_orient	=	_mode
 						__orient_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__orient_link		=	_link_to
+						__orient_link		= _mode == PULSE_DISTRIBUTION.LINKED ?	_link_to : undefined
 						break
 					}
 				}
@@ -405,6 +428,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the life of the particles. 
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_life	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
 	{
 		switch(_mode)
@@ -438,6 +466,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the speed of the particles. 
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_speed	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
 	{
 		if _link_to == PULSE_LINK_TO.SPEED
@@ -475,6 +508,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the size of the particles. 
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_size	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
 	{
 		switch(_mode)
@@ -512,6 +550,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the color of the particles. Uses the mode Color Mix, in which the particles can have a color interpolated between A and B. This overrides the color mode of the particle itself.
+	/// @param {Constant.Colour}	_color_A : Color A
+	/// @param {Constant.Colour}	_color_B : Color B
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_color_mix=  function ( _color_A, _color_B,_mode,_input,_link_to = undefined)
 	{
 		__color_mix_A[0] = color_get_blue(_color_A)
@@ -537,7 +582,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					if animcurve_channel_exists(_input[0],_input[1])
 					{
 						distr_color_mix		=	_mode
-						color_mix_channel	=	animcurve_get_channel(_input[0],_input[1])
+						__color_mix_channel	=	animcurve_get_channel(_input[0],_input[1])
 						__color_mix_link		=	_link_to
 						break
 					}
@@ -553,6 +598,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the frames of the particle's sprite.
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_frame	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
 	{
 		if !part_type.set_to_sprite
@@ -602,6 +652,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the spawn point of the particle in the U axis in the emitter.
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Real, Array}					_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
+	/// @param {Real.Enum.PULSE_LINK_TO}		_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.V_COORD
+	/// @context pulse_emitter
 	static set_distribution_u		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
 		switch(_mode)
@@ -654,6 +709,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the type of distribution for the spawn point of the particle in the V axis in the emitter.
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Real, Array}					_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
+	/// @param {Real.Enum.PULSE_LINK_TO}		_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD
+	/// @context pulse_emitter
 	static set_distribution_v		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
 		switch(_mode)
@@ -705,11 +765,14 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	/// @description	Sets the offset for the U axis
+	/// @param {Real}	_offset :  Amount of offset
 	static set_distribution_u_offset=  function (_offset)
 	{
 		divisions_u_offset = _offset
 	}
-	
+	/// @description	Sets the offset for the V axis
+	/// @param {Real}	_offset :  Amount of offset
 	static set_distribution_v_offset=  function (_offset)
 	{
 		divisions_v_offset = _offset
@@ -719,6 +782,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	#region DISPLACEMENT MAP SETTERS
 	
+	/// @description	Sets a sprite to be used as a displacement map.
+	/// @param {Struct.__buffered_sprite}	_map : Buffered sprite created using buffer_from_sprite() or buffer_from_surface() or Dragonite's Macaw
+	/// @context pulse_emitter
 	static	set_displacement_map	=	function(_map)
 	{
 		if buffer_exists(_map.noise)
@@ -728,10 +794,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		else
 		{		
-		__pulse_show_debug_message("Displacement Map is a wrong format",2)
+		__pulse_show_debug_message("Displacement Map is of the wrong format",2)
 		}
 	}
 	
+	/// @description	Sets a sprite to be used as a displacement map.
+	/// @param {Struct.__buffered_sprite}	_map : Buffered sprite created using buffer_from_sprite() or buffer_from_surface()
+	/// @context pulse_emitter
 	static	set_color_map			=	function(_map,_blend=1)
 	{
 		if  is_instanceof(_map, __buffered_sprite) 
@@ -833,6 +902,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		draw_arrow(x,y,_directionrange_x,_directionrange_y,10)
 	}
 	
+	/// @description	Adds a collision element to be checked by the collision function.
+	/// @param {Any}	_object : Can be an object, instance, tile or anything admitable 
+	/// @context pulse_emitter
 	static	add_collisions			=	function(_object)
 	{
 		array_push(collisions,_object)
@@ -1115,7 +1187,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				_amount = random(1)
 			}
-				_amount = animcurve_channel_evaluate(color_mix_channel,_amount)
+				_amount = animcurve_channel_evaluate(__color_mix_channel,_amount)
 				_p.r_h =  lerp(__color_mix_A[2],__color_mix_B[2],_amount)
 				_p.g_s =  lerp(__color_mix_A[1],__color_mix_B[1],_amount)
 				_p.b_v =  lerp(__color_mix_A[0],__color_mix_B[0],_amount)
@@ -1843,7 +1915,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 }
 
-function	pulse_cache(_cache,_emitter) constructor
+	/// @description	Creates a Pulse Cache storage
+	
+	/// @param { Struct.pulse_emitter}		_emitter : The emitter from which the particles will be emitted. This is used to update collisions and to get the main particle type.
+	/// @param {Array}						_cache : An array populated by a Pulse emitter's output. By default is empty. Particles can be added with the add_particles() methods
+function	pulse_cache(_emitter , _cache=[] ) constructor
 {
 	emitter = _emitter
 	index	= 0
@@ -1852,6 +1928,7 @@ function	pulse_cache(_cache,_emitter) constructor
 	length	= array_length(_cache)
 	flag_stencil = false
 	part_type = emitter.part_type
+	
 	
 	/// @desc Adds particles to the cache
 	/// @param {Array} array with the results of a pulse emit.
@@ -1870,6 +1947,8 @@ function	pulse_cache(_cache,_emitter) constructor
 	
 	static	__update_stencil	=	function(_index,_amount)
 	{
+		if emitter == undefined return
+		
 		for(var _i =_index; _i < _amount ; _i++)
 		{
 			var _p	= cache[_i]
@@ -1916,7 +1995,6 @@ function	pulse_cache(_cache,_emitter) constructor
 	}
 }
 
-
 /// @desc Throws a vector until it hits an object. Returns Vector3(x, y, id) if it hits.
 /// @param {real} origin_x The ray x origin.
 /// @param {real} origin_y The ray y origin.
@@ -1926,11 +2004,12 @@ function	pulse_cache(_cache,_emitter) constructor
 /// @param {bool} precise Whether the check is based on precise collisions (true, which is slower) or its bounding box in general (false, faster).
 /// @param {bool} notme Whether the calling instance, if relevant, should be excluded (true) or not (false).
 /// @returns {struct} Description
-/// Modified from Foxy's TurboGML
-function __pulse_raycast(origin_x, origin_y, object, angle, distance, precise=true, notme=true) {
 	// original by: YellowAfterLife, https://yal.cc/gamemaker-collision-line-point/
 	// edited by FoxyOfJungle, adapted for Pulse
-//	var _dir = degtorad(angle),
+function	__pulse_raycast(origin_x, origin_y, object, angle, distance, precise=true, notme=true)
+{
+
+	//	var _dir = degtorad(angle),
 	var _x1 = origin_x,
 	_y1 = origin_y,
 	_x2 = origin_x + lengthdir_x(distance,angle), //+ cos(_dir)*distance,

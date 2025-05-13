@@ -9,7 +9,7 @@ global.pulse =
 /// @description			Use this to create a new particle
 /// @param {String}			_name : Name your particle or leave empty to use the default name
 /// @return {Struct}
-function pulse_particle			(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
+function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
 	
 	#region //SET BASIC PROPERTIES
@@ -964,16 +964,9 @@ function pulse_store_particle		(_particle,_override = false)
 	
 	var _name =  _particle.name
 	
-	if _override
+	if  pulse_exists_particle(_name) > 0  && !_override
 	{
-		__pulse_show_debug_message($"Created particle by the name {_name}",3);
-		
-		global.pulse.part_types[$_name] = variable_clone(_particle)
-		return  global.pulse.part_types[$_name]
-	}
-	
-	if pulse_exists_particle(_name) > 0 
-	{
+		/// Change name if the name already exists
 		var l		=	struct_names_count(global.pulse.part_types)		
 		_name		=	$"{_name}_{l}";	
 		_particle.name = _name
@@ -997,7 +990,7 @@ function pulse_fetch_particle		(_name)
 	
 	if pulse_exists_particle(_name) > 0 
 	{
-		return global.pulse.part_type[$_name]
+		return global.pulse.part_types[$_name]
 	}
 	
 	__pulse_show_debug_message($"System named '{_name}' not found",3);
