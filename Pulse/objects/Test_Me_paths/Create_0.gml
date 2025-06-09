@@ -18,4 +18,4 @@ sys.add_collisions(o_Collider)
 sys.set_stencil(ac_empty,"curve1").set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.PATH_SPEED)
 
 
-sys.form_path(Path3)
+sys.form_path(Path10)

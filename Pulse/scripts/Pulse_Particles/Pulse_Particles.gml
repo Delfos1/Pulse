@@ -25,14 +25,14 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 	{
 		if is_array(_min) or is_array(_max) or is_array(_incr) or is_array(_wiggle)
 		{
-			size[0]= is_array(_min) ? _min[0] : _min
-			size[1]= is_array(_min) ? _min[1] : _min
-			size[2]= is_array(_max) ? _max[0] : _max
-			size[3]= is_array(_max) ? _max[1] : _max
-			size[4]= is_array(_incr) ? _incr[0] : _incr
-			size[5]= is_array(_incr) ? _incr[1] : _incr
-			size[6]= is_array(_wiggle) ? _wiggle[0] : _wiggle
-			size[7]= is_array(_wiggle) ? _wiggle[1] : _wiggle
+			size[0]= is_array(_min) ? _min[0] : _min  // x min
+			size[1]= is_array(_min) ? _min[1] : _min  // y min
+			size[2]= is_array(_max) ? _max[0] : _max  // x max
+			size[3]= is_array(_max) ? _max[1] : _max  // y max
+			size[4]= is_array(_incr) ? _incr[0] : _incr //x incr
+			size[5]= is_array(_incr) ? _incr[1] : _incr  //y incr
+			size[6]= is_array(_wiggle) ? _wiggle[0] : _wiggle  // x wigg
+			size[7]= is_array(_wiggle) ? _wiggle[1] : _wiggle  // y wigg
 
 			part_type_size_x(index,size[0],size[2],size[4],size[6])
 			part_type_size_y(index,size[1],size[3],size[5],size[7])
@@ -332,9 +332,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
 			set_gravity(gravity[0]*_factor,gravity[1])
-			
 
-		
 			return self
 		}
 /// @description			It changes Life, Speed and Gravity so the particle does the same trajectory but at a different time factor (faster or slower). The factor is absolute in relation to the original properties of the particle
@@ -356,9 +354,12 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 /// @param {Bool}			_gravity : Whether to change the particle's gravity
 		static scale_space		= function (_factor,_shrink_particle, _gravity = true)
 		{
-		
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
-			if _gravity = set_gravity(gravity[0]*_factor,gravity[1])
+			if _gravity 
+			{
+				set_gravity(gravity[0]*_factor,gravity[1])
+			}
+			
 			if _shrink_particle
 			{
 				set_size([size[0]*_factor,size[1]*_factor],[size[2]*_factor,size[3]*_factor],[size[4]*_factor,size[5]*_factor],[size[6]*_factor,size[7]*_factor])
@@ -374,6 +375,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 /// @param {Bool}			_gravity : Whether to change the particle's gravity
 		static scale_space_abs	= function(_factor,_shrink_particle,_gravity = true)
 		{
+			if _factor == scale_factor return
+			
 			var _absolute_factor = _factor
 			_factor = _factor/space_factor
 			
@@ -577,7 +580,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			if size !=undefined
 			{
 				part_type_size_x(particle.index,size[0],size[2],particle.size[4],particle.size[6])	
-				part_type_size_y(particle.index,size[1],size[3],particle.size[4],particle.size[6])	
+				part_type_size_y(particle.index,size[1],size[3],particle.size[5],particle.size[7])	
 			}
 			
 			if orient !=undefined
@@ -603,7 +606,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			}
 			particle.prelaunch(_struct)
 			
-			part_particles_create(part_system.index, x_origin+x,y_origin+y,particle.index, 1);
+			part_particles_create(part_system, x_origin+x,y_origin+y,particle.index, 1);
 		}		
 	}
 	reset()
@@ -649,29 +652,15 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 	update()
 }
 /// @description			Use this to create a new instance particle 
-/// @param {GM.Object}		_object : Object that will be instantiated
+/// @param {Asset.GMObject}		_object : Object that will be instantiated
 /// @param {String}			_name : Name your particle or leave empty to use the default name
 /// @return {Struct}
-function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) constructor
+function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
 	name			=	string(_name)
+	if particle_exists(index) part_type_destroy(index)
 	index			=	_object
-	size			=	[1,1,1,1,0,0,0,0]
-	scale			=	__PULSE_DEFAULT_PART_SCALE
-	life			=	__PULSE_DEFAULT_PART_LIFE
-	color			=	__PULSE_DEFAULT_PART_COLOR
-	color_mode		=	__PULSE_DEFAULT_PART_COLOR_MODE
-	alpha			=	__PULSE_DEFAULT_PART_ALPHA
-	blend			=	__PULSE_DEFAULT_PART_BLEND
-	speed			=	__PULSE_DEFAULT_PART_SPEED
 	sprite			=	object_get_sprite(_object)
-	orient			=	__PULSE_DEFAULT_PART_ORIENT
-	gravity			=	__PULSE_DEFAULT_PART_GRAVITY
-	direction		=	__PULSE_DEFAULT_PART_DIRECTION
-	death_type		=	undefined
-	death_number	=	undefined
-	step_type		=	undefined
-	step_number	=	undefined
 	
 	#region //SET BASIC PROPERTIES
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
@@ -756,42 +745,34 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) const
 	
 	static launch		=	function(_struct)
 	{	
-		
-		if _struct.size == undefined
-		{
-			_struct.size			=	size
-		}
-		if _struct.orient == undefined
-		{
-			_struct.orient			=	orient
-		}
-		_struct.scale			=	scale
-		_struct.color			=	color
-		_struct.alpha			=	alpha
-		_struct.blend			=	blend
-		//_struct._sprite			=	_sprite
-
-		_struct.gravity		=	gravity
-		_struct.death_type		=	death_type
-		_struct.death_number	=	death_number
-		_struct.step_type		=	step_type
-		_struct.step_number		=	step_number
 
 		if _struct.part_system.layer == -1
 		{
-			instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,_struct.particle_index,_struct)
+			var _i = instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,index,_struct)
 		}
 		else
 		{
-			instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,_struct.particle_index,_struct)	
+			var _i = instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,index,_struct)	
 		}
+		
+		with (_i)
+		{
+			if size != undefined
+			{
+				image_xscale = scale[0] * particle.scale[0]
+				image_yscale = scale[1] * particle.scale[1]
+			}
+				//color_mode : distr_color_mix 
+			image_angle =  orient ?? image_angle
+			image_index = frame ?? image_index 
+			direction = dir
 		}
-	
+	}
 }
+
 
 /// @description			Private Particle Class used as a base for all other particles.
 /// @param {String}			_name : Name of the particle.
-/// @return {Struct}
 function __pulse_particle_class		(_name) constructor
 {
 	name			=	string(_name)
@@ -976,7 +957,8 @@ function pulse_store_particle		(_particle,_override = false)
 		global.pulse.part_types[$_name] = variable_clone(_particle)
 		return  global.pulse.part_types[$_name]
 }
-/// @description			Fetches a Pulse Particle from the global struct. Returns a reference to the global struct.
+
+/// @description			Fetches a Pulse Particle from the global struct. Returns a reference to the global struct, or undefined if particle is not found.
 /// @param {String}	_particle : Pulse Particle name to fetch.
 /// @return {Struct}
 function pulse_fetch_particle		(_name)
@@ -985,7 +967,7 @@ function pulse_fetch_particle		(_name)
 	if !is_string(_name)
 	{
 		__pulse_show_debug_message("Argument provided is not a String",3)
-		return
+		return undefined
 	}
 	
 	if pulse_exists_particle(_name) > 0 
@@ -995,7 +977,7 @@ function pulse_fetch_particle		(_name)
 	
 	__pulse_show_debug_message($"System named '{_name}' not found",3);
 	
-	return 
+	return undefined
 }
 				
 

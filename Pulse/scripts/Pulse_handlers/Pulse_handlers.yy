@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_handlers",
+  "%Name":"Pulse_Handlers",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_handlers",
+  "name":"Pulse_Handlers",
   "parent":{
     "name":"Pulse",
     "path":"folders/Pulse.yy",

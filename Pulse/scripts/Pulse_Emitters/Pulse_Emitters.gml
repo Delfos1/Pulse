@@ -12,39 +12,11 @@ function	_pulse_clamp_wrap(val, minn, maxx) {
 	/// @param {Asset.GMAniCurve}						anim_curve : An animation curve that contains one of the following channels: "v_coord" , "u_coord" , "speed", "life" , "orient", "size_x", "size_y" and "frame" . Setting this will make the property's distribution set to the animation curve.
 function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,anim_curve = undefined)  constructor
 {
-	part_system_array = []
-	part_type_array  = []
 	
-	if is_array(__part_system)
-	{
-		part_system_array = array_create(array_length(__part_system))
-		for(var i=0; i<array_length(__part_system);i++)
-		{
-			part_system_array[i] = 	__pulse_lookup_system(__part_system[i])
-		}
-		part_system = part_system_array[0]
-	}
-	else
-	{
-		part_system = 	 __pulse_lookup_system(__part_system)
-		part_system_array[0]= part_system
-	}
-	
-	if is_array(__part_type)
-	{
-		part_type_array = array_create(array_length(__part_type))
-		for(var i=0; i<array_length(__part_type);i++)
-		{
-			part_type_array[i] =  __pulse_lookup_particle(__part_type[i])
-		}
-		
-		part_type	=part_type_array[0]
-	}
-	else
-	{
-		part_type	=	 __pulse_lookup_particle(__part_type)
-		part_type_array[0]=part_type
-	}
+	name = undefined
+	part_system = 	 __pulse_lookup_system(__part_system)
+	part_type =  __pulse_lookup_particle(__part_type)
+
 
 	#region Emitter Form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
@@ -184,7 +156,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 
 	#region EMITTER SETTINGS
 	
-	
+	static set_particle_type		=	function(_particle)
+	{
+		part_type =  __pulse_lookup_particle(_particle)
+		return		
+	}
 	/// @description	Sets an animation curves as a stencil
 	/// @param {Asset.GMAnimCurve}	__ac_curve : Animation curve
 	/// @param {Real, String}		_ac_channel : Channel's string name or number
@@ -535,6 +511,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						{
 							__size_y_channel	=	animcurve_get_channel(_input[0],_input[2])
 						}
+						else
+						{
+							__size_y_channel	=	__size_x_channel
+						}
 						__size_link		=	_link_to
 						break
 					}
@@ -551,8 +531,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the type of distribution for the color of the particles. Uses the mode Color Mix, in which the particles can have a color interpolated between A and B. This overrides the color mode of the particle itself.
-	/// @param {Constant.Colour}	_color_A : Color A
-	/// @param {Constant.Colour}	_color_B : Color B
+	/// @param {Constant.Colour, Real}	_color_A : Color A
+	/// @param {Constant.Colour, Real}	_color_B : Color B
 	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
@@ -1094,7 +1074,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			else
 			{
-				_p.life		=	random_range(part_type.life[0],part_type.life[1])
+				_p.life		=	irandom_range(part_type.life[0],part_type.life[1])
 			}
 		}
 		else
@@ -1115,6 +1095,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		#endregion
 		
 		#region orient
+		
+		// Unless changed, it is not calculated, as it is not necessary for other processes.
 		if distr_orient != PULSE_DISTRIBUTION.RANDOM && distr_orient != PULSE_DISTRIBUTION.NONE
 		{
 			var _amount= 0;
@@ -1133,7 +1115,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		#endregion
 			
 		#region size
-
+		// Unless changed, it is not calculated, as it is not necessary for other processes.
 		if distr_size != PULSE_DISTRIBUTION.RANDOM && distr_size != PULSE_DISTRIBUTION.NONE
 		{
 			var _amount = 0;
@@ -1149,12 +1131,15 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 			_p.size = array_create(4,0)
 			_p.size[0]		=	lerp(part_type.size[0],part_type.size[2],animcurve_channel_evaluate(__size_x_channel,_amount))
+			_p.size[2]		= _p.size[0]
 			_p.size[1]		=	lerp(part_type.size[1],part_type.size[3],animcurve_channel_evaluate(__size_y_channel,_amount))
+			_p.size[3]		=  _p.size[1]
+
 		}
 		#endregion
 			
 		#region frame
-
+		// Unless changed, it is not calculated, as it is not necessary for other processes.
 		if distr_frame != PULSE_DISTRIBUTION.NONE
 		{
 			var _amount= 0;
@@ -1174,7 +1159,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		#endregion
 			
 		#region color
-
+		// Unless changed, it is not calculated, as it is not necessary for other processes.
 		if distr_color_mix == PULSE_DISTRIBUTION.LINKED || distr_color_mix == PULSE_DISTRIBUTION.ANIM_CURVE
 		{
 			var _amount= 0;
@@ -1775,19 +1760,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
 
-		if form_mode == PULSE_FORM.PATH && !path_really_exists(path)
-		{
-			form_mode = PULSE_FORM.ELLIPSE
-		}
-
 		if stencil_profile ==undefined
 		{
 			stencil_mode = PULSE_STENCIL.NONE
 		}
 		
-		var system_array = array_length(part_system_array)
-		var type_array = array_length(part_type_array)
-		
+	
 	
 		div_v	=	1 +  divisions_v_offset
 		if div_v>2 div_v -= 1
@@ -1806,7 +1784,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		repeat(_amount)
 		{
-			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined }
+			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined, speed: undefined , life: undefined }
 			var emitter_struct	= { }
 			// ----- Assigns where the particle will spawn in normalized space (u_coord)
 			//ASSIGN U COORDINATE
@@ -1865,33 +1843,25 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				__check_forces(particle_struct,x,y)
 			}
-			//CHECK FOR OCCLUDERS/COLLISIONS
 			
 			if particle_struct.life <=1 continue
 				
-			var _type	=	0
-			var _sys	=	0
-						
-			for (var _repeat =0; _repeat< max(system_array,type_array,1);_repeat++) 
+
+			particle_struct.part_system	=	part_system.index
+			particle_struct.particle	=	part_type
+			if particle_struct.to_edge && ( particle_struct.particle.subparticle != undefined && particle_struct.particle.on_collision)
 			{
-				var _type	= _type+1	==type_array		? 0 : _type+1
-				var _sys	= _sys+1	==system_array		? 0 : _type+1
-				particle_struct.part_system	=	part_system_array[_sys]
-				particle_struct.particle	=	part_type_array[_type]
-				if particle_struct.to_edge && ( particle_struct.particle.subparticle != undefined && particle_struct.particle.on_collision)
-				{
-					particle_struct.particle	= particle_struct.particle.subparticle
-				}
+				particle_struct.particle	= particle_struct.particle.subparticle
+			}
 				
-				if _cache
-				{
-					cache[i]=particle_struct
-					i++
-				}
-				else
-				{
-					part_type.launch(particle_struct)
-				}
+			if _cache
+			{
+				cache[i]=particle_struct
+				i++
+			}
+			else
+			{
+				part_type.launch(particle_struct)
 			}
 				
 			div_v++
@@ -1995,6 +1965,59 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	}
 }
 
+/// @description			Store a emitter in Pulse's Global storage. If there is a emitter of the same name it will override it or change the name.
+/// @param {Struct.pulse_emitter}			_emitter : Pulse emitter to store
+/// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter.
+/// @return {Struct}
+function pulse_store_emitter			(_emitter,_name , _override = false)
+{
+	/// Check if it is a Pulse emitter
+	if !is_instanceof(_emitter,pulse_emitter)
+	{
+		__pulse_show_debug_message("Argument provided is not a Pulse emitter",3)
+		return
+	}
+	
+	_emitter.name = string(_name)
+
+	if pulse_exists_emitter(_name) > 0 && !_override
+	{
+		/// Change name if the name already exists
+		var l		=	struct_names_count(global.pulse.emitters)		
+		_name		=	$"{_name}_{l}";	
+		_emitter.name = _name
+	}
+	
+	__pulse_show_debug_message($"Created emitter by the name {_name}",3);
+	global.pulse.emitters[$_name] = variable_clone(_emitter)
+	return  global.pulse.emitters[$_name]
+}
+
+/// @description			Fetches a Pulse emitter from the global struct. Returns a reference to the global struct.
+/// @param {String}	_name : Pulse emitter name to fetch, as a string.
+/// @return {Struct}
+function pulse_fetch_emitter			(_name)
+{
+	/// Check if it is a Pulse emitter
+	if !is_string(_name)
+	{
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return undefined
+	}
+	
+	if pulse_exists_emitter(_name) > 0 
+	{
+		return global.pulse.emitters[$_name]
+	}
+	
+	__pulse_show_debug_message($"emitter named '{_name}' not found",3);
+	
+	return undefined
+}
+
+
+
+
 /// @desc Throws a vector until it hits an object. Returns Vector3(x, y, id) if it hits.
 /// @param {real} origin_x The ray x origin.
 /// @param {real} origin_y The ray y origin.
@@ -2049,3 +2072,5 @@ function	__pulse_raycast(origin_x, origin_y, object, angle, distance, precise=tr
 	return noone
 	
 }
+
+

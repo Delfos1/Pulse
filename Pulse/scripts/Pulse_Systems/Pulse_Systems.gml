@@ -1,7 +1,6 @@
 
 /// @description			Use this constructor to create a new particle system.
 /// @param {String}			_name : Name your particle or leave empty to use the default name
-/// @param {Bool}			_return_index	: Whether to return the particle index or not (false by default)
 /// @param {ID.Layer}		_layer	: Which layer to place the system
 /// @param {Bool}			_persistent	: Whether to make the system persistent or not (true by default)
 /// @return {Struct}
@@ -364,7 +363,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 }
 
 /// @description			Store a system in Pulse's Global storage. If there is a system of the same name it will override it or change the name.
-/// @param {String}			_system : Pulse System to store
+/// @param {Struct.pulse_system}			_system : Pulse System to store
 /// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system.
 /// @return {Struct}
 function pulse_store_system			(_system,_override = false)
@@ -400,7 +399,7 @@ function pulse_fetch_system			(_name)
 	if !is_string(_name)
 	{
 		__pulse_show_debug_message("Argument provided is not a String",3)
-		return
+		return undefined
 	}
 	
 	if pulse_exists_system(_name) > 0 
@@ -410,5 +409,5 @@ function pulse_fetch_system			(_name)
 	
 	__pulse_show_debug_message($"System named '{_name}' not found",3);
 	
-	return 
+	return undefined
 }

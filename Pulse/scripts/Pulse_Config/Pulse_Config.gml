@@ -1,4 +1,6 @@
 
+
+
 enum __PULSE_COLOR_MODE
 {// Color mode use internally to set to particles
 	COLOR,
@@ -61,7 +63,7 @@ enum PULSE_FORCE
 	RANGE_RADIAL,
 	RANGE_DIRECTIONAL,
 }
-
+/// @description  0: No extra , 1: Warning , 2 : Error , 3: Success
 function __pulse_show_debug_message(_message,_type = 0)
 {
 	if __PULSE_SHOW_DEBUG == false exit;
@@ -73,28 +75,39 @@ function __pulse_show_debug_message(_message,_type = 0)
 			_pre = "███ ♋ PULSE  ███ : " 
 		break
 		case 1 : // Warning
-			_pre = "▉╳▉ ↯ PULSE WARNING ▉╳▉ : "
+			_pre = "▉╳▉ ♋ PULSE WARNING ▉╳▉ : "
 		break
 		case 2: // Error
-			_pre = "▉╳▉ ↯ PULSE ERROR ▉╳▉ : "
+			_pre = "▉╳▉ ♋ PULSE ERROR ▉╳▉ : "
 		break
 		case 3: // Success
-			_pre = "███ ↯ PULSE SUCCESS ███ : "
+			_pre = "███ ♋ PULSE SUCCESS ███ : "
 		break
 	}
+	if __PULSE_SHOW_DEBUG_STACK
+	{
+		var _stack = debug_get_callstack(3)
+		show_debug_message($"{_pre} + {_message} : {_stack}");
+	}
+		show_debug_message($"{_pre} + {_message}");
 	
-	show_debug_message($"{_pre} + {_message}");
+	
 }
 
 //Shows messages on the Output
 #macro __PULSE_SHOW_DEBUG				true
-
+#macro __PULSE_SHOW_DEBUG_STACK			true
 // Default naming
 #macro __PULSE_DEFAULT_SYS_NAME			"_system"
 
 #macro __PULSE_DEFAULT_PART_NAME		"part_type"
 
-// Default Particle properties
+// Default directory for exporting/importing
+
+#macro __PULSE_DEFAULT_DIRECTORY		working_directory //string_concat(working_directory  + "Pulse")
+
+
+// Default Particle properties 
 
 #macro __PULSE_DEFAULT_PART_SIZE		[.1,.1,.2,.2,0,0,0,0] // minx, min y, max x, max y, acc x, acc y, wiggle x wiggle y
 

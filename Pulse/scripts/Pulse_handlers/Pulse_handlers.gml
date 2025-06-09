@@ -92,7 +92,6 @@ function pulse_clone_particle	(__name,__new_name=__name)
 	return global.pulse.part_types[$__new_name]
 }
 
-
 /// @desc Destroys a system both from the GameMaker index as from Pulse's data
 /// @param {string} _name The name of the system to destroy
 /// @returns {Struct}
@@ -172,14 +171,7 @@ function pulse_exists_system	(_name)
 	}
 	else if  is_instanceof(_name,pulse_system)
 	{
-		if struct_exists(global.pulse.systems,_name.name)
-		{
-			system_found =  2 //found in storage
-		}
-		else
-		{
-			system_found =  3 //found locally
-		}
+		system_found =  2 //found locally
 	}
 	else
 	{
@@ -190,7 +182,7 @@ function pulse_exists_system	(_name)
 }
 
 /// Checks if a particle exists with the name provided as string or if its a struct.
-/// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+/// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, 2 = Particle struct
 function pulse_exists_particle	(_name)
 {
 	var particle_found =  1 /// 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
@@ -206,17 +198,9 @@ function pulse_exists_particle	(_name)
 			particle_found =  0 //create with provided name
 		}
 	}
-	else if  is_instanceof(_name,pulse_particle)
+	else if  is_instanceof(_name,__pulse_particle_class)
 	{
-		if struct_exists(global.pulse.part_types,_name.name)
-		{
-			_name = _name.name
-			particle_found =  2 //found in storage
-		}
-		else
-		{
-			particle_found =  3 //found locally
-		}
+		particle_found =  2 //found locally
 	}
 	else
 	{
@@ -226,6 +210,42 @@ function pulse_exists_particle	(_name)
 	return particle_found
 }
 
+/// Checks if a emitter exists with the name provided as string or if its a struct.
+/// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+function pulse_exists_emitter	(_name)
+{
+	var emitter_found =  1 /// 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+	
+	if is_string(_name) 
+	{
+		if struct_exists(global.pulse.emitters,_name)
+		{
+			emitter_found =  1 //found in storage
+		}
+		else
+		{
+			emitter_found =  0 //create with provided name
+		}
+	}
+	else if  is_instanceof(_name,pulse_emitter)
+	{
+		if struct_exists(global.pulse.emitters,_name.name)
+		{
+			_name = _name.name
+			emitter_found =  2 //found in storage
+		}
+		else
+		{
+			emitter_found =  3 //found locally
+		}
+	}
+	else
+	{
+		 emitter_found =  -1 //Not found, make 
+	}
+	
+	return emitter_found
+}
 /// @description			   
 ///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
 ///							Particles are named after the emitter they are on.
@@ -277,25 +297,57 @@ function pulse_convert_particles(part_system)
 	}
 }
 
+//////// Particles
 
-function pulse_export_particle	(_particle,name = undefined)
+/// @description			   Exports a particle as a .pulsep file . Returns the file path as a string.
+/// @param {Struct.__pulse_particle_class}	_particle : The particle you wish to export.
+
+function pulse_export_particle	(_particle, file = undefined)
 {
-	name ??= $"particle_{_particle.name}"
-	file = get_save_filename("*.pulse", $"{name}");
-	if (file != "")
+	if !is_instanceof(_particle,__pulse_particle_class) 
 	{
-		var	 _stringy = json_stringify(_particle , true),
-			 _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
-	
-		buffer_write(_buff, buffer_text, _stringy);
-		buffer_save(_buff, file);
-		buffer_delete(_buff);
+		__pulse_show_debug_message($"Particle wasn't exported (Wrong type provided)",2)
+		return
 	}
+	
+	if file == undefined 
+	{
+		file = __PULSE_DEFAULT_DIRECTORY+$"particle_{_particle.name}.pulsep"
+	}
+	else if !directory_exists( filename_dir(file))
+	{
+		file = get_save_filename("*.pulsep", $"{_particle.name}.pulsep");
+	
+		if (file == "") return
+	}
+	
+	if filename_ext(file) != ".pulsep"
+	{
+		file = filename_change_ext(file,".pulsep")
+	}
+		
+	var	 _stringy = json_stringify(_particle , true),
+			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+	buffer_write(_buff, buffer_text, _stringy);
+	buffer_save(_buff, file);
+	buffer_delete(_buff);
+	
+	__pulse_show_debug_message($"Particle '{_particle.name}' was exported succesfully.",3)
+	return file
 }
 
-function pulse_import_particle	(_particle_file, _overwrite = false)
+/// @description			Imports a particle saved as a .pulsep file in the safe directory and stores it. Returns a reference to the global storage.
+/// @param {String}			_particle_file : The name of the file you wish to import, as a string.
+/// @param {Bool}			_overwrite : Whether to overwrite a particle of the same name if it already exists (true) or not (false). DEFAULT: False
+function pulse_import_particle	(_particle_file , _overwrite = false)
 {	
-	file_text_open_read(_particle_file)
+	if filename_ext(_particle_file) != ".pulsep"
+	{
+		__pulse_show_debug_message("Particle wasn't imported (Wrong type provided)",2)
+		return
+	}
+	
 	var _buffer = buffer_load(_particle_file)
 		buffer_seek(_buffer, buffer_seek_start, 0);
 	var _string = buffer_read(_buffer, buffer_string) ,
@@ -335,7 +387,7 @@ function pulse_import_particle	(_particle_file, _overwrite = false)
 			}
 
 			_new_part.reset()
-			return  _new_part
+			return  pulse_store_particle(_new_part,true)
 		}
 
 		// else return the existintg particle
@@ -343,23 +395,70 @@ function pulse_import_particle	(_particle_file, _overwrite = false)
 		return global.pulse.part_types[$ _parsed.name];
 }
 
-function pulse_export_system	(_system, name = undefined)
+function pulse_import_particle_ext	(_dir , _overwrite = false)
 {
-	name ??= $"system_{_system.name}"
-	file = get_save_filename("*.pulse", $"{name}");
-	if (file != "")
+	if !GM_is_sandboxed 
 	{
-		var	 _stringy = json_stringify(_system , true),
-			 _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
-	
-		buffer_write(_buff, buffer_text, _stringy);
-		buffer_save(_buff, file);
-		buffer_delete(_buff);
+		if directory_exists(filename_dir(_dir))
+		{
+			return pulse_import_particle	(_dir , _overwrite = false)
+		}
+	}
+	else
+	{
+		return
 	}
 }
 
+
+//////// Systems
+
+function pulse_export_system	(_system,file = undefined)
+{
+	if !is_instanceof(_system,pulse_system) 
+	{
+		__pulse_show_debug_message($"System wasn't exported (Wrong type provided)",2)
+		return
+	}
+	
+	if file == undefined 
+	{
+		file = __PULSE_DEFAULT_DIRECTORY+$"system_{_system.name}.pulses"
+	}
+	else if !directory_exists( filename_dir(file))
+	{
+		file = get_save_filename("*.pulses", $"{_system.name}.pulses");
+		if (file == "") return
+	}
+	
+	if filename_ext(file) != ".pulses"
+	{
+		file = filename_change_ext(file,".pulses")
+	}
+	
+	var	 _stringy = json_stringify(_system , true),
+			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+	buffer_write(_buff, buffer_text, _stringy);
+	buffer_save(_buff, file);
+	buffer_delete(_buff);
+		
+	__pulse_show_debug_message($"System '{_system.name}' was exported succesfully" ,3)
+
+	return file
+}
+
+/// @description			Imports a system saved as a .pulsep file in the safe directory and stores it. Returns a reference to the global storage.
+/// @param {String}			_system_file : The name of the file you wish to import, as a string.
+/// @param {Bool}			_overwrite : Whether to overwrite a system of the same name if it already exists (true) or not (false). DEFAULT: False
 function pulse_import_system	(_system_file, _overwrite = false)
 {
+	if filename_ext(_system_file) != ".pulses"	
+	{
+		__pulse_show_debug_message("System wasn't imported (Wrong type provided)",2)
+		return
+	}
+	
 	file_text_open_read(_system_file)
 	var _buffer = buffer_load(_system_file)
 		buffer_seek(_buffer, buffer_seek_start, 0);
@@ -393,7 +492,7 @@ function pulse_import_system	(_system_file, _overwrite = false)
 				}
 
 			_new_sys.reset()
-			return  _new_sys
+			return  pulse_store_system(_new_sys,true)
 		}
 
 		file_text_close(_system_file)
@@ -401,35 +500,56 @@ function pulse_import_system	(_system_file, _overwrite = false)
 		return global.pulse.systems[$ _parsed.name];
 }
 
+//////// Emitters
+
 function pulse_export_emitter	(_emitter)
 {
-	var file;
-	file = get_save_filename("*.pulse", $"emitter_");
-	if (file != "")
+
+	if !is_instanceof(_emitter,pulse_emitter) 
 	{
-		// Export particle and system
-		var _dir = filename_path(file),
-		_fname = filename_name(file),
-		_fpartname = string_concat(_dir,_fname,"_particle",".pulse"),
-		_fsysname = string_concat(_dir,_fname,"_system",".pulse")
-		
-		pulse_export_particle(_emitter.part_type,_fpartname)
-		pulse_export_system(_emitter.part_system,_fsysname)
-		
-		var	 _stringy = json_stringify(_emitter , true, function(key,value)
-		{
-			if key == "part_type_array" || key == "part_type" || key == "part_system_array" || key == "part_system"
-			{
-				return undefined
-			}
-			return value
-		}),
-		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
-	
-		buffer_write(_buff, buffer_text, _stringy)
-		buffer_save(_buff, file);
-		buffer_delete(_buff);
+		__pulse_show_debug_message($"Emitter wasn't exported (Wrong type provided)",2)
+		return
 	}
+	var file;
+	
+	if GM_is_sandboxed
+	{
+		if  !directory_exists(__PULSE_DEFAULT_DIRECTORY) directory_create("Pulse")
+		file =  __PULSE_DEFAULT_DIRECTORY+$"emitter.pulsee"
+	}
+	else
+	{
+		file = get_save_filename("*.pulsee", $"emitter_");
+
+		if (file == "") return
+	}
+	// Export particle and system
+	var _fname = filename_change_ext(file,""),
+	_fpartname = string_concat(_fname,"_particle",".pulsep"),
+	_fsysname = string_concat(_fname,"_system",".pulses")
+	
+	if filename_ext(file) != ".pulsee"
+	{
+		file = filename_change_ext(file,".pulsee")
+	}
+	
+	var _pfile = pulse_export_particle(_emitter.part_type,_fpartname)
+	var _psys = pulse_export_system(_emitter.part_system,_fsysname)
+		
+	var	 _stringy = json_stringify(_emitter , true, function(key,value)
+	{
+		if key == "part_type_array" || key == "part_type" || key == "part_system_array" || key == "part_system"
+		{
+			return undefined
+		}
+		return value
+	}),
+		_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+	buffer_write(_buff, buffer_text, _stringy)
+	buffer_save(_buff, file);
+	buffer_delete(_buff);
+	
 }
 
 function pulse_import_emitter	(file, _overwrite = false)
@@ -461,6 +581,11 @@ function pulse_import_emitter	(file, _overwrite = false)
 	stencil_mode		=	_parsed.stencil_mode
 	form_mode			=	_parsed.form_mode
 	path				=	_parsed.path
+	if path == -1 && form_mode == PULSE_FORM.PATH 
+	{
+		form_mode = PULSE_FORM.ELLIPSE
+		__pulse_show_debug_message("Path not found on import, replacing with ellipse")
+	}
 	path_res			=	_parsed.path_res
 	stencil_tween		=	_parsed.stencil_tween
 	radius_external		=	_parsed.radius_external
