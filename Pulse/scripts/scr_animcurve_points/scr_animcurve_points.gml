@@ -41,10 +41,6 @@ function animcurve_point_add(_point_array,_posx,_value,_replace=false)
 				{
 					if _replace
 					{
-						/*
-						array_delete(_point_array,_i,1)
-						array_insert(_point_array, _i, __make_point(_posx,_value))
-						*/
 						_point_array[_i]= __make_point(_posx,_value)
 					}
 					break

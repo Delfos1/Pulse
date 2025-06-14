@@ -1,4 +1,4 @@
-if !debug exit
+//if !debug exit
 
 var amount = part_particles_count(system.index)
 

@@ -66,8 +66,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	divisions_v_offset	=	0
 	divisions_u_offset	=	0
 	#endregion
-
-	
 	
 	#region Channels
 	__v_coord_channel		=	undefined
@@ -245,7 +243,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Real}	_radius_external : The external radius in absolute terms, in pixels. All particles are created within internal and external radius
 	/// @param {Real}	[_edge_internal] : The internal edge of the emitter. Allows to feather particles going towards the center while still limiting them . DEFAULT : Equal to the internal radius (no feathering)
 	/// @param {Real}	[_edge_external] : The external edge of the emitter. Allows to feather particles going away of the center while still limiting them . DEFAULT : Equal to the external radius (no feathering)
-	/// @context pulse_emitter
 	static	set_radius			=	function(_radius_internal,_radius_external,_edge_internal = _radius_internal,_edge_external = _radius_external)
 	{
 		radius_internal	=	(_radius_internal != undefined) ? _radius_internal : radius_internal;
@@ -1172,6 +1169,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				_amount = random(1)
 			}
+						
 				_amount = animcurve_channel_evaluate(__color_mix_channel,_amount)
 				_p.r_h =  lerp(__color_mix_A[2],__color_mix_B[2],_amount)
 				_p.g_s =  lerp(__color_mix_A[1],__color_mix_B[1],_amount)
@@ -1199,11 +1197,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					var y1			= path_get_y(path,_p.u_coord+j)
 					_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
 							
-					// Direction Increments do not work with particle types. Leaving this in hopes that some day, they will
-					//var x2	= path_get_x(path,u_coord+(j*2))
-					//var y2	= path_get_y(path,u_coord+(j*2))
-					//arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
-
+					/*// Direction Increments only work with non-GM Particles
+					var x2	= path_get_x(path,u_coord+(j*2))
+					var y2	= path_get_y(path,u_coord+(j*2))
+					_p.arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+					*/
 					_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
 				}
 				else
@@ -1594,7 +1592,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	 * @param {bool}_prec Whether the collision is precise (true, slow) or not (false, fast)
 	 * @param {real} _rays amount of rays emitted to create a stencil collision
 	 */
-	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
+	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 16 )
 	{
 		if is_array(_collision_obj){
 		if array_length(_collision_obj)==0
@@ -1667,19 +1665,19 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		// Emit 32 rays and check for collisions
 		var _source		=	animcurve_get_channel(stencil_profile, 2),
-		 _points		=	new animcurve_point_collection( animcurve_points_subdiv(_source,_rays),mask_start,mask_end) ,
+		_points			= animcurve_points_subdivide(_source,_rays,mask_start,mask_end),
 		 _ray			= {u_coord : 0 , v_coord : 0 , length : 0} ,
 		 _fail			= 0 ,
-		 _dir_stencil	= animcurve_points_find_closest(_points.collection, stencil_offset,false),
+		 _dir_stencil	= animcurve_point_find_closest(_points, stencil_offset),
 		 _mod_i			= _dir_stencil,
-		 _l				= _points.length
+		 _l				= array_length(_points)
 		 
 		for(var i =	0; i < _l ; i +=1)
 		{
-			_ray.u_coord	= _points.collection[i].posx
+			_ray.u_coord	= _points[i].posx
 			_mod_i = (i+_dir_stencil)%_l
 			
-			var _length		=	edge_external*_points.collection[_mod_i].value 
+			var _length		=	edge_external*_points[_mod_i].value 
 			_ray			= __set_normal_origin(_ray,x,y)
 
 			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
@@ -1687,7 +1685,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if _ray_collision != noone
 			{
 				var _value = (point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external) 
-				_points.new_point(_points.collection[_mod_i].posx,_value,true)
+				
+				animcurve_point_add(_points,_points[_mod_i].posx,_value,true)
+				
 				
 				// Add colliding entity to an array
 				if !array_contains(colliding_entities,_ray_collision.z)
@@ -1700,8 +1700,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_fail ++
 			}
 		}
-		
-		if _fail = _points.length
+
+		if _fail = array_length(_points)
 		{
 			if is_colliding
 			{
@@ -1711,7 +1711,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			return undefined
 		}
 		
-		_points = _points.export()
 
 		if stencil_mode == PULSE_STENCIL.NONE
 		{
@@ -1740,7 +1739,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			else
 			{
-				__pulse_show_debug_message("System is currently asleep!", 1)
+				__pulse_show_debug_message($"System \"{part_system.name}\" is currently asleep!", 1)
 				exit
 			}
 		}
@@ -1764,8 +1763,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			stencil_mode = PULSE_STENCIL.NONE
 		}
-		
-	
 	
 		div_v	=	1 +  divisions_v_offset
 		if div_v>2 div_v -= 1
@@ -1845,7 +1842,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			
 			if particle_struct.life <=1 continue
-				
+			if (force_to_edge == PULSE_TO_EDGE.SPEED || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED) && particle_struct.speed<=1
+			{	continue }
 
 			particle_struct.part_system	=	part_system.index
 			particle_struct.particle	=	part_type

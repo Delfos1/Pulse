@@ -16,16 +16,15 @@ particle.set_sprite(s_hand)
 		
 pulse_store_particle(particle)
 		
-emitter= new pulse_emitter("sys_1","a_particle_name")
+emitter = new pulse_emitter("sys_1","a_particle_name");
 
-emitter	.set_radius(50,300,50,800)
-		.set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION)
-		.set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.SPEED)
+emitter.set_radius(0,300,50,300);
+emitter.set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION)
+emitter.set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.SPEED)
 //emitter	.set_mask_spread(0,75)
-emitter	.force_to_edge  = PULSE_TO_EDGE.LIFE
+emitter.force_to_edge  = PULSE_TO_EDGE.SPEED
 //emitter.form_path(Path10)
-//sys.add_collisions(o_Collider)
-//sys.set_stencil(ac_empty,"curve1")
-//emitter.set_stencil(ac_Shape,"Star")
+emitter.add_collisions(o_Collider)
+emitter.set_stencil(ac_Shape,"Star")
 //cache = sys.pulse(300,0,0,true)
-//pulse_export_emitter(emitter)
+pulse_export_emitter(emitter)
