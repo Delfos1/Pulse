@@ -1,6 +1,3 @@
-
-
-
 enum __PULSE_COLOR_MODE
 {// Color mode use internally to set to particles
 	COLOR,
@@ -38,7 +35,7 @@ enum PULSE_COLOR
 	RGB					=33,
 	NONE				=34,
 }
-enum PULSE_TO_EDGE
+enum PULSE_BOUNDARY
 {
 	NONE=40,
 	SPEED=41,
@@ -72,25 +69,25 @@ function __pulse_show_debug_message(_message,_type = 0)
 	switch (_type)
 	{
 		case 0 : // Normal message
-			_pre = "███ ♋ PULSE  ███ : " 
+			_pre = "█♋█  PULSE  █♋█ : " 
 		break
 		case 1 : // Warning
-			_pre = "▉╳▉ ♋ PULSE WARNING ▉╳▉ : "
+			_pre = "▉♋▉  PULSE WARNING  ▉♋▉ : "
 		break
 		case 2: // Error
-			_pre = "▉╳▉ ♋ PULSE ERROR ▉╳▉ : "
+			_pre = "▉♋▉  PULSE ERROR  ▉♋▉ : "
 		break
 		case 3: // Success
-			_pre = "███ ♋ PULSE SUCCESS ███ : "
+			_pre = "█♋█  PULSE SUCCESS █♋█ : "
 		break
 	}
 	if __PULSE_SHOW_DEBUG_STACK
 	{
 		var _stack = debug_get_callstack(3)
-		show_debug_message($"{_pre} + {_message} : {_stack}");
+		show_debug_message($"{_pre} {_message} : {_stack}");
+	}else{
+		show_debug_message($"{_pre} {_message}");
 	}
-		show_debug_message($"{_pre} + {_message}");
-	
 	
 }
 
@@ -153,7 +150,7 @@ function __pulse_show_debug_message(_message,_type = 0)
 //Whether the emitter changes the direction of the particle is emitting
 #macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true
 
-#macro __PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE			PULSE_TO_EDGE.LIFE
+#macro __PULSE_DEFAULT_EMITTER_BOUNDARY			PULSE_BOUNDARY.LIFE
 
 #macro __PULSE_DEFAULT_DISTR_PROPERTY					PULSE_DISTRIBUTION.RANDOM
 

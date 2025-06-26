@@ -14,7 +14,7 @@
         {"th0":-0.007860422,"th1":0.0017905831,"tv0":-0.23793781,"tv1":-0.25908786,"x":0.8,"y":1.0,},
         {"th0":-0.042761803,"th1":0.044279218,"tv0":0.037012577,"tv1":0.05816257,"x":0.9,"y":0.5,},
         {"th0":-0.01047045,"th1":0.1,"tv0":-0.27495044,"tv1":0.0,"x":1.0,"y":1.0,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
     {"$GMAnimCurveChannel":"","%Name":"Splash","colour":4290799884,"name":"Splash","points":[
         {"th0":-0.1,"th1":0.019325513,"tv0":0.0,"tv1":-0.1401856,"x":0.0,"y":1.0,},
         {"th0":-0.018241346,"th1":0.01254205,"tv0":-0.050554574,"tv1":-0.13385248,"x":0.06107739,"y":0.98648745,},
@@ -37,14 +37,14 @@
         {"th0":-0.010716498,"th1":0.012359321,"tv0":0.0,"tv1":0.0,"x":0.896965,"y":0.6427627,},
         {"th0":-0.007587254,"th1":0.027222574,"tv0":-0.1563701,"tv1":-0.21109933,"x":0.93968135,"y":0.8790369,},
         {"th0":-0.016959012,"th1":0.1,"tv0":-0.1163252,"tv1":0.0,"x":1.0,"y":1.0,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
-    {"$GMAnimCurveChannel":"","%Name":"Cat_eye","colour":4279025727,"name":"Cat_eye","points":[
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
+    {"$GMAnimCurveChannel":"","%Name":"Cat_Eye","colour":4279025727,"name":"Cat_Eye","points":[
         {"th0":-0.1,"th1":0.038378265,"tv0":0.0,"tv1":-0.354263,"x":0.0,"y":1.0,},
         {"th0":-0.11665281,"th1":0.1293838,"tv0":-0.007536216,"tv1":0.008358687,"x":0.25,"y":0.4,},
         {"th0":-0.045502126,"th1":0.025827944,"tv0":-0.33362037,"tv1":-0.30613017,"x":0.5,"y":1.0,},
         {"th0":-0.13210882,"th1":0.16292226,"tv0":0.011105885,"tv1":-0.013696253,"x":0.75,"y":0.4,},
         {"th0":-0.021411061,"th1":0.1,"tv0":-0.25380033,"tv1":0.0,"x":1.0,"y":1.0,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
     {"$GMAnimCurveChannel":"","%Name":"Circle","colour":4279234797,"name":"Circle","points":[
         {"th0":-0.1,"th1":0.036567908,"tv0":0.0,"tv1":1.4901161E-08,"x":0.0,"y":2.0,},
         {"th0":-0.04755348,"th1":0.1,"tv0":1.4901161E-08,"tv1":0.0,"x":1.0,"y":2.0,},

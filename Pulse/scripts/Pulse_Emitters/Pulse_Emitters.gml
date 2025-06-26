@@ -1,5 +1,3 @@
-/// feather ignore all
-
 //※∴∼↻⊙↺ ♇♋︎ ↯⭍ ⚡︎ ⁎∗⃰❆❄❅
 
 function	_pulse_clamp_wrap(val, minn, maxx) {
@@ -40,7 +38,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	mask_v_start		=	0
 	mask_v_end			=	1
 	line				=	[0,0]
-
+	boundary		=	__PULSE_DEFAULT_EMITTER_BOUNDARY
+	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
+	
 	#endregion
 	
 	#region Emitter properties
@@ -136,9 +136,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 
 	#endregion
 	
-	force_to_edge		=	__PULSE_DEFAULT_EMITTER_FORCE_TO_EDGE
-	alter_direction		=	__PULSE_DEFAULT_EMITTER_ALTER_DIRECTION
-	
 	//Image maps
 	displacement_map	=	undefined
 	color_map			=	undefined					
@@ -162,18 +159,16 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets an animation curves as a stencil
 	/// @param {Asset.GMAnimCurve}	__ac_curve : Animation curve
 	/// @param {Real, String}		_ac_channel : Channel's string name or number
-	/// @param {Asset.GMAnimCurve}	__ac_curve_b : Animation curve B
-	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
 	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
 	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
-	/// @context pulse_emitter
-	static	set_stencil			=	function(__ac_curve,__ac_channel,_channel=0,_mode=PULSE_STENCIL.EXTERNAL)
+	/// @param {Real}			_to_channel : Channel's string name or number
+	static	set_stencil			=	function(__ac_curve,__ac_channel,_mode=PULSE_STENCIL.EXTERNAL,_to_channel=0)
 	{
-		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_channel,false)
+		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_to_channel,false)
 		
-		if _channel == 0
+		if _to_channel == 0
 		{
-			animcurve_channel_copy(stencil_profile,_channel,stencil_profile,2,false)
+			animcurve_channel_copy(stencil_profile,_to_channel,stencil_profile,2,false)
 		}
 						
 		stencil_mode= _mode
@@ -181,29 +176,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 
 	}
-	/// @description	Sets animation curves as stencils , that tween from A to B
-	/// @param {Asset.GMAnimCurve}	__ac_curve_a : Animation curve A
-	/// @param {Real, String}		_ac_channel_a : Channel's string name or number
-	/// @param {Asset.GMAnimCurve}	__ac_curve_b : Animation curve B
-	/// @param {Real, String}		_ac_channel_b : Channel's string name or number
-	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
-	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
-	/// @context pulse_emitter
-	static	set_tween_stencil	=	function(__ac_curve_a,_ac_channel_a,__ac_curve_b,_ac_channel_b,_mode=PULSE_STENCIL.A_TO_B)
+	/// @description	Sets the tween to be applied between Stencils A and B
+	/// @param {Real}	_tween : A value between 0 and 1. Any lower or higher values will be automatically wrapped around
+	static	set_stencil_tween	=	function(_tween)
 	{
-		set_stencil(__ac_curve_a,_ac_channel_a,0);
-		set_stencil(__ac_curve_b,_ac_channel_b,1);
+		stencil_tween =	clamp(_tween,0,1);	
 
-		stencil_tween =	0;	
-		
-		stencil_mode= _mode
-		
 		return self
 	}
 	
 	/// @description	Sets the offset of the stencil.
 	/// @param {Real}	__offset : A value from 0 to 1.
-	/// @context pulse_emitter
 	static	set_stencil_offset	=	function(_offset)
 	{
 		if _offset < 0
@@ -218,7 +201,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the mask on the U axis. A mask defines a range in which particles can spawn
 	/// @param {Real}	_mask_start : A value from 0 to 1
 	/// @param {Real}	_mask_end : A value from 0 to 1
-	/// @context pulse_emitter
 	static	set_u_mask			=	function(_mask_start,_mask_end)
 	{
 		mask_start			=	clamp(_mask_start,0,1);
@@ -257,7 +239,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	///							The emitter's direction determines whether the particles travel away from the center ( 0 ), transversal to the U axis (90) or towards the center (180)
 	/// @param {Real.Degree}	_direction_min : The minimum direction a particle will take. In degrees.
 	/// @param {Real.Degree}	[_direction_max] : The maximum direction a particle will take. In degrees. DEFAULT : Equal to the minimum, (no variation between particles)
-	/// @context pulse_emitter
 	static	set_direction_range	=	function(_direction_min,_direction_max=_direction_min)
 	{
 		direction_range	=	[_direction_min,_direction_max]
@@ -268,7 +249,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the mask on the U axis as an even spread from a central axis in an elliptic emitter. 
 	/// @param {Real.Degree}	_direction : Central axis from which to measure the spread. In degrees.
 	/// @param {Real.Degree}	_spread_angle : Spread from the central direction, to either sides of it. In degrees.
-	/// @context pulse_emitter
 	static	set_mask_spread			=	function(_direction, _spread_angle)
 	{
 		_direction			= (_direction%360)/360
@@ -281,7 +261,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the scale of the emitter. 1 == Notmal scale
 	/// @param {Real}	[_x_scale] : Scale for the X axis. If left empty, the scale in this axis remains unchanged
 	/// @param {Real}	[_y_scale] : Scale for the Y axis. If left empty, the scale in this axis remains unchanged
-	/// @context pulse_emitter
+
 	static	set_scale			=	function(_x_scale=x_scale,_y_scale=y_scale)
 	{
 		if is_real(_x_scale) && is_real(_y_scale)
@@ -306,6 +286,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		x_focal_point		=	_x
 		y_focal_point		=	_y
+		
+		return self
+	}
+	
+	static set_boundaries		=	function(_mode = PULSE_BOUNDARY.LIFE )
+	{
+		boundary = _mode
 		
 		return self
 	}
@@ -632,7 +619,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the spawn point of the particle in the U axis in the emitter.
 	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
 	/// @param {Real, Array}					_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
-	/// @param {Real.Enum.PULSE_LINK_TO}		_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
 	static set_distribution_u		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
@@ -889,6 +875,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
+	static remove_collisions =	function(_object)
+	{
+		var ind = array_find_index(collisions,function(_element, _index){return _element == _object})
+		if ind > -1
+		{
+			array_delete(collisions,ind,1)
+		}
+		
+		return self
+	}
+	
 	#region private methods
 	
 	static __assign_u_coordinate	=	function(div_u,_p={})
@@ -937,29 +934,27 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		var dir_stencil = (stencil_offset+_particle.u_coord)%1;
 			
-		eval_c	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
-		eval_a	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
-		eval	=	eval_a
-		
+		eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+		eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
 		eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
-		eval	=	lerp(eval_a,eval_b,abs(stencil_tween))
+		eval	=	lerp(eval_a,eval_b,stencil_tween)
 				
 		switch (stencil_mode)
 		{
 			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
 			{
-				_emitter.ext		= eval_a
+				_emitter.ext		= min(eval_a,(eval_c*(edge_external/radius_external)))
 				_emitter.int		= eval_b
 				_emitter.total		= eval
-				_emitter.edge		= eval_c
+				_emitter.edge		= min(eval_a,eval_c)
 				break;
 			}
 			case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
 			{
-				_emitter.ext		= eval
+				_emitter.ext		= min(eval,(eval_c*(edge_external/radius_external)))
 				_emitter.int		= 1
 				_emitter.total		= eval
-				_emitter.edge		= eval_c
+				_emitter.edge		= min(eval,eval_c)
 				break;
 			}
 			case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
@@ -967,7 +962,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_emitter.ext		= 1
 				_emitter.int		= eval
 				_emitter.total		= eval
-				_emitter.edge		= 1
+				_emitter.edge		= min(1,eval_c)
 				break;
 			}
 		}
@@ -1307,7 +1302,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		_p.to_edge	=	false
 		//If we wish to cull the particle to the "edge" , proceed
-		if force_to_edge == PULSE_TO_EDGE.NONE
+		if boundary == PULSE_BOUNDARY.NONE
 		{
 			return _p 
 		}
@@ -1340,7 +1335,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		else											//NORMAL TOWARDS CENTER
 		{	
 			// If particle is going towards a focal point and thats the limit to be followed
-			if force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
+			if boundary == PULSE_BOUNDARY.FOCAL_LIFE || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 					var _length_to_edge	=	point_distance(x+x_focal_point,y+y_focal_point,_p.x_origin,_p.y_origin)
 			}
@@ -1371,11 +1366,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		// If the particle moves beyond the edge of the radius, change either its speed or life
 		if	_displacement > _length_to_edge
 		{
-			if force_to_edge == PULSE_TO_EDGE.SPEED || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED
+			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 				_p.speed	=	(_length_to_edge-_accel)/_p.life
 			} 
-			else if force_to_edge == PULSE_TO_EDGE.LIFE || force_to_edge == PULSE_TO_EDGE.FOCAL_LIFE
+			else if boundary == PULSE_BOUNDARY.LIFE || boundary == PULSE_BOUNDARY.FOCAL_LIFE
 			{
 				_p.life	=	(_length_to_edge-_accel)/_p.speed
 			}
@@ -1588,11 +1583,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	 /**
 	 * @desc Generates a modified stencil which adapts to colliding objects. Returns an array that contains the IDs of all colliding instances 
-	 * @param {any} _collision_obj Any collideable element that can regularly be an argument for collision functions
-	 * @param {bool}_prec Whether the collision is precise (true, slow) or not (false, fast)
-	 * @param {real} _rays amount of rays emitted to create a stencil collision
+	 * @param {Real} _x X coordinate
+	 * @param {Real} _y Y coordinate
+	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions
+	 * @param {bool}[_prec] Whether the collision is precise (true, slow) or not (false, fast)
+	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
 	 */
-	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 16 )
+	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
 	{
 		if is_array(_collision_obj){
 		if array_length(_collision_obj)==0
@@ -1654,7 +1651,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if is_colliding
 			{
 				// Reset the Curve to its original state
-				animcurve_channel_copy(stencil_profile, "c",stencil_profile, "a")
+				var _array = []
+				animcurve_point_add(_array,0,1)
+				animcurve_point_add(_array,1,1)
+				animcurve_points_set(stencil_profile, "c",_array)
 				is_colliding = false
 			}
 			return undefined
@@ -1664,30 +1664,25 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		array_resize(colliding_entities,0)
 		
 		// Emit 32 rays and check for collisions
-		var _source		=	animcurve_get_channel(stencil_profile, 2),
-		_points			= animcurve_points_subdivide(_source,_rays,mask_start,mask_end),
-		 _ray			= {u_coord : 0 , v_coord : 0 , length : 0} ,
+		var _points		= [] ,
+		 _ray			= {u_coord : 0 , length : 0} ,
 		 _fail			= 0 ,
 		 _dir_stencil	= animcurve_point_find_closest(_points, stencil_offset),
-		 _mod_i			= _dir_stencil,
-		 _l				= array_length(_points)
+		 _l				= (mask_end - mask_start )/_rays
 		 
-		for(var i =	0; i < _l ; i +=1)
+		 for(var i =mask_start; i <= mask_end ; i +=_l)
 		{
-			_ray.u_coord	= _points[i].posx
-			_mod_i = (i+_dir_stencil)%_l
-			
-			var _length		=	edge_external*_points[_mod_i].value 
-			_ray			= __set_normal_origin(_ray,x,y)
-
+			_ray.u_coord	= i ;
+			var _length		=	edge_external ;
+			_ray			= __set_normal_origin(_ray,x,y) ;
+			animcurve_point_add(_points,i,1)
 			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
 			
 			if _ray_collision != noone
 			{
-				var _value = (point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external) 
+				var _value = point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external
 				
-				animcurve_point_add(_points,_points[_mod_i].posx,_value,true)
-				
+				animcurve_point_add(_points,i,_value,true)
 				
 				// Add colliding entity to an array
 				if !array_contains(colliding_entities,_ray_collision.z)
@@ -1700,12 +1695,44 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_fail ++
 			}
 		}
+		/* 
+		for(var i =	0; i < _l ; i +=1)
+		{
+			_ray.u_coord	= _points[i].posx
+			_mod_i = (i+_dir_stencil)%_l
+			
+			var _length		=	edge_external//*_points[_mod_i].value 
+			_ray			= __set_normal_origin(_ray,x,y)
 
-		if _fail = array_length(_points)
+			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
+			
+			if _ray_collision != noone
+			{
+				var _value = (point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external) 
+				
+				animcurve_point_add(_points,_points[_mod_i].posx,_value,true)
+				
+				// Add colliding entity to an array
+				if !array_contains(colliding_entities,_ray_collision.z)
+				{
+					array_push(colliding_entities,_ray_collision.z)		
+				}
+			}
+			else
+			{
+				_fail ++
+			}
+		}
+*/
+		if _fail = _rays //array_length(_points)
 		{
 			if is_colliding
 			{
-				animcurve_channel_copy(stencil_profile, "c",stencil_profile, "a")
+				// Reset the Curve to its original state
+				var _array = []
+				animcurve_point_add(_array,0,1)
+				animcurve_point_add(_array,1,1)
+				animcurve_points_set(stencil_profile, "c",_array)
 				is_colliding = false
 			}
 			return undefined
@@ -1717,7 +1744,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			stencil_mode = PULSE_STENCIL.EXTERNAL
 		} 
 
-		if _occlude		animcurve_points_set(stencil_profile,"a",_points)
+		if _occlude		
+		{
+			animcurve_point_add(_points,0,1,false)
+			animcurve_point_add(_points,1,1,false)
+			animcurve_points_set(stencil_profile,"c",_points)
+		}
 	
 		return colliding_entities
 	}
@@ -1842,7 +1874,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			
 			if particle_struct.life <=1 continue
-			if (force_to_edge == PULSE_TO_EDGE.SPEED || force_to_edge == PULSE_TO_EDGE.FOCAL_SPEED) && particle_struct.speed<=1
+			if (boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED) && particle_struct.speed<=1
 			{	continue }
 
 			particle_struct.part_system	=	part_system.index
@@ -1895,7 +1927,6 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	cache	= _cache
 	length	= array_length(_cache)
 	flag_stencil = false
-	part_type = emitter.part_type
 	
 	
 	/// @desc Adds particles to the cache
@@ -1938,7 +1969,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				if flag_stencil {__update_stencil(index,length-index)}
 				for(var _i = index ; _i < length-index ; _i++)
 				{
-					part_type.launch(cache[_i],x,y)
+					cache[_i].particle.launch(cache[_i],x,y)
 				}
 				_amount -=  (length - index)
 				index = 0
@@ -1948,7 +1979,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				if flag_stencil {__update_stencil(index,index+_amount)}
 				for(var _i = index ; _i < index+_amount ; _i++)
 				{
-					part_type.launch(cache[_i],x,y)
+					cache[_i].particle.launch(cache[_i],x,y)
 				}
 				index = (index + _amount) % length
 				_amount = 0

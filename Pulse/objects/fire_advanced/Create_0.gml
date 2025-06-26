@@ -12,7 +12,7 @@ particle.set_life(40,60).set_speed(6,8)
 .set_color(c_orange,c_maroon,#200020).set_alpha(.9,.7,.1).set_orient(90,90,0,0,false)//.set_blend(true)//
 
 emit = new pulse_emitter(system,"fire")
-emit.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
+emit.boundary=PULSE_BOUNDARY.FOCAL_LIFE
 emit.set_focal_point(0,-500).set_direction_range(178,188).form_line(160,0).set_radius(0,26)
 
 // -------- SMALLER FLAMES AT BASE
@@ -22,7 +22,7 @@ particle_2 = pulse_clone_particle("fire","fire_2")
 .set_alpha(.9,.7,.1).set_blend(true)
 
 emit_smaller = new pulse_emitter(system2,"fire_2")
-emit_smaller.force_to_edge=PULSE_TO_EDGE.FOCAL_LIFE
+emit_smaller.boundary=PULSE_BOUNDARY.FOCAL_LIFE
 emit_smaller.set_focal_point(50,-150).set_direction_range(180,180)
 emit_smaller.form_line(160,0).set_radius(0,0)
 
@@ -36,7 +36,7 @@ sparks.set_shape(pt_shape_line).set_color(c_yellow,c_red).set_size(.1,.2,-0.0005
 
 emit_spark = new pulse_emitter(system2,"sparks")
 emit_spark.form_line(0,100).set_radius(-50,50).set_direction_range(35,90)
-emit_spark.force_to_edge=PULSE_TO_EDGE.NONE
+emit_spark.boundary=PULSE_BOUNDARY.NONE
 
 // SINE WAVES SETUP
 

@@ -4,7 +4,7 @@ if move
 	y = mouse_y
 	
 	if xprevious != x || yprevious != y
-	{
+	{/*
 		with ParticlesParent
 		{
 			var col = emitter.check_collision(x,y)
@@ -17,7 +17,7 @@ if move
 					sys.cache_update_collisions(cache)
 				}
 			}*/
-		}
+		//}
 	}
 }
 

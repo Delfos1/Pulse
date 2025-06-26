@@ -13,7 +13,7 @@ particle.set_life(700,900).set_speed(.70,1.10,-.0002).set_direction(0,0,0)
 
 emit = new pulse_emitter(system,"snow")
 emit.form_line(room_width+100,0).set_direction_range(180,180)
-emit.force_to_edge=PULSE_TO_EDGE.NONE
+emit.boundary=PULSE_BOUNDARY.NONE
 
 
 t = 0;

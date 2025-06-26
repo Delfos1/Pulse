@@ -7,7 +7,7 @@ emitter = new pulse_emitter("sys2","particle2")
 emitter.set_distribution_u(PULSE_DISTRIBUTION.EVEN,10).set_distribution_v(PULSE_DISTRIBUTION.EVEN,2).form_line(0,300).set_radius(0,40)
 mode = 0
 
-emitter.force_to_edge=PULSE_TO_EDGE.NONE
+emitter.boundary=PULSE_BOUNDARY.NONE
 
 
 

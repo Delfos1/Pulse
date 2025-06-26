@@ -18,7 +18,7 @@ smoke= new pulse_emitter("smoke","smoke",1)
 
 smoke.set_path(path)
 fire.alter_direction=false
-fire.force_to_edge=PULSE_TO_EDGE.NONE
+fire.boundary=PULSE_BOUNDARY.NONE
 
 smoke_pt.set_shape(pt_shape_cloud)
 smoke_pt.set_size(.2,.4,.001)
@@ -27,7 +27,7 @@ smoke_pt.set_life(130,150)
 smoke_pt.set_orient(0,360,0.3)
 smoke_pt.set_speed(.6,.6,0)
 smoke.set_direction_range(-90,-90)
-smoke.force_to_edge=PULSE_TO_EDGE.NONE
+smoke.boundary=PULSE_BOUNDARY.NONE
 
 smoke.set_radius(0,10)
 smoke.set_mask(0,0.001)

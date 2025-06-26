@@ -13,7 +13,7 @@ system	= pulse_make_system("system",false,"Instances_1")
 emit = new pulse_emitter("system","particle",20)
 
 
-emit.force_to_edge=PULSE_TO_EDGE.NONE
+emit.boundary=PULSE_BOUNDARY.NONE
 particle.set_speed(1,2).set_life(30,50).set_gravity(270,.2)
 
 

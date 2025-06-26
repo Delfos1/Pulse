@@ -13,9 +13,9 @@ system = pulse_make_system("bubble_sys")
 ///
 emit = new pulse_emitter(system,"bubble")
 emit2 = new pulse_emitter(system,"bubble2")
-emit.force_to_edge=PULSE_TO_EDGE.NONE
+emit.boundary=PULSE_BOUNDARY.NONE
 emit.alter_direction=false
-emit2.force_to_edge=PULSE_TO_EDGE.NONE
+emit2.boundary=PULSE_BOUNDARY.NONE
 emit2.alter_direction=false
 emit.set_mask(.20,.30).set_radius(0,30)
 emit2.set_mask(.20,.30).set_radius(0,30)

@@ -953,7 +953,7 @@ function pulse_store_particle		(_particle,_override = false)
 		_particle.name = _name
 	}
 	
-	__pulse_show_debug_message($"Created system by the name {_name}",3);
+	__pulse_show_debug_message($" Stored particle \"{_name}\"",3);
 		global.pulse.part_types[$_name] = variable_clone(_particle)
 		return  global.pulse.part_types[$_name]
 }

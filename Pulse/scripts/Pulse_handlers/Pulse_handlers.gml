@@ -878,7 +878,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 
 	#endregion
 	
-	force_to_edge		=	_parsed.force_to_edge
+	boundary		=	_parsed.boundary
 	alter_direction		=	_parsed.alter_direction	
 	
 	//Image maps
@@ -971,8 +971,8 @@ function __pulse_lookup_particle(_name)
 				return global.pulse.part_types[$_name];
 		break
 		case 0:
-				__pulse_show_debug_message($"Particle {_name} not found, creating particle with that name",1)
-				return new pulse_particle(_name);
+				__pulse_show_debug_message($"Particle \"{_name}\" not found, creating particle with that name",1)
+				return	pulse_store_particle(new pulse_particle(_name));
 		break
 		case -1:
 				__pulse_show_debug_message($"Particle argument is not a string or a Pulse Particle, creating particle with default name" ,1)

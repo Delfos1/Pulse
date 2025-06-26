@@ -22,7 +22,7 @@ emitter = new pulse_emitter("system","arrow")
 //Simple emitter, no edge
 emitter.set_direction_range(180,180).set_radius(0,0)
 //emitter.set_distribution_u(PULSE_DISTRIBUTION.EVEN,8)
-emitter.force_to_edge = PULSE_TO_EDGE.NONE
+emitter.boundary = PULSE_BOUNDARY.NONE
 emitter.form_path(Path10)
 
 //Then we link the frame of the sprite to the particle direction

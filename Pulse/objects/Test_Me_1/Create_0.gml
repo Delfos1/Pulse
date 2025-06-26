@@ -19,7 +19,7 @@ particle = pulse_fetch_particle("a_particle_name")
 /*
 emitter.set_radius(50,300,50,800).set_distribution_size(PULSE_DISTRIBUTION.LINKED,[sizeToU,"x","y"],PULSE_LINK_TO.DIRECTION).set_distribution_color_mix(c_lime,c_yellow,PULSE_DISTRIBUTION.LINKED,[colorToV,0],PULSE_LINK_TO.SPEED)
 emitter.set_mask_spread(0,75)
-emitter.force_to_edge=PULSE_TO_EDGE.LIFE
+emitter.boundary=PULSE_BOUNDARY.LIFE
 */
 //sys.add_collisions(o_Collider)
 //sys.set_stencil(ac_empty,"curve1")

@@ -1,0 +1,342 @@
+debug = true
+show_debug_overlay(debug)
+
+// Welcome to Pulse!
+
+system = pulse_store_system( new pulse_system("sys_1") )
+
+particle =  new pulse_particle("a_particle_name");
+
+
+
+
+#region Particle
+
+dbg_view("Particle",true)
+dbg_text(particle.name)
+
+dbg_text_separator("Life")
+
+p_life = [30,50]
+p_life_prev = [30,50]
+dbg_text_input(ref_create(self,"p_life",0),"Life Minimum","i")
+dbg_text_input(ref_create(self,"p_life",1),"Life Maximum","i")
+
+dbg_text_separator("Speed")
+p_speed = [1,2,0,0]
+p_speed_prev = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_speed",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_speed",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_speed",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_speed",3),"Wiggle","f")
+
+dbg_text_separator("Direction")
+p_dir = [1,2,0,0]
+p_dir_prev = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_dir",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_dir",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_dir",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_dir",3),"Wiggle","f")
+
+dbg_text_separator("Gravity")
+p_grav = [30,50]
+p_grav_prev = [30,50]
+dbg_text_input(ref_create(self,"p_grav",0),"Acceleration","i")
+dbg_slider(ref_create(self,"p_grav",1),0,360,"Direction","i")
+
+dbg_text_separator("Orientation")
+
+dbg_section("Sprite",false)
+
+dbg_text_separator("Shape")
+p_shape = pt_shape_circle
+dbg_drop_down(ref_create(self,"p_shape"),[pt_shape_circle,pt_shape_cloud,
+pt_shape_disk,pt_shape_explosion,pt_shape_flare,pt_shape_line,pt_shape_pixel,pt_shape_ring,
+pt_shape_smoke,pt_shape_snow,pt_shape_spark,pt_shape_star,pt_shape_sphere,pt_shape_square],
+["Circle","Cloud","Disk","Explosion","Flare","Line","Pixel","Ring","Smoke","Snow","Spark","Star","Sphere","Square",])
+
+dbg_button("Apply",function(){	particle.set_shape(p_shape)	})
+
+dbg_text_separator("Sprite")
+/// Sprite selection
+p_sprite = flame_01
+p_sprite_ref = ref_create(self,"p_sprite")
+dbg_drop_down(p_sprite_ref,[flame_01,s_hand,pt_snow_cartoon,Smoke_center___200_200_],["Flame","Hand","Snow","Smoke"])
+
+
+/// Sprite Properties
+
+p_anim = false
+p_stretch = false
+p_sp_random = true
+p_sp_frame = 0
+p_sp_frame_ref = ref_create(self,"p_sp_frame")
+dbg_checkbox(ref_create(self,"p_anim"),"Animate")
+dbg_checkbox(ref_create(self,"p_stretch"),"Stretch animation over Life")
+dbg_checkbox(ref_create(self,"p_sp_random"),"Random Frame/SubImage")
+dbg_text_input(p_sp_frame_ref,"Frame / SubImage","i")
+
+dbg_sprite(p_sprite_ref,p_sp_frame_ref,"Sprite")
+dbg_button("Apply",function(){
+	particle.set_sprite(p_sprite,p_anim,p_stretch,p_sp_random,p_sp_frame)
+						})
+
+dbg_section("Visual Appereance",false)
+
+dbg_text_separator("Size")
+
+p_size = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_size",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_size",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_size",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_size",3),"Wiggle","f")
+
+p_size_split = false
+dbg_checkbox(ref_create(self,"p_size_split"),"Split into X and Y dimensions")
+
+dbg_text_separator("Size - Y")
+p_size_y_y = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_size_y",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_size_y",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_size_y",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_size_y",3),"Wiggle","f")
+
+
+dbg_text_separator("Color")
+
+
+
+
+
+
+
+#endregion
+
+pulse_store_particle(particle)
+
+
+emitter = new pulse_emitter("sys_1","a_particle_name");
+
+emitter.add_collisions(o_Collider)
+
+dbg_view("Emitter",true)
+
+e_amount = 200
+dbg_text_input(ref_create(self,"e_amount"),"Amount of particles emitted","i")
+
+#region Shape
+dbg_section("Shape",true)
+
+e_shape = "Ellipse"
+e_shape_prev = "Ellipse"
+dbg_drop_down(ref_create(self,"e_shape"),["Ellipse","Path","Line"],["Ellipse","Path","Line"],"Shape")
+
+#endregion
+
+#region Line
+
+dbg_text_separator("Line Properties")
+line_x = 100
+line_y = 0
+line_x_prev = 100
+line_y_prev = 0
+line_x_ref = ref_create(self,"line_x")
+line_y_ref = ref_create(self,"line_y")
+
+#endregion
+
+dbg_section("General Properties",true)
+#region Radius
+dbg_text_separator("Radius")
+e_radius_prev	= [0,150,0,150]
+e_radius		= [0,150,0,150]
+dbg_text_input(ref_create(self,"e_radius",0),"Minimum Radius","f")
+dbg_text_input(ref_create(self,"e_radius",1),"Maximum Radius","f")
+dbg_text_input(ref_create(self,"e_radius",2),"Minimum Edge","f")
+dbg_text_input(ref_create(self,"e_radius",3),"Maximum Edge","f")
+#endregion
+
+#region Scale
+dbg_text_separator("Scale")
+e_scale = [1,1]
+e_scale_prev = [1,1]
+dbg_text_input(ref_create(self,"e_scale",0),"Scale X","f")
+dbg_text_input(ref_create(self,"e_scale",1),"Scale Y","f")
+#endregion
+
+#region Masks
+dbg_text_separator("Masks")
+e_mask_u = [0,1]
+e_mask_u_prev = [0,1]
+e_mask_v = [0,1]
+e_mask_v_prev = [0,1]
+dbg_slider(ref_create(self,"e_mask_u",0),0,1,"Minimum Mask U")
+dbg_slider(ref_create(self,"e_mask_u",1),0,1,"Maximum Mask U")
+dbg_slider(ref_create(self,"e_mask_v",0),0,1,"Minimum Mask V")
+dbg_slider(ref_create(self,"e_mask_v",1),0,1,"Maximum Mask V")
+#endregion
+
+#region Stencil
+dbg_text_separator("Stencil")
+
+e_stencils = [undefined,undefined]
+e_stencils_prev = [undefined,undefined]
+e_stencils_mode = PULSE_STENCIL.NONE
+e_stencils_mode_prev = PULSE_STENCIL.NONE
+e_stencils_off		= 0
+e_stencils_off_prev = 0
+e_stencils_tween = 0
+e_stencils_tween_prev = 0
+
+dbg_drop_down(ref_create(self,"e_stencils_mode"),[PULSE_STENCIL.NONE,PULSE_STENCIL.A_TO_B,PULSE_STENCIL.EXTERNAL,PULSE_STENCIL.INTERNAL],["None","A to B","External","Internal"],"Stencil Mode")
+dbg_drop_down(ref_create(self,"e_stencils",0),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil A")
+dbg_drop_down(ref_create(self,"e_stencils",1),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil B")
+dbg_slider(ref_create(self,"e_stencils_off"),0,1,"Stencil Offset")
+dbg_slider(ref_create(self,"e_stencils_tween"),0,1,"Stencil Tween")
+#endregion
+
+#region Boundary
+dbg_text_separator("Boundary")
+
+e_bound = "Life"
+e_bound_prev = "Life"
+dbg_drop_down(ref_create(self,"e_bound"),["Life","Speed","Focal Life","Focal Speed","None"],["Life","Speed","Focal Life","Focal Speed","None"],"Boundary")
+#endregion
+
+dbg_section("Direction Modifiers",true)
+#region Direction
+dbg_text_separator("Direction Range")
+
+e_dir = [0,0]
+e_dir_prev = [0,0]
+e_collide = false
+e_collide_prev = false
+dbg_slider(ref_create(self,"e_dir",0),-360,360,"Minimum Direction")
+dbg_slider(ref_create(self,"e_dir",1),-360,360,"Maximum Direction")
+dbg_checkbox(ref_create(emitter,"alter_direction"),"Alter Particle's Default Direction");
+dbg_checkbox(ref_create(self,"e_collide"),"Activate collisions");
+#endregion
+
+#region Focal Point
+dbg_text_separator("Focal Point")
+
+e_focal =[0,0]
+e_focal_prev =[0,0]
+dbg_text_input(ref_create(self,"e_focal",0),"Focal Point X","f")
+dbg_text_input(ref_create(self,"e_focal",1),"Focal Point Y","f")
+
+#endregion
+dbg_section("Distributions",true)
+#region Distributions
+
+dbg_text_separator("U axis")
+e_dist_u_mode = PULSE_DISTRIBUTION.NONE
+e_dist_u_input = undefined
+e_dist_u_input_number = 1
+dbg_drop_down(ref_create(self,"e_dist_u_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.EVEN],["Random","Animation Curve","Even"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_u_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_text_input(ref_create(self,"e_dist_u_input_number"),"Divide evenly by","i")
+dbg_button("Apply Distribution", function()
+{
+	if e_dist_u_mode == PULSE_DISTRIBUTION.EVEN
+	{
+		emitter.set_distribution_u(e_dist_u_mode,real(e_dist_u_input_number))
+	}
+	else
+	{
+		emitter.set_distribution_u(e_dist_u_mode,[Distribution_Sample,e_dist_u_input])
+	}
+})
+
+e_dist_u_offset = 0
+e_dist_u_offset_prev = 0
+dbg_slider(ref_create(self,"e_dist_u_offset"),0,1,"U Coord Offset")
+
+dbg_text_separator("V axis")
+e_dist_v_mode = PULSE_DISTRIBUTION.NONE
+e_dist_v_input = undefined
+e_dist_v_input_number = 1
+dbg_drop_down(ref_create(self,"e_dist_v_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.EVEN],["Random","Animation Curve","Even"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_v_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_text_input(ref_create(self,"e_dist_v_input_number"),"Divide evenly by","i")
+dbg_button("Apply Distribution", function()
+{
+	if e_dist_v_mode == PULSE_DISTRIBUTION.EVEN
+	{
+		emitter.set_distribution_v(e_dist_v_mode,real(e_dist_v_input_number))
+	}
+	else
+	{
+		emitter.set_distribution_v(e_dist_v_mode,[Distribution_Sample,e_dist_v_input])
+	}
+})
+
+e_dist_v_offset = 0
+e_dist_v_offset_prev = 0
+dbg_slider(ref_create(self,"e_dist_v_offset"),0,1,"V Coord Offset")
+
+dbg_text_separator("Speed")
+e_dist_speed_mode = PULSE_DISTRIBUTION.RANDOM
+e_dist_speed_input = undefined
+e_dist_speed_link = undefined
+dbg_drop_down(ref_create(self,"e_dist_speed_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_speed_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_speed_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+
+dbg_button("Apply Distribution", function()
+{
+	emitter.set_distribution_speed(e_dist_speed_mode,[Distribution_Sample,e_dist_speed_input],e_dist_speed_link)
+})
+
+dbg_text_separator("Life")
+e_dist_life_mode = PULSE_DISTRIBUTION.RANDOM
+e_dist_life_input = undefined
+e_dist_life_link = undefined
+dbg_drop_down(ref_create(self,"e_dist_life_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_life_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_life_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_button("Apply Distribution", function()
+{
+	emitter.set_distribution_life(e_dist_life_mode,[Distribution_Sample,e_dist_life_input],e_dist_life_link)
+})
+
+dbg_text_separator("Orient")
+e_dist_orient_mode = PULSE_DISTRIBUTION.RANDOM
+e_dist_orient_input = undefined
+e_dist_orient_link = undefined
+dbg_drop_down(ref_create(self,"e_dist_orient_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_orient_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_orient_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_button("Apply Distribution", function()
+{
+	emitter.set_distribution_orient(e_dist_orient_mode,[Distribution_Sample,e_dist_orient_input],e_dist_orient_link)
+})
+
+dbg_text_separator("Size")
+e_dist_size_mode = PULSE_DISTRIBUTION.RANDOM
+e_dist_size_input = [undefined,undefined]
+e_dist_size_link = undefined
+dbg_drop_down(ref_create(self,"e_dist_size_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_size_input",0),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve for X")
+dbg_drop_down(ref_create(self,"e_dist_size_input",1),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve for Y")
+dbg_drop_down(ref_create(self,"e_dist_size_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_button("Apply Distribution", function()
+{
+	emitter.set_distribution_size(e_dist_size_mode,[Distribution_Sample,e_dist_size_input[0],e_dist_size_input[1]],e_dist_size_link)
+})
+
+dbg_text_separator("Frame")
+e_dist_frame_mode = PULSE_DISTRIBUTION.RANDOM
+e_dist_frame_input = undefined
+e_dist_frame_link = undefined
+dbg_drop_down(ref_create(self,"e_dist_frame_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
+dbg_drop_down(ref_create(self,"e_dist_frame_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_frame_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_button("Apply Distribution", function()
+{
+	emitter.set_distribution_frame(e_dist_frame_mode,[Distribution_Sample,e_dist_frame_input],e_dist_frame_link)
+})
+
+
+
+#endregion
