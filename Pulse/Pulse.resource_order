@@ -32,6 +32,8 @@
   "ResourceOrderSettings":[
     {"name":"ac_Arrow_links","order":4,"path":"animcurves/ac_Arrow_links/ac_Arrow_links.yy",},
     {"name":"ac_empty","order":1,"path":"animcurves/ac_empty/ac_empty.yy",},
+    {"name":"ac_Polygons","order":6,"path":"animcurves/ac_Polygons/ac_Polygons.yy",},
+    {"name":"ac_Shape","order":5,"path":"animcurves/ac_Shape/ac_Shape.yy",},
     {"name":"colorToV","order":3,"path":"animcurves/colorToV/colorToV.yy",},
     {"name":"Distribution_Sample","order":4,"path":"animcurves/Distribution_Sample/Distribution_Sample.yy",},
     {"name":"sizeToU","order":2,"path":"animcurves/sizeToU/sizeToU.yy",},

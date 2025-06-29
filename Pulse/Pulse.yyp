@@ -53,6 +53,7 @@
   "resources":[
     {"id":{"name":"ac_Arrow_links","path":"animcurves/ac_Arrow_links/ac_Arrow_links.yy",},},
     {"id":{"name":"ac_empty","path":"animcurves/ac_empty/ac_empty.yy",},},
+    {"id":{"name":"ac_Polygons","path":"animcurves/ac_Polygons/ac_Polygons.yy",},},
     {"id":{"name":"ac_Shape","path":"animcurves/ac_Shape/ac_Shape.yy",},},
     {"id":{"name":"AnimationCurve2","path":"animcurves/AnimationCurve2/AnimationCurve2.yy",},},
     {"id":{"name":"colorToV","path":"animcurves/colorToV/colorToV.yy",},},

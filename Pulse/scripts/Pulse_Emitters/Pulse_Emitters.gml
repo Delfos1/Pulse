@@ -161,16 +161,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Real, String}		_ac_channel : Channel's string name or number
 	/// @param {Real.Enum_PULSE_STENCIL}	[_mode] : The mode in which the curves will tween. It must be an enum of PULSE_STENCIL:
 	/// 	INTERNAL, EXTERNAL, A_TO_B	, or NONE	. DEFAULT : A_TO_B
-	/// @param {Real}			_to_channel : Channel's string name or number
-	static	set_stencil			=	function(__ac_curve,__ac_channel,_mode=PULSE_STENCIL.EXTERNAL,_to_channel=0)
+	/// @param {Bool}			_to_channel : There are two channels, A (false) or B (true). A is the default
+	static	set_stencil			=	function(__ac_curve,__ac_channel,_mode=PULSE_STENCIL.EXTERNAL,_to_channel=false)
 	{
+		_to_channel = _to_channel== true ? 1 : 0 ;
 		animcurve_channel_copy(__ac_curve,__ac_channel,stencil_profile,_to_channel,false)
-		
-		if _to_channel == 0
-		{
-			animcurve_channel_copy(stencil_profile,_to_channel,stencil_profile,2,false)
-		}
-						
+
 		stencil_mode= _mode
 			
 		return self
@@ -227,8 +223,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Real}	[_edge_external] : The external edge of the emitter. Allows to feather particles going away of the center while still limiting them . DEFAULT : Equal to the external radius (no feathering)
 	static	set_radius			=	function(_radius_internal,_radius_external,_edge_internal = _radius_internal,_edge_external = _radius_external)
 	{
-		radius_internal	=	(_radius_internal != undefined) ? _radius_internal : radius_internal;
-		radius_external	=	(_radius_external != undefined) ? _radius_external : radius_external;
+		radius_internal	=	_radius_internal ?? radius_internal;
+		radius_external	=	_radius_external ?? radius_external;
 
 		edge_internal	=	(_edge_internal >radius_internal ) ? radius_internal : _edge_internal;
 		edge_external	=	(_edge_external <radius_external) ? radius_external : _edge_external;
@@ -258,7 +254,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
-	/// @description	Sets the scale of the emitter. 1 == Notmal scale
+	/// @description	Sets the scale of the emitter. 1 == Normal scale
 	/// @param {Real}	[_x_scale] : Scale for the X axis. If left empty, the scale in this axis remains unchanged
 	/// @param {Real}	[_y_scale] : Scale for the Y axis. If left empty, the scale in this axis remains unchanged
 
@@ -357,7 +353,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_orient	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_orient	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined )
 	{
 		switch(_mode)
 		{
@@ -935,8 +931,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		var dir_stencil = (stencil_offset+_particle.u_coord)%1;
 			
 		eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
-		eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
 		eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
+		
+		eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+
 		eval	=	lerp(eval_a,eval_b,stencil_tween)
 				
 		switch (stencil_mode)
@@ -1695,35 +1693,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_fail ++
 			}
 		}
-		/* 
-		for(var i =	0; i < _l ; i +=1)
-		{
-			_ray.u_coord	= _points[i].posx
-			_mod_i = (i+_dir_stencil)%_l
-			
-			var _length		=	edge_external//*_points[_mod_i].value 
-			_ray			= __set_normal_origin(_ray,x,y)
-
-			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
-			
-			if _ray_collision != noone
-			{
-				var _value = (point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external) 
-				
-				animcurve_point_add(_points,_points[_mod_i].posx,_value,true)
-				
-				// Add colliding entity to an array
-				if !array_contains(colliding_entities,_ray_collision.z)
-				{
-					array_push(colliding_entities,_ray_collision.z)		
-				}
-			}
-			else
-			{
-				_fail ++
-			}
-		}
-*/
 		if _fail = _rays //array_length(_points)
 		{
 			if is_colliding

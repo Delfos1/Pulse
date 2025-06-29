@@ -4,6 +4,8 @@ emitter.pulse(e_amount,x,y,false)			// avg ~600
 //sys.stencil_offset = (sys.stencil_offset+.001)%1
 //sys.check_collision(x,y,,false,64)
 
+
+
 #region Emitter
 if e_shape != e_shape_prev
 {
@@ -94,12 +96,14 @@ if !array_equals(e_stencils,e_stencils_prev) || e_stencils_mode != e_stencils_mo
 {
 	if e_stencils[0] != undefined
 	{
-		emitter.set_stencil(ac_Shape,e_stencils[0],e_stencils_mode,0)
+		//emitter.set_stencil(ac_Shape,e_stencils[0],e_stencils_mode,0)
+		emitter.set_stencil(ac_Polygons,e_stencils[0],e_stencils_mode,0)
 		e_stencils_prev[0] = e_stencils[0]
 	}
 	if e_stencils[1] != undefined
 	{
-		emitter.set_stencil(ac_Shape,e_stencils[1],e_stencils_mode,1)
+		//emitter.set_stencil(ac_Shape,e_stencils[1],e_stencils_mode,1)
+		emitter.set_stencil(ac_Polygons,e_stencils[1],e_stencils_mode,1)
 		e_stencils_prev[1] = e_stencils[1]
 	}
 	if e_stencils_mode != e_stencils_mode_prev
@@ -142,6 +146,7 @@ if e_dist_u_offset != e_dist_u_offset_prev
 
 
 #region Particle
+
 
 
 #endregion

@@ -5,9 +5,7 @@ show_debug_overlay(debug)
 
 system = pulse_store_system( new pulse_system("sys_1") )
 
-particle =  new pulse_particle("a_particle_name");
-
-
+particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
 
 
 #region Particle
@@ -18,34 +16,48 @@ dbg_text(particle.name)
 dbg_text_separator("Life")
 
 p_life = [30,50]
-p_life_prev = [30,50]
 dbg_text_input(ref_create(self,"p_life",0),"Life Minimum","i")
 dbg_text_input(ref_create(self,"p_life",1),"Life Maximum","i")
+dbg_button("Apply",function(){
+	particle.set_life(p_life[0],p_life[1])						})
 
 dbg_text_separator("Speed")
 p_speed = [1,2,0,0]
-p_speed_prev = [1,2,0,0]
+
 dbg_text_input(ref_create(self,"p_speed",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_speed",1),"Range Maximum","f")
 dbg_text_input(ref_create(self,"p_speed",2),"Acceleration","f")
 dbg_text_input(ref_create(self,"p_speed",3),"Wiggle","f")
+dbg_button("Apply",function(){
+	particle.set_speed(p_speed[0],p_speed[1],p_speed[2],p_speed[3])			})
 
 dbg_text_separator("Direction")
 p_dir = [1,2,0,0]
-p_dir_prev = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_dir",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_dir",1),"Range Maximum","f")
 dbg_text_input(ref_create(self,"p_dir",2),"Acceleration","f")
 dbg_text_input(ref_create(self,"p_dir",3),"Wiggle","f")
+dbg_button("Apply",function(){
+	particle.set_direction(p_dir[0],p_dir[1],p_dir[2],p_dir[3])			})
+
 
 dbg_text_separator("Gravity")
-p_grav = [30,50]
-p_grav_prev = [30,50]
-dbg_text_input(ref_create(self,"p_grav",0),"Acceleration","i")
-dbg_slider(ref_create(self,"p_grav",1),0,360,"Direction","i")
+p_grav = [.24,270]
+dbg_text_input(ref_create(self,"p_grav",0),"Acceleration","f")
+dbg_slider(ref_create(self,"p_grav",1),0,360,"Direction")
+dbg_button("Apply",function(){
+	particle.set_gravity(p_grav[0],p_grav[1])						})
 
 dbg_text_separator("Orientation")
-
+p_orient = [1,2,0,0,true]
+dbg_text_input(ref_create(self,"p_orient",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_orient",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_orient",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_orient",3),"Wiggle","f")
+dbg_checkbox(ref_create(self,"p_orient",4),"Relative to direction")
+dbg_button("Apply",function(){
+	particle.set_orient(p_orient[0],p_orient[1],p_orient[2],p_orient[3],p_orient[4])			})
+	
 dbg_section("Sprite",false)
 
 dbg_text_separator("Shape")
@@ -62,7 +74,6 @@ dbg_text_separator("Sprite")
 p_sprite = flame_01
 p_sprite_ref = ref_create(self,"p_sprite")
 dbg_drop_down(p_sprite_ref,[flame_01,s_hand,pt_snow_cartoon,Smoke_center___200_200_],["Flame","Hand","Snow","Smoke"])
-
 
 /// Sprite Properties
 
@@ -95,33 +106,103 @@ p_size_split = false
 dbg_checkbox(ref_create(self,"p_size_split"),"Split into X and Y dimensions")
 
 dbg_text_separator("Size - Y")
-p_size_y_y = [1,2,0,0]
+p_size_y = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_size_y",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_size_y",1),"Range Maximum","f")
 dbg_text_input(ref_create(self,"p_size_y",2),"Acceleration","f")
 dbg_text_input(ref_create(self,"p_size_y",3),"Wiggle","f")
 
+dbg_button("Apply",function(){
+	if p_size_split
+	{
+		particle.set_size([p_size[0],p_size_y[0]],[p_size[1],p_size_y[1]],[p_size[2],p_size_y[2]],[p_size[3],p_size_y[3]])
+			
+	}else
+	{
+		particle.set_size(p_size[0],p_size[1],p_size[2],p_size[3])
+	}
+						})
+				
+dbg_text_separator("Set Absolute Size ")
+dbg_text("It sets the size of a particle in absolute pixel size")
+p_size_abs = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_size_abs",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_size_abs",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_size_abs",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_size_abs",3),"Wiggle","f")
 
+p_size_abs_split = false
+dbg_checkbox(ref_create(self,"p_size_abs_split"),"Split into X and Y dimensions")
+
+dbg_text_separator("size_abs - Y")
+p_size_abs_y = [1,2,0,0]
+dbg_text_input(ref_create(self,"p_size_abs_y",0),"Range Minimum","f")
+dbg_text_input(ref_create(self,"p_size_abs_y",1),"Range Maximum","f")
+dbg_text_input(ref_create(self,"p_size_abs_y",2),"Acceleration","f")
+dbg_text_input(ref_create(self,"p_size_abs_y",3),"Wiggle","f")
+
+dbg_button("Apply",function(){
+	if p_size_abs_split
+	{
+		particle.set_size_abs([p_size_abs[0],p_size_abs_y[0]],[p_size_abs[1],p_size_abs_y[1]],[p_size_abs[2],p_size_abs_y[2]],[p_size_abs[3],p_size_abs_y[3]])
+			
+	}else
+	{
+		particle.set_size_abs(p_size_abs[0],p_size_abs[1],p_size_abs[2],p_size_abs[3])
+	}
+						})
+	
+dbg_text_separator("Set Final Size ")
+dbg_text("It sets the size acceleration of a particle to approximate a size in absolute pixel terms")
+p_size_final = [0,0,0,undefined]
+p_size_final_split = false
+	dbg_checkbox(ref_create(self,"p_size_final_split"),"Split into X and Y dimensions")
+	dbg_text_input(ref_create(self,"p_size_final",0),"Size X","f")
+	dbg_text_input(ref_create(self,"p_size_final",1),"Size Y","f")
+	dbg_drop_down(ref_create(self,"p_size_final",2),[0,1,2],["Circle","Circle","Circle"])
+	dbg_button("Apply",function(){
+	if p_size_abs_split
+	{
+		particle.set_size_abs([p_size_abs[0],p_size_abs_y[0]],[p_size_abs[1],p_size_abs_y[1]],[p_size_abs[2],p_size_abs_y[2]],[p_size_abs[3],p_size_abs_y[3]])
+			
+	}else
+	{
+		particle.set_size_abs(p_size_abs[0],p_size_abs[1],p_size_abs[2],p_size_abs[3])
+	}
+						})
 dbg_text_separator("Color")
 
+p_color = [c_blue,c_aqua,c_white]
 
 
+dbg_drop_down(ref_create(self,"p_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black"],"Color 1")
+dbg_drop_down(ref_create(self,"p_color",1),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
+dbg_drop_down(ref_create(self,"p_color",2),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
 
-
-
+dbg_button("Apply",function()
+{
+	particle.set_color(p_color[0],p_color[1],p_color[2])
+})
 
 #endregion
 
-pulse_store_particle(particle)
+
 
 
 emitter = new pulse_emitter("sys_1","a_particle_name");
 
 emitter.add_collisions(o_Collider)
-
+emitter.set_radius(0,150)
+emitter.set_boundaries(PULSE_BOUNDARY.NONE)
 dbg_view("Emitter",true)
 
-e_amount = 200
+e_amount = 50
 dbg_text_input(ref_create(self,"e_amount"),"Amount of particles emitted","i")
 
 #region Shape
@@ -189,8 +270,10 @@ e_stencils_tween = 0
 e_stencils_tween_prev = 0
 
 dbg_drop_down(ref_create(self,"e_stencils_mode"),[PULSE_STENCIL.NONE,PULSE_STENCIL.A_TO_B,PULSE_STENCIL.EXTERNAL,PULSE_STENCIL.INTERNAL],["None","A to B","External","Internal"],"Stencil Mode")
-dbg_drop_down(ref_create(self,"e_stencils",0),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil A")
-dbg_drop_down(ref_create(self,"e_stencils",1),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil B")
+//dbg_drop_down(ref_create(self,"e_stencils",0),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil A")
+//dbg_drop_down(ref_create(self,"e_stencils",1),["Circle","Star","Splash","Cat_Eye","Letter_P"],["None","Star","Splash","Cat Eye","Letter P"],"Stencil B")
+dbg_drop_down(ref_create(self,"e_stencils",0),["Triangle","Square","Pentagon","Hexagon"],["Triangle","Square","Pentagon","Hexagon"],"Stencil A")
+dbg_drop_down(ref_create(self,"e_stencils",1),["Triangle","Square","Pentagon","Hexagon"],["Triangle","Square","Pentagon","Hexagon"],"Stencil B")
 dbg_slider(ref_create(self,"e_stencils_off"),0,1,"Stencil Offset")
 dbg_slider(ref_create(self,"e_stencils_tween"),0,1,"Stencil Tween")
 #endregion
