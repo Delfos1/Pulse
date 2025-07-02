@@ -92,7 +92,7 @@ dbg_button("Apply",function(){
 	particle.set_sprite(p_sprite,p_anim,p_stretch,p_sp_random,p_sp_frame)
 						})
 
-dbg_section("Visual Appereance",false)
+dbg_section("Size",false)
 
 dbg_text_separator("Size")
 
@@ -133,6 +133,9 @@ dbg_text_input(ref_create(self,"p_size_abs",3),"Wiggle","f")
 
 p_size_abs_split = false
 dbg_checkbox(ref_create(self,"p_size_abs_split"),"Split into X and Y dimensions")
+p_size_abs_mode = 0
+
+dbg_drop_down(ref_create(self,"p_size_abs_mode"),[0,1,2],["Average","Shortest Side","Largest Side"],"Mode")
 
 dbg_text_separator("size_abs - Y")
 p_size_abs_y = [1,2,0,0]
@@ -144,33 +147,35 @@ dbg_text_input(ref_create(self,"p_size_abs_y",3),"Wiggle","f")
 dbg_button("Apply",function(){
 	if p_size_abs_split
 	{
-		particle.set_size_abs([p_size_abs[0],p_size_abs_y[0]],[p_size_abs[1],p_size_abs_y[1]],[p_size_abs[2],p_size_abs_y[2]],[p_size_abs[3],p_size_abs_y[3]])
+		particle.set_size_abs([p_size_abs[0],p_size_abs_y[0]],[p_size_abs[1],p_size_abs_y[1]],[p_size_abs[2],p_size_abs_y[2]],[p_size_abs[3],p_size_abs_y[3]],p_size_abs_mode)
 			
 	}else
 	{
-		particle.set_size_abs(p_size_abs[0],p_size_abs[1],p_size_abs[2],p_size_abs[3])
+		particle.set_size_abs(p_size_abs[0],p_size_abs[1],p_size_abs[2],p_size_abs[3],p_size_abs_mode)
 	}
-						})
+})
 	
 dbg_text_separator("Set Final Size ")
-dbg_text("It sets the size acceleration of a particle to approximate a size in absolute pixel terms")
-p_size_final = [0,0,0,undefined]
+dbg_text("It sets the size acceleration of a particle to approximate a size in relative scale terms")
+p_size_final = [0,0,undefined]
 p_size_final_split = false
+p_size_final_mode = 0
 	dbg_checkbox(ref_create(self,"p_size_final_split"),"Split into X and Y dimensions")
 	dbg_text_input(ref_create(self,"p_size_final",0),"Size X","f")
 	dbg_text_input(ref_create(self,"p_size_final",1),"Size Y","f")
-	dbg_drop_down(ref_create(self,"p_size_final",2),[0,1,2],["Circle","Circle","Circle"])
+dbg_drop_down(ref_create(self,"p_size_final_mode"),[0,1,2],["Average","Shortest Side","Largest Side"],"Mode")
 	dbg_button("Apply",function(){
-	if p_size_abs_split
+	if p_size_final_split
 	{
-		particle.set_size_abs([p_size_abs[0],p_size_abs_y[0]],[p_size_abs[1],p_size_abs_y[1]],[p_size_abs[2],p_size_abs_y[2]],[p_size_abs[3],p_size_abs_y[3]])
+		particle.set_final_size([p_size_final[0],p_size_final[1]],p_size_final_mode,p_size_final[2])
 			
 	}else
 	{
-		particle.set_size_abs(p_size_abs[0],p_size_abs[1],p_size_abs[2],p_size_abs[3])
+		particle.set_final_size(p_size_final[0],p_size_final_mode,p_size_final[2])
 	}
 						})
-dbg_text_separator("Color")
+
+dbg_section("Color",false)
 
 p_color = [c_blue,c_aqua,c_white]
 
@@ -190,6 +195,22 @@ dbg_button("Apply",function()
 	particle.set_color(p_color[0],p_color[1],p_color[2])
 })
 
+dbg_section("Time and Space Scaling",false)
+
+p_time_factor = 1
+dbg_text_input(ref_create(self,"p_time_factor"),"Time Factor","f")
+dbg_button("Apply",function()
+{
+	particle.scale_time_abs(p_time_factor)
+})
+p_space_factor = [1,true,true]
+dbg_text_input(ref_create(self,"p_space_factor",0),"Space Factor","f")
+dbg_checkbox(ref_create(self,"p_space_factor",1),"Shrink Particle")
+dbg_checkbox(ref_create(self,"p_space_factor",2),"Alter Gravity")
+dbg_button("Apply",function()
+{
+	particle.scale_space_abs(p_space_factor[0],p_space_factor[1],p_space_factor[2])
+})
 #endregion
 
 

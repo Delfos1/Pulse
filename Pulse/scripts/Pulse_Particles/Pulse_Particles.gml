@@ -325,13 +325,14 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			// Record the changes to be able to reset it later
 			time_factor		=	time_factor*_factor
 			
-			set_life(life[0]*_factor,life[1]*_factor)
+			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
+			set_gravity(gravity[0]*_factor,gravity[1])	
 
 			//flip percentage
 			_factor = 1/_factor
 		
-			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
-			set_gravity(gravity[0]*_factor,gravity[1])
+		// life is inversely proportional to speed and gravity.
+			set_life(life[0]*_factor,life[1]*_factor)
 
 			return self
 		}
@@ -339,6 +340,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 /// @param {Real}			_factor : factor to which to change the time scale of the particle in absolute terms	
 		static scale_time_abs	= function(_factor)
 		{
+			if _factor == time_factor return
+			
 			var _absolute_factor = _factor
 			_factor = _factor/time_factor
 			
@@ -375,14 +378,14 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 /// @param {Bool}			_gravity : Whether to change the particle's gravity
 		static scale_space_abs	= function(_factor,_shrink_particle,_gravity = true)
 		{
-			if _factor == scale_factor return
+			if _factor == space_factor return
 			
 			var _absolute_factor = _factor
 			_factor = _factor/space_factor
 			
 			scale_space(_factor,_shrink_particle,_gravity)
 			
-			scale_factor = _absolute_factor
+			space_factor = _absolute_factor
 		
 			return self
 		}
@@ -801,7 +804,7 @@ function __pulse_particle_class		(_name) constructor
 	step_number		=	1
 	//
 	time_factor		=	1
-	scale_factor	=	1
+	space_factor	=	1
 	altered_acceleration = 0
 	subparticle = undefined
 	
