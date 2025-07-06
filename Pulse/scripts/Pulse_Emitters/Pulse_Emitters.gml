@@ -1,4 +1,4 @@
-//※∴∼↻⊙↺ ♇♋︎ ↯⭍ ⚡︎ ⁎∗⃰❆❄❅
+//※∴∼↻⊙↺ ♇♋︎ ↯⭍ ⚡︎ ⁎∗⃰❆❄❅ ⚈ ◬⧆⁂
 
 function	_pulse_clamp_wrap(val, minn, maxx) {
 	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
@@ -60,6 +60,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	distr_orient		=	PULSE_DISTRIBUTION.NONE
 	distr_size			=	PULSE_DISTRIBUTION.NONE
 	distr_color_mix		=	PULSE_DISTRIBUTION.NONE
+	distr_color_mix_type=	PULSE_COLOR.NONE
 	distr_frame			=	PULSE_DISTRIBUTION.NONE
 	divisions_v			=	1
 	divisions_u			=	1
@@ -84,6 +85,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	__size_link				=	undefined
 	__color_mix_link		=	undefined
 	__frame_link			=	undefined
+	
+	__speed_weight			=	undefined
+	__life_weight			=	undefined
+	__orient_weight			=	undefined
+	__size_weight			=	undefined
+	__color_mix_weight		=	undefined
+	__frame_weight			=	undefined
 	
 	__color_mix_A			=	[0,0,0]
 	__color_mix_B			=	[0,0,0]
@@ -349,75 +357,99 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	#region NONLINEAR DISTRIBUTIONS
 	
 	/// @description	Sets the type of distribution for the orientation of the particles. 
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
-	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
+	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : Requires one of the following: PULSE_LINK_TO.NONE,	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_orient	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined )
+	static set_distribution_orient	=  function (_curve = undefined, _link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
-		switch(_mode)
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__orient_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_orient	=	_mode
-						__orient_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__orient_link		= _mode == PULSE_DISTRIBUTION.LINKED ?	_link_to : undefined
-						break
+						__orient_weight		=	_weight
+						while (array_length(__orient_weight) < 3)
+						{
+							array_push(__orient_weight,1)
+						};
+					}
+					else
+					{
+						__orient_weight		= array_create(4,_weight)
 					}
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-				distr_orient = PULSE_DISTRIBUTION.RANDOM
 		}
+		
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+				if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						distr_orient		=	_mode;
+						__orient_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
+				}
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
+			
+		}
+		
+		distr_orient = _mode
+
 		return self
-	}
-	
+	}	
 	/// @description	Sets the type of distribution for the life of the particles. 
 	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_life	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_life	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
-		switch(_mode)
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__life_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_life	=	_mode
-						__life_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__life_link		=	_link_to
-						break
+						__life_weight		=	_weight
+						while (array_length(__life_weight) < 3)
+						{
+							array_push(__life_weight,1)
+						};
+					}
+					else
+					{
+						__life_weight		= array_create(4,_weight)
 					}
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-				distr_life = PULSE_DISTRIBUTION.RANDOM
 		}
 		
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						distr_life		=	_mode;
+						__life_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
+				}
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
+			
+		}
+		
+		distr_life = _mode
 
 		return self
 	}
@@ -427,40 +459,53 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_speed	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_speed	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
-		if _link_to == PULSE_LINK_TO.SPEED
+		if (_link_to == PULSE_LINK_TO.SPEED)
 		{
 			__pulse_show_debug_message("Invalid link property. Speed can't link to Speed",2)	
-			return self
-		}
+			_link_to = PULSE_LINK_TO.NONE
+		};
 
-		switch(_mode)
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__speed_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_speed	=	_mode
-						__speed_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__speed_link		=	_link_to
-						break
+						__speed_weight		=	_weight
+						while (array_length(__speed_weight) < 3)
+						{
+							array_push(__speed_weight,1)
+						};
+					}
+					else
+					{
+						__speed_weight		= array_create(4,_weight)
 					}
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-				distr_speed = PULSE_DISTRIBUTION.RANDOM
 		}
+		
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						distr_speed		=	_mode;
+						__speed_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
+				}
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
+		}
+	
+		
+		distr_speed = _mode
 		return self
 	}
 	
@@ -469,43 +514,61 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_size	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_size	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
-		switch(_mode)
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__size_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_size		=	_mode
-						__size_x_channel	=	animcurve_get_channel(_input[0],_input[1])
-						if array_length(_input)>2
+						__size_weight		=	_weight
+						while (array_length(__size_weight) < 3)
 						{
-							__size_y_channel	=	animcurve_get_channel(_input[0],_input[2])
+							array_push(__size_weight,1)
+						};
+					}
+					else
+					{
+						__size_weight		= array_create(4,_weight)
+					}
+				}
+		}
+		
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						__size_x_channel	=	animcurve_get_channel(_curve[0],_curve[1])
+						if array_length(_input)>3
+						{
+							if animcurve_really_exists(_curve[2]) && animcurve_channel_exists(_curve[2],_curve[3])
+							{
+								__size_y_channel	=	animcurve_get_channel(_curve[3],_curve[4])
+							}
+							else
+							{
+								__size_y_channel	=	__size_x_channel
+							}
 						}
 						else
 						{
 							__size_y_channel	=	__size_x_channel
 						}
-						__size_link		=	_link_to
-						break
-					}
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-				distr_size = PULSE_DISTRIBUTION.RANDOM
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
 		}
+	
 		
+		distr_size = _mode
 
 		return self
 	}
@@ -517,7 +580,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_color_mix=  function ( _color_A, _color_B,_mode,_input,_link_to = undefined)
+	static set_distribution_color_mix=  function ( _color_A, _color_B,_curve,_link_to = PULSE_LINK_TO.NONE,_weight = 1,_color_mode = PULSE_COLOR.NONE )
 	{
 		__color_mix_A[0] = color_get_blue(_color_A)
 		__color_mix_A[1] = color_get_green(_color_A)
@@ -527,33 +590,46 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		__color_mix_B[1] = color_get_green(_color_B)
 		__color_mix_B[2] = color_get_red(_color_B)
 		
-		switch(_mode)
+		distr_color_mix_type = _color_mode
+		
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__color_mix_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP 
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_color_mix		=	_mode
-						__color_mix_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__color_mix_link		=	_link_to
-						break
+						__color_mix_weight		=	_weight
+						while (array_length(__color_mix_weight) < 3)
+						{
+							array_push(__color_mix_weight,1)
+						};
+					}
+					else
+					{
+						__color_mix_weight		= array_create(4,_weight)
 					}
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-				__pulse_show_debug_message("Distribution Mode selected is not valid for Color Mix",2)	
 		}
-		
+
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						distr_color_mix		=	_mode;
+						__color_mix_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
+				}
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
+		}
+	
+		distr_color_mix = _mode
 
 		return self
 	}
@@ -563,51 +639,61 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
-	static set_distribution_frame	=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input = undefined,_link_to = undefined)
+	static set_distribution_frame	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
 		if !part_type.set_to_sprite
 		{
 			__pulse_show_debug_message($"Particle {part_type.name} not set to sprite" ,2)	
 			return self	
 		}
-		switch(_mode)
+		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if _link_to != PULSE_LINK_TO.NONE
 		{
-			case 	PULSE_DISTRIBUTION.ANIM_CURVE:
-			case 	PULSE_DISTRIBUTION.LINKED:
-			{
-				if !is_array(_input)
+			_mode = PULSE_DISTRIBUTION.LINKED
+			__frame_link		=	_link_to
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
 				{
-					__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	
-					break;
-				}
-				if animcurve_really_exists(_input[0])
-				{
-					if animcurve_channel_exists(_input[0],_input[1])
+					if is_array(_weight)
 					{
-						distr_frame		=	_mode
-						__frame_channel	=	animcurve_get_channel(_input[0],_input[1])
-						__frame_link		=	_link_to
+						__frame_weight		=	_weight
+						while (array_length(__frame_weight) < 3)
+						{
+							array_push(__frame_weight,1)
+						};
+					}
+					else
+					{
+						__frame_weight		= array_create(4,_weight)
+					}
+				}
+		}
+		
+		if _curve != undefined
+		{
+			if is_array(_curve)
+			{
+					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				{
+						distr_frame		=	_mode;
+						__frame_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
+						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
 						with(part_type)
 						{
 							set_sprite(sprite[0],sprite[1],sprite[2],false,0)
 						}
 						__pulse_show_debug_message($"Sprite of particle {part_type.name} : Random set to False",1)	
-						break
-					}
 				}
-				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)
-				break
-			}
-			default:
-			{
-				distr_frame = PULSE_DISTRIBUTION.RANDOM
-				with(part_type)
-				{
-					set_sprite(sprite[0],sprite[1],sprite[2],true,0)
-				}
-			}
+					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
+			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
+			
+		}
+		else
+		{
+			set_sprite(sprite[0],sprite[1],sprite[2],true,0)
 		}
 		
+		distr_frame = _mode
 
 		return self
 	}
@@ -658,10 +744,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				__pulse_show_debug_message("Distribution Anim Curve or channel not found",2)	
 			break
 			}
-			case 	PULSE_DISTRIBUTION.LINKED:
+			default:
 			{
-				__pulse_show_debug_message("Distribution Linked not allowed in U Coordinate",2)
-				break
+				__pulse_show_debug_message("Mode is not allowed in U Coordinate",2)
 			}
 		}
 		
@@ -1022,153 +1107,286 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				case PULSE_LINK_TO.V_COORD:
 					_amount	=	_p.v_coord
 				break
+				case PULSE_LINK_TO.DISPL_MAP:
+					var u = displacement_map.scale_u * (_p.u_coord+displacement_map.offset_u);
+					u = u>1||u<0 ?  abs(frac(u)): u ;
+					var v = displacement_map.scale_v * (_p.v_coord+displacement_map.offset_v);
+					v = v>1||v<0 ?  abs(frac(v)): v ;
+					
+					_amount = displacement_map.buffer.GetNormalised(u,v)
+					
+					if is_array(_amount)
+					{
+						// if the returned value is an array we can use individual channels
+						_amount[0] =_amount[0]/255  //RED
+						_amount[1] =_amount[1]/255  //GREEN
+						_amount[2] =_amount[2]/255  //BLUE
+						_amount[3] =_amount[3]/255  //ALPHA
+						_amount[4] = mean(_amount[0],_amount[1],_amount[2])
+					}
+					else
+					{
+						//else you are probably using Dragonite's noise generator Macaw
+						_amount= _amount/255
+					}
+				break
+				case PULSE_LINK_TO.COLOR_MAP:
+					var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
+					u = u>1||u<0 ?  abs(frac(u)): u ;
+					var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
+					v = v>1||v<0 ?  abs(frac(v)): v ;
+					
+					 _amount = color_map.buffer.GetNormalised(u,v)
+				break
 			}
 			return _amount
 		}	
 				
 		#region SPEED
-		if distr_speed == PULSE_DISTRIBUTION.RANDOM
+		
+		var _amount = 0
+		// early exit if there is no range to interpret the property
+		if part_type.speed[0]==part_type.speed[1]
 		{
-			if part_type.speed[0]==part_type.speed[1]
-			{
-				_p.speed		=	part_type.speed[0]
-			}
-			else
-			{
-				_p.speed		=	random_range(part_type.speed[0],part_type.speed[1])
-			}
+			_p.speed		=	part_type.speed[0]
 		}
 		else
 		{
-			var _amount;
-				
-			if distr_speed == PULSE_DISTRIBUTION.LINKED
+			if distr_speed == PULSE_DISTRIBUTION.RANDOM
 			{
-				_amount = get_link_value(__speed_link,_p)
+				_p.speed	=	random_range(part_type.speed[0],part_type.speed[1]);
 			}
 			else
 			{
-				_amount = random(1)
-			}
+				if distr_speed == PULSE_DISTRIBUTION.LINKED_CURVE || distr_speed == PULSE_DISTRIBUTION.LINKED
+				{
+					_amount = get_link_value(__speed_link,_p)
+					
+					if __speed_link == PULSE_LINK_TO.DISPL_MAP
+					{
+						_amount=  median(	lerp(0,_amount[0],__speed_weight[0]),
+											lerp(0,_amount[1],__speed_weight[1]),
+											lerp(0,_amount[2],__speed_weight[2]));
+					}
+				}
+				else
+				{
+					_amount = random(1)
+				}
 				
-			_p.speed		=	lerp(part_type.speed[0],part_type.speed[1],animcurve_channel_evaluate(__speed_channel,_amount))
+				if distr_speed == PULSE_DISTRIBUTION.ANIM_CURVE  || distr_speed == PULSE_DISTRIBUTION.LINKED_CURVE 
+				{
+					_amount		=	animcurve_channel_evaluate(__speed_channel,_amount);
+				}
+				_p.speed		=lerp(part_type.speed[0],part_type.speed[1],_amount);
+			}
 		}
 		#endregion
 			
 		#region life
-		if distr_life == PULSE_DISTRIBUTION.RANDOM
+		
+		// early exit if there is no range to interpret the property
+		if part_type.life[0]==part_type.life[1]
 		{
-			if part_type.life[0]==part_type.life[1]
-			{
-				_p.life		=	part_type.life[0]
-			}
-			else
-			{
-				_p.life		=	irandom_range(part_type.life[0],part_type.life[1])
-			}
+			_p.life		=	part_type.life[0]
 		}
 		else
 		{
-			var _amount= 0;
-				
-			if distr_life == PULSE_DISTRIBUTION.LINKED
+			if distr_life == PULSE_DISTRIBUTION.RANDOM
 			{
-				_amount = get_link_value(__life_link,_p)
+				_p.life	=	irandom_range(part_type.life[0],part_type.life[1]);
 			}
 			else
 			{
-				_amount = random(1)
-			}
+				if distr_life == PULSE_DISTRIBUTION.LINKED_CURVE || distr_life == PULSE_DISTRIBUTION.LINKED
+				{
+					_amount = get_link_value(__life_link,_p)
+					
+					if __life_link == PULSE_LINK_TO.DISPL_MAP || __life_link == PULSE_LINK_TO.COLOR_MAP
+					{
+						_amount=  median(	lerp(0,_amount[0],__life_weight[0]),
+											lerp(0,_amount[1],__life_weight[1]),
+											lerp(0,_amount[2],__life_weight[2]));
+					}
+				}
+				else
+				{
+					_amount = random(1)
+				}
 				
-			_p.life		=	lerp(part_type.life[0],part_type.life[1],animcurve_channel_evaluate(__life_channel,_amount))
+				if distr_life == PULSE_DISTRIBUTION.ANIM_CURVE  || distr_life == PULSE_DISTRIBUTION.LINKED_CURVE 
+				{
+					_amount		=	animcurve_channel_evaluate(__life_channel,_amount);
+				}
+				_p.life		= round(lerp(part_type.life[0],part_type.life[1],_amount));
+			}
 		}
+
 		#endregion
 		
 		#region orient
 		
-		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if distr_orient != PULSE_DISTRIBUTION.RANDOM && distr_orient != PULSE_DISTRIBUTION.NONE
+		// early exit if there is no range to interpret the property
+		if part_type.orient[0]!=part_type.orient[1] || distr_life != PULSE_DISTRIBUTION.RANDOM
 		{
-			var _amount= 0;
+				if distr_orient == PULSE_DISTRIBUTION.LINKED_CURVE || distr_orient == PULSE_DISTRIBUTION.LINKED
+				{
+					_amount = get_link_value(__orient_link,_p)
+					
+					if __orient_link == PULSE_LINK_TO.DISPL_MAP
+					{
+						_amount=  median(	lerp(0,_amount[0],__orient_weight[0]),
+											lerp(0,_amount[1],__orient_weight[1]),
+											lerp(0,_amount[2],__orient_weight[2]));
+					}
+				}
+				else
+				{
+					_amount = random(1)
+				}
 				
-			if distr_orient == PULSE_DISTRIBUTION.LINKED
-			{
-				_amount = get_link_value(__orient_link,_p)
-			}
-			else
-			{
-				_amount = random(1)
-			}
-				
-			_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],animcurve_channel_evaluate(__orient_channel,_amount))
+				if distr_orient == PULSE_DISTRIBUTION.ANIM_CURVE  || distr_orient == PULSE_DISTRIBUTION.LINKED_CURVE 
+				{
+					_amount		=	animcurve_channel_evaluate(__orient_channel,_amount);
+				}
+				_p.orient		= round(lerp(part_type.orient[0],part_type.orient[1],_amount));
+			
 		}
 		#endregion
 			
 		#region size
-		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if distr_size != PULSE_DISTRIBUTION.RANDOM && distr_size != PULSE_DISTRIBUTION.NONE
+		// early exit if there is no range to interpret the property
+		if (part_type.size[0]!=part_type.size[2] && part_type.size[1]!=part_type.size[3]) || distr_size != PULSE_DISTRIBUTION.RANDOM
 		{
-			var _amount = 0;
+			var split_dimensions = part_type.size[0] != part_type.size[1] || part_type.size[2] != part_type.size[3] 
 				
-			if distr_size == PULSE_DISTRIBUTION.LINKED
-			{
-				_amount = get_link_value(__size_link,_p)
-			}
-			else
-			{
-				_amount = random(1)
-			}
+				if distr_size == PULSE_DISTRIBUTION.LINKED_CURVE || distr_size == PULSE_DISTRIBUTION.LINKED
+				{
+					var _amount_x = get_link_value(__size_link,_p)
+					var _amount_y =	_amount_x
+					if __size_link == PULSE_LINK_TO.DISPL_MAP
+					{
+						_amount=  median(	lerp(0,_amount[0],__size_weight[0]),
+											lerp(0,_amount[1],__size_weight[1]),
+											lerp(0,_amount[2],__size_weight[2]));
+					}
+				}
+				else
+				{
+					var _amount_x =	random(1);
+					var _amount_y =	split_dimensions == true ? random(1) : _amount_x;
+				}
+				
+				if distr_size == PULSE_DISTRIBUTION.ANIM_CURVE  || distr_size == PULSE_DISTRIBUTION.LINKED_CURVE 
+				{
+					_amount_x =		animcurve_channel_evaluate(__size_x_channel,_amount_x)
+					_amount_y =		split_dimensions  == true ? animcurve_channel_evaluate(__size_y_channel,_amount_y) : _amount_x
+				}
 				
 			_p.size = array_create(4,0)
-			_p.size[0]		=	lerp(part_type.size[0],part_type.size[2],animcurve_channel_evaluate(__size_x_channel,_amount))
-			_p.size[2]		= _p.size[0]
-			_p.size[1]		=	lerp(part_type.size[1],part_type.size[3],animcurve_channel_evaluate(__size_y_channel,_amount))
-			_p.size[3]		=  _p.size[1]
-
+			_p.size[0]		=	lerp(part_type.size[0],part_type.size[2],_amount_x);
+			_p.size[2]		= _p.size[0];
+			_p.size[1]		=	split_dimensions == true ? lerp(part_type.size[1],part_type.size[3],_amount_y) : _p.size[0] ;
+			_p.size[3]		=  _p.size[1];
 		}
+
 		#endregion
 			
 		#region frame
 		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if distr_frame != PULSE_DISTRIBUTION.NONE
+		if distr_frame != PULSE_DISTRIBUTION.RANDOM
 		{
-			var _amount= 0;
+				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
+				{
+					_amount = get_link_value(__frame_link,_p)
+					
+					if __frame_link == PULSE_LINK_TO.DISPL_MAP
+					{
+						_amount=  median(	lerp(0,_amount[0],__frame_weight[0]),
+											lerp(0,_amount[1],__frame_weight[1]),
+											lerp(0,_amount[2],__frame_weight[2]));
+					}
+				}
+				else
+				{
+					_amount = random(1)
+				}
 				
-			if distr_frame == PULSE_DISTRIBUTION.LINKED
-			{
-				_amount = get_link_value(__frame_link,_p)
-			}
-			else
-			{
-				_amount = random(1)
-			}
-				
-				
-			_p.frame		=	animcurve_channel_evaluate(__frame_channel,_amount)
+				if distr_frame == PULSE_DISTRIBUTION.ANIM_CURVE  || distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE 
+				{
+					_amount		=	animcurve_channel_evaluate(__frame_channel,_amount);
+				}
+				_p.frame		= round(_amount)
 		}
 		#endregion
 			
 		#region color
 		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if distr_color_mix == PULSE_DISTRIBUTION.LINKED || distr_color_mix == PULSE_DISTRIBUTION.ANIM_CURVE
+		
+		if distr_color_mix != PULSE_DISTRIBUTION.NONE
 		{
-			var _amount= 0;
-				
-			if distr_color_mix == PULSE_DISTRIBUTION.LINKED
+			if distr_color_mix == PULSE_DISTRIBUTION.LINKED  || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
 			{
 				_amount = get_link_value(__color_mix_link,_p)
+				if __color_mix_link == PULSE_LINK_TO.DISPL_MAP  
+				{
+					_amount=  median(	lerp(0,_amount[0],__color_mix_weight[0]),
+										lerp(0,_amount[1],__color_mix_weight[1]),
+										lerp(0,_amount[2],__color_mix_weight[2]));
+				}
 			}
 			else
 			{
 				_amount = random(1)
 			}
-						
-				_amount = animcurve_channel_evaluate(__color_mix_channel,_amount)
+			
+			if distr_color_mix == PULSE_DISTRIBUTION.ANIM_CURVE || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
+			{
+				if __color_mix_link == PULSE_LINK_TO.COLOR_MAP
+				{
+					_amount[0] = animcurve_channel_evaluate(__color_mix_channel,_amount[0])
+					_amount[1] = animcurve_channel_evaluate(__color_mix_channel,_amount[1])
+					_amount[2] = animcurve_channel_evaluate(__color_mix_channel,_amount[2])
+				}
+				else
+				{
+					_amount = animcurve_channel_evaluate(__color_mix_channel,_amount)
+				}
+			}
+			
+			if __color_mix_link == PULSE_LINK_TO.COLOR_MAP
+			{
+					_p.color_mode =PULSE_COLOR.COLOR_MAP
+					_p.r_h =  lerp(__color_mix_A[2],_amount[0],__color_mix_weight[0])
+					_p.g_s =  lerp(__color_mix_A[1],_amount[1],__color_mix_weight[1])
+					_p.b_v =  lerp(__color_mix_A[0],_amount[2],__color_mix_weight[2])
+					var _alpha = _amount[3]/255
+					//Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
+				if _p[$ "size"] != undefined
+				{
+					_p.size[0] =  lerp(0,_p.size[0],_alpha)
+					_p.size[2] =  _p.size[0]
+					_p.size[1] =  lerp(0,_p.size[1],_alpha)
+					_p.size[3] =  _p.size[1]
+				}
+				else
+				{
+					_p.size = array_create(4,lerp(0,part_type.size[1],_alpha))
+				}
+			}
+			else
+			{				
 				_p.r_h =  lerp(__color_mix_A[2],__color_mix_B[2],_amount)
 				_p.g_s =  lerp(__color_mix_A[1],__color_mix_B[1],_amount)
 				_p.b_v =  lerp(__color_mix_A[0],__color_mix_B[0],_amount)
-				_p.color_mode = PULSE_COLOR.A_TO_B_RGB
+				_p.color_mode = distr_color_mix_type
+			}
+					
+			
+	
+	
 		}
+	
 		#endregion
 
 		return _p
@@ -1819,7 +2037,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				__assign_properties(particle_struct)
 			
 			#region DISPLACEMENT MAP
-				
+			/*	
 			if displacement_map != undefined
 			{
 				__apply_displacement(particle_struct,emitter_struct)
@@ -1827,7 +2045,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if color_map != undefined && distr_color_mix == PULSE_COLOR.COLOR_MAP
 			{
 				__apply_color_map(particle_struct,emitter_struct)
-			}
+			}*/
 				
 			#endregion	
 	

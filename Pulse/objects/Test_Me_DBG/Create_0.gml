@@ -6,7 +6,7 @@ show_debug_overlay(debug)
 system = pulse_store_system( new pulse_system("sys_1") )
 
 particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
-
+created_maps = false
 
 #region Particle
 
@@ -380,67 +380,95 @@ e_dist_v_offset_prev = 0
 dbg_slider(ref_create(self,"e_dist_v_offset"),0,1,"V Coord Offset")
 
 dbg_text_separator("Speed")
-e_dist_speed_mode = PULSE_DISTRIBUTION.RANDOM
+
 e_dist_speed_input = undefined
-e_dist_speed_link = undefined
-dbg_drop_down(ref_create(self,"e_dist_speed_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
-dbg_drop_down(ref_create(self,"e_dist_speed_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
-dbg_drop_down(ref_create(self,"e_dist_speed_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+e_dist_speed_link = PULSE_LINK_TO.NONE
+
+dbg_drop_down(ref_create(self,"e_dist_speed_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_speed_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
 
 dbg_button("Apply Distribution", function()
 {
-	emitter.set_distribution_speed(e_dist_speed_mode,[Distribution_Sample,e_dist_speed_input],e_dist_speed_link)
+	var _curve = e_dist_speed_input== undefined ? undefined : [Distribution_Sample,e_dist_speed_input]
+	emitter.set_distribution_speed(_curve,e_dist_speed_link)
 })
 
 dbg_text_separator("Life")
-e_dist_life_mode = PULSE_DISTRIBUTION.RANDOM
 e_dist_life_input = undefined
 e_dist_life_link = undefined
-dbg_drop_down(ref_create(self,"e_dist_life_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
-dbg_drop_down(ref_create(self,"e_dist_life_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
-dbg_drop_down(ref_create(self,"e_dist_life_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_drop_down(ref_create(self,"e_dist_life_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_life_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
 dbg_button("Apply Distribution", function()
 {
-	emitter.set_distribution_life(e_dist_life_mode,[Distribution_Sample,e_dist_life_input],e_dist_life_link)
+	var _curve = e_dist_life_input== undefined ? undefined : [Distribution_Sample,e_dist_life_input]
+	emitter.set_distribution_life(_curve,e_dist_life_link)
 })
 
 dbg_text_separator("Orient")
-e_dist_orient_mode = PULSE_DISTRIBUTION.RANDOM
 e_dist_orient_input = undefined
 e_dist_orient_link = undefined
-dbg_drop_down(ref_create(self,"e_dist_orient_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
-dbg_drop_down(ref_create(self,"e_dist_orient_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
-dbg_drop_down(ref_create(self,"e_dist_orient_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_drop_down(ref_create(self,"e_dist_orient_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_orient_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
 dbg_button("Apply Distribution", function()
 {
-	emitter.set_distribution_orient(e_dist_orient_mode,[Distribution_Sample,e_dist_orient_input],e_dist_orient_link)
+	var _curve = e_dist_orient_input== undefined ? undefined : [Distribution_Sample,e_dist_orient_input]
+	emitter.set_distribution_orient(_curve,e_dist_orient_link)
 })
 
 dbg_text_separator("Size")
-e_dist_size_mode = PULSE_DISTRIBUTION.RANDOM
 e_dist_size_input = [undefined,undefined]
 e_dist_size_link = undefined
-dbg_drop_down(ref_create(self,"e_dist_size_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
-dbg_drop_down(ref_create(self,"e_dist_size_input",0),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve for X")
-dbg_drop_down(ref_create(self,"e_dist_size_input",1),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve for Y")
-dbg_drop_down(ref_create(self,"e_dist_size_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_drop_down(ref_create(self,"e_dist_size_input",0),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve for X")
+dbg_drop_down(ref_create(self,"e_dist_size_input",1),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curvefor Y")
+dbg_drop_down(ref_create(self,"e_dist_size_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
 dbg_button("Apply Distribution", function()
 {
-	emitter.set_distribution_size(e_dist_size_mode,[Distribution_Sample,e_dist_size_input[0],e_dist_size_input[1]],e_dist_size_link)
+	var _curve = e_dist_size_input[0] == undefined ? undefined : [Distribution_Sample,e_dist_size_input[0]]
+	var _curve2 = e_dist_size_input[1]== undefined ? undefined : [Distribution_Sample,e_dist_size_input[1]]
+	var _curve = array_concat(_curve,_curve2)
+	emitter.set_distribution_size(_curve,e_dist_size_link)
 })
 
 dbg_text_separator("Frame")
-e_dist_frame_mode = PULSE_DISTRIBUTION.RANDOM
 e_dist_frame_input = undefined
 e_dist_frame_link = undefined
-dbg_drop_down(ref_create(self,"e_dist_frame_mode"),[PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.LINKED],["Random","Animation Curve","Linked"],"Dist Mode")
-dbg_drop_down(ref_create(self,"e_dist_frame_input"),["Linear","EaseInOut","EaseIn","EaseOut"],["Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
-dbg_drop_down(ref_create(self,"e_dist_frame_link"),[undefined,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD],["None","Direction","Path Speed","Speed","U Coord","V Coord"],"Link To")
+dbg_drop_down(ref_create(self,"e_dist_frame_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_frame_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
 dbg_button("Apply Distribution", function()
 {
-	emitter.set_distribution_frame(e_dist_frame_mode,[Distribution_Sample,e_dist_frame_input],e_dist_frame_link)
+	var _curve = e_dist_frame_input== undefined ? undefined : [Distribution_Sample,e_dist_frame_input]
+	emitter.set_distribution_frame(_curve,e_dist_frame_link)
 })
 
 
+p_color = [c_blue,c_aqua,c_white]
 
+dbg_text_separator("Color Mix")
+
+e_dist_color = [c_white,c_aqua]
+e_dist_color_input = undefined
+e_dist_color_link = undefined
+e_dist_color_type = PULSE_COLOR.NONE
+
+dbg_drop_down(ref_create(self,"e_dist_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black"],"Color 1")
+dbg_drop_down(ref_create(self,"e_dist_color",1),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
+
+dbg_drop_down(ref_create(self,"e_dist_color_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_color_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
+													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
+dbg_drop_down(ref_create(self,"e_dist_color_type"),[PULSE_COLOR.A_TO_B_HSV,PULSE_COLOR.A_TO_B_RGB,PULSE_COLOR.COLOR_MAP,PULSE_COLOR.NONE],["A to B - RGB","A to B HSV","Color Map","None"],"Animation Curve")
+dbg_button("Apply Distribution", function()
+{
+	var _curve = e_dist_color_input== undefined ? undefined : [Distribution_Sample,e_dist_color_input]
+	emitter.set_distribution_color_mix(e_dist_color[0],e_dist_color[1],_curve,e_dist_color_link,,e_dist_color_type)
+})
 #endregion

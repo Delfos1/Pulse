@@ -152,7 +152,6 @@ function __pulse_color_map(_map,_parent) constructor
 
 	static	set_color_map	=	function(_blend=1)
 	{
-		parent.distr_color_mix = PULSE_COLOR.COLOR_MAP
 		color_blend		= _blend
 		return self
 	}
