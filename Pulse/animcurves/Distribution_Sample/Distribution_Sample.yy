@@ -3,9 +3,9 @@
   "%Name":"Distribution_Sample",
   "channels":[
     {"$GMAnimCurveChannel":"","%Name":"Linear","colour":4290799884,"name":"Linear","points":[
-        {"th0":-0.1,"th1":0.13490137,"tv0":0.0,"tv1":0.1269002,"x":0.0,"y":0.0,},
-        {"th0":-0.10455239,"th1":0.1,"tv0":-0.11103767,"tv1":0.0,"x":1.0,"y":1.0,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
+        {"th0":-0.1,"th1":0.14552352,"tv0":0.0,"tv1":-0.14276272,"x":0.0,"y":1.0,},
+        {"th0":-0.15007591,"th1":0.1,"tv0":0.15333773,"tv1":0.0,"x":1.0,"y":0.0,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
     {"$GMAnimCurveChannel":"","%Name":"EaseInOut","colour":4281083598,"name":"EaseInOut","points":[
         {"th0":-0.1,"th1":0.7709028,"tv0":0.0,"tv1":0.0026437547,"x":0.0,"y":0.0,},
         {"th0":-0.5608664,"th1":0.1,"tv0":-0.005287409,"tv1":0.0,"x":1.0,"y":1.0,},
@@ -17,7 +17,7 @@
     {"$GMAnimCurveChannel":"","%Name":"EaseIn","colour":4279234797,"name":"EaseIn","points":[
         {"th0":-0.1,"th1":0.002604167,"tv0":0.0,"tv1":0.51817584,"x":0.0,"y":0.0,},
         {"th0":-0.57135415,"th1":0.1,"tv0":-0.005287528,"tv1":0.0,"x":1.0,"y":1.0,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
   ],
   "function":2,
   "name":"Distribution_Sample",

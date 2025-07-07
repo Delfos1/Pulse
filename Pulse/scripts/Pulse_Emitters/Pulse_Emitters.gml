@@ -368,7 +368,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__orient_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || _link_to == PULSE_LINK_TO.COLOR_MAP
 				{
 					if is_array(_weight)
 					{
@@ -382,6 +382,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					{
 						__orient_weight		= array_create(4,_weight)
 					}
+				}
+				else
+				{
+					__orient_weight		=	_weight
 				}
 		}
 		
@@ -417,7 +421,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__life_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || _link_to == PULSE_LINK_TO.COLOR_MAP
 				{
 					if is_array(_weight)
 					{
@@ -431,6 +435,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					{
 						__life_weight		= array_create(4,_weight)
 					}
+				}
+				else
+				{
+					__life_weight		=_weight
 				}
 		}
 		
@@ -473,7 +481,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__speed_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP ||  _link_to == PULSE_LINK_TO.COLOR_MAP
 				{
 					if is_array(_weight)
 					{
@@ -487,6 +495,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					{
 						__speed_weight		= array_create(4,_weight)
 					}
+				}
+					else
+				{
+					__speed_weight		=_weight
 				}
 		}
 		
@@ -522,7 +534,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__size_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || _link_to == PULSE_LINK_TO.COLOR_MAP
 				{
 					if is_array(_weight)
 					{
@@ -537,6 +549,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						__size_weight		= array_create(4,_weight)
 					}
 				}
+					else
+				{
+					__size_weight		=_weight
+				}
 		}
 		
 		if _curve != undefined
@@ -546,11 +562,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
 				{
 						__size_x_channel	=	animcurve_get_channel(_curve[0],_curve[1])
-						if array_length(_input)>3
+						if array_length(_curve)>3
 						{
 							if animcurve_really_exists(_curve[2]) && animcurve_channel_exists(_curve[2],_curve[3])
 							{
-								__size_y_channel	=	animcurve_get_channel(_curve[3],_curve[4])
+								__size_y_channel	=	animcurve_get_channel(_curve[2],_curve[3])
 							}
 							else
 							{
@@ -652,7 +668,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__frame_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP || _link_to == PULSE_LINK_TO.COLOR_MAP
 				{
 					if is_array(_weight)
 					{
@@ -666,6 +682,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					{
 						__frame_weight		= array_create(4,_weight)
 					}
+				}
+				else
+				{
+					__frame_weight		=_weight
 				}
 		}
 		
@@ -992,7 +1012,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		else if distr_along_u_coord	== PULSE_DISTRIBUTION.EVEN
 		{
-			//Distribute the u_coord evenly by particle amount and number of divisions_v
+			//Distribute the u_coord evenly by particle amount and number of divisions_u
 			
 			_p.u_coord ??= lerp(mask_start, mask_end,div_u/divisions_u)
 		}
@@ -1077,7 +1097,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.EVEN
 		{
 			//Distribute evenly
-			_p.v_coord		??=	_pulse_clamp_wrap((div_v/divisions_v),0,1)
+			_p.v_coord		??=	lerp(mask_v_start,mask_v_end,(div_v/divisions_v))//_pulse_clamp_wrap((div_v/divisions_v),mask_v_start,mask_v_end)
 			_p.length		=	lerp(_e.int*radius_internal,_e.ext*radius_external,_p.v_coord)
 			
 		}
@@ -1162,11 +1182,15 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount = get_link_value(__speed_link,_p)
 					
-					if __speed_link == PULSE_LINK_TO.DISPL_MAP
+					if (__speed_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __speed_link == PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(	lerp(0,_amount[0],__speed_weight[0]),
-											lerp(0,_amount[1],__speed_weight[1]),
-											lerp(0,_amount[2],__speed_weight[2]));
+						_amount=  median(	(_amount[0]*__speed_weight[0]),
+											(_amount[1]*__speed_weight[1]),
+											(_amount[2]*__speed_weight[2]));
+					}
+						else
+					{
+						_amount=_amount*__speed_weight
 					}
 				}
 				else
@@ -1202,11 +1226,15 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount = get_link_value(__life_link,_p)
 					
-					if __life_link == PULSE_LINK_TO.DISPL_MAP || __life_link == PULSE_LINK_TO.COLOR_MAP
+					if (__life_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __life_link == PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(	lerp(0,_amount[0],__life_weight[0]),
-											lerp(0,_amount[1],__life_weight[1]),
-											lerp(0,_amount[2],__life_weight[2]));
+						_amount=  median(	(_amount[0]*__life_weight[0]),
+											(_amount[1]*__life_weight[1]),
+											(_amount[2]*__life_weight[2]));
+					}
+						else
+					{
+						_amount=_amount*__life_weight
 					}
 				}
 				else
@@ -1233,11 +1261,15 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount = get_link_value(__orient_link,_p)
 					
-					if __orient_link == PULSE_LINK_TO.DISPL_MAP
+					if (__orient_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __orient_link == PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(	lerp(0,_amount[0],__orient_weight[0]),
-											lerp(0,_amount[1],__orient_weight[1]),
-											lerp(0,_amount[2],__orient_weight[2]));
+						_amount=  median(	(_amount[0]*__orient_weight[0]),
+											(_amount[1]*__orient_weight[1]),
+											(_amount[2]*__orient_weight[2]));
+					}
+						else
+					{
+						_amount=_amount*__orient_weight
 					}
 				}
 				else
@@ -1264,11 +1296,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					var _amount_x = get_link_value(__size_link,_p)
 					var _amount_y =	_amount_x
-					if __size_link == PULSE_LINK_TO.DISPL_MAP
+					if (__size_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __size_link == PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(	lerp(0,_amount[0],__size_weight[0]),
-											lerp(0,_amount[1],__size_weight[1]),
-											lerp(0,_amount[2],__size_weight[2]));
+						_amount_x=  median(	(_amount_x[0]*__size_weight[0]),
+											(_amount_x[1]*__size_weight[1]),
+											(_amount_x[2]*__size_weight[2]));
+						_amount_y =	_amount_x
+					}
+						else
+					{
+						_amount_x=_amount_x*__size_weight
+						_amount_y =	_amount_x
 					}
 				}
 				else
@@ -1300,11 +1338,15 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount = get_link_value(__frame_link,_p)
 					
-					if __frame_link == PULSE_LINK_TO.DISPL_MAP
+					if (__frame_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __frame_link == PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(	lerp(0,_amount[0],__frame_weight[0]),
-											lerp(0,_amount[1],__frame_weight[1]),
-											lerp(0,_amount[2],__frame_weight[2]));
+						_amount=  median(	(_amount[0]*__frame_weight[0]),
+											(_amount[1]*__frame_weight[1]),
+											(_amount[2]*__frame_weight[2]));
+					}
+						else
+					{
+						_amount=_amount*__frame_weight
 					}
 				}
 				else
