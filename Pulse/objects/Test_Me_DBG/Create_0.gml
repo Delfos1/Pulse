@@ -8,13 +8,27 @@ system = pulse_store_system( new pulse_system("sys_1") )
 particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
 created_maps = false
 
+
 #region Particle
 
-dbg_view("Particle",true)
+dbg_view("Particle",true,30,70,350,600)
 dbg_text(particle.name)
 
+dbg_button("Import",function(){
+	
+	var _p = get_open_filename("particle.pulsep","particle.pulsep")
+	if _p != ""
+	{
+		pulse_destroy_particle(particle.name)
+		particle = pulse_import_particle(_p,true)	
+		emitter.set_particle_type(particle)
+	}
+	})
+dbg_same_line()
+dbg_button("Export",function(){
+	pulse_export_particle(particle,"none")})
+	
 dbg_text_separator("Life")
-
 p_life = [30,50]
 dbg_text_input(ref_create(self,"p_life",0),"Life Minimum","i")
 dbg_text_input(ref_create(self,"p_life",1),"Life Maximum","i")
@@ -190,9 +204,27 @@ dbg_drop_down(ref_create(self,"p_color",2),[c_white,c_aqua,c_teal,c_blue,c_navy,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
 ["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
 
+
 dbg_button("Apply",function()
 {
 	particle.set_color(p_color[0],p_color[1],p_color[2])
+})
+
+dbg_text_separator("Alpha")
+
+p_alpha = [1,1,0]
+
+
+dbg_slider(ref_create(self,"p_alpha",0),0,1,"Alpha Start",.1)
+
+dbg_text("Use -.1 to set as undefined ⮧")
+dbg_slider(ref_create(self,"p_alpha",1),-.1,1,"Alpha Mid Point",.1)
+dbg_slider(ref_create(self,"p_alpha",2),-.1,1,"Alpha End",.1)
+dbg_button("Apply",function()
+{
+	p_alpha[1] = p_alpha[1]<0 ? -1 : p_alpha[1]
+	p_alpha[2] = p_alpha[2]<0 ? -1 : p_alpha[2]
+	particle.set_alpha(p_alpha[0],p_alpha[1],p_alpha[2])
 })
 
 dbg_section("Time and Space Scaling",false)
@@ -214,18 +246,36 @@ dbg_button("Apply",function()
 #endregion
 
 
-
-
 emitter = new pulse_emitter("sys_1","a_particle_name");
 
 emitter.add_collisions(o_Collider)
 emitter.set_radius(0,150)
 emitter.set_boundaries(PULSE_BOUNDARY.NONE)
-dbg_view("Emitter",true)
+dbg_view("Emitter",true,380,70,350,600)
 
+dbg_button("Import",function(){
+	
+	var _p = get_open_filename("particle.pulsep","particle.pulsep")
+	
+	if _p != ""
+	{
+		pulse_destroy_particle(particle.name)
+		emitter = pulse_import_emitter(_p,true)	
+		particle =  emitter.part_type
+	}
+	})
+dbg_same_line()
+dbg_button("Export",function(){
+	pulse_export_emitter(emitter)})
+	
 e_amount = 50
+e_freq = 1
+counter = 0
 dbg_text_input(ref_create(self,"e_amount"),"Amount of particles emitted","i")
+dbg_slider_int(ref_create(self,"e_freq"),1,120,"Frequency for emitter burst")
 
+e_dbg_check = true
+dbg_checkbox(ref_create(self,"e_dbg_check"),"Draw debug helpers")
 #region Shape
 dbg_section("Shape",true)
 

@@ -385,6 +385,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 				else
 				{
+					if is_array(_weight)
+					{
+						_weight = _weight[0]
+					}
 					__orient_weight		=	_weight
 				}
 		}
@@ -432,7 +436,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						};
 					}
 					else
+					{					
+						if is_array(_weight)
 					{
+						_weight = _weight[0]
+					}
 						__life_weight		= array_create(4,_weight)
 					}
 				}
@@ -498,6 +506,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 					else
 				{
+										if is_array(_weight)
+					{
+						_weight = _weight[0]
+					}
 					__speed_weight		=_weight
 				}
 		}
@@ -551,6 +563,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 					else
 				{
+										if is_array(_weight)
+					{
+						_weight = _weight[0]
+					}
 					__size_weight		=_weight
 				}
 		}
@@ -609,6 +625,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		distr_color_mix_type = _color_mode
 		
 		var _mode = PULSE_DISTRIBUTION.RANDOM
+		_weight = clamp(_weight,0,1)
 		
 		if _link_to != PULSE_LINK_TO.NONE
 		{
@@ -680,6 +697,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					}
 					else
 					{
+						if is_array(_weight)
+						{
+						_weight = _weight[0]
+						}
 						__frame_weight		= array_create(4,_weight)
 					}
 				}
@@ -698,21 +719,18 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						distr_frame		=	_mode;
 						__frame_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
 						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
-						with(part_type)
-						{
-							set_sprite(sprite[0],sprite[1],sprite[2],false,0)
-						}
-						__pulse_show_debug_message($"Sprite of particle {part_type.name} : Random set to False",1)	
+						
 				}
 					else{		__pulse_show_debug_message("Distribution Anim Curve or channel not found",2) }
 			}else{				__pulse_show_debug_message("Distribution Anim Curve argument must be an array [curve,channel]",2)	}
 			
 		}
-		else
+
+		with(part_type)
 		{
-			set_sprite(sprite[0],sprite[1],sprite[2],true,0)
+			set_sprite(sprite[0],sprite[1],sprite[2],false,0)
+			__pulse_show_debug_message($"Sprite of particle {part_type.name} : Random set to False",1)	
 		}
-		
 		distr_frame = _mode
 
 		return self
@@ -914,10 +932,14 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	static	draw_debug				=	function(x,y)
 	{
 		// draw radiuses
-		var ext_x =  radius_external*x_scale
-		var int_x =  radius_internal*x_scale
-		var ext_y =  radius_external*y_scale
-		var int_y =  radius_internal*y_scale
+		var ext_x =  radius_external*x_scale ,
+			int_x =  radius_internal*x_scale ,
+			ext_y =  radius_external*y_scale ,
+			int_y =  radius_internal*y_scale ,
+			ed_x = edge_external*x_scale ,
+			ed_y = edge_external*y_scale ,
+			edint_x = edge_internal*x_scale ,
+			edint_y = edge_internal*y_scale 
 		
 		if is_colliding
 			{
@@ -930,6 +952,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			draw_ellipse(x-ext_x,y-ext_y,x+ext_x,y+ext_y,true)
 			draw_ellipse(x-int_x,y-int_y,x+int_x,y+int_y,true)
+			
+			if edge_external > radius_external
+			{
+				draw_set_color(c_red)
+				draw_ellipse(x-ed_x,y -ed_y,x+ed_x,y+ed_y,true)
+			}
+			if edge_internal < radius_internal
+			{
+				draw_set_color(c_red)
+				draw_ellipse(x-edint_x,y-edint_y,x+edint_x,y+edint_y,true)
+			}
 		}
 		else if form_mode == PULSE_FORM.PATH
 		{
@@ -1019,21 +1052,21 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return _p
 	}
 						
-	static __calculate_stencil		=	function(_particle, _emitter={})
+	static __calculate_stencil		=	function(_p, _e={})
 	{
 		var eval, eval_a, eval_b, eval_c;
 			
 		// early exit if there are no stencils
 		if stencil_mode == PULSE_STENCIL.NONE 
 		{
-			_emitter.ext		= 1
-			_emitter.int		= 1
-			_emitter.total		= 1
-			_emitter.edge		= 1
-			return _emitter
+			_e.ext		= 1
+			_e.int		= 1
+			_e.total	= 1
+			_e.edge		= 1
+			return _e
 		}
 			
-		var dir_stencil = (stencil_offset+_particle.u_coord)%1;
+		var dir_stencil = (stencil_offset+_p.u_coord)%1;
 			
 		eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
 		eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
@@ -1046,31 +1079,31 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
 			{
-				_emitter.ext		= min(eval_a,(eval_c*(edge_external/radius_external)))
-				_emitter.int		= eval_b
-				_emitter.total		= eval
-				_emitter.edge		= min(eval_a,eval_c)
+				_e.ext		= min(eval_a,(eval_c*(edge_external/radius_external)))
+				_e.int		= eval_b
+				_e.total	= eval
+				_e.edge		= min(eval_a,eval_c)
 				break;
 			}
 			case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
 			{
-				_emitter.ext		= min(eval,(eval_c*(edge_external/radius_external)))
-				_emitter.int		= 1
-				_emitter.total		= eval
-				_emitter.edge		= min(eval,eval_c)
+				_e.ext		= min(eval,(eval_c*(edge_external/radius_external)))
+				_e.int		= 1
+				_e.total		= eval
+				_e.edge		= min(eval,eval_c)
 				break;
 			}
 			case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
 			{
-				_emitter.ext		= 1
-				_emitter.int		= eval
-				_emitter.total		= eval
-				_emitter.edge		= min(1,eval_c)
+				_e.ext		= 1
+				_e.int		= eval
+				_e.total	= eval
+				_e.edge		= min(1,eval_c)
 				break;
 			}
 		}
 					
-		return _emitter
+		return _e
 	}
 	
 	static __assign_v_coordinate	=	function(div_v,_p,_e={})
@@ -1107,7 +1140,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	static __assign_properties		=	function(_p)
 	{				
-		function get_link_value(_link,_p)
+		function get_link_value(_link,_p,_weight)
 		{
 			var _amount
 			switch( _link )
@@ -1159,18 +1192,47 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					 _amount = color_map.buffer.GetNormalised(u,v)
 				break
 			}
+			
+			if is_array(_amount)
+			{
+				if is_array(_weight)
+				{
+					_amount[0]= _weight[0] <0 ?  1+ (_amount[0]*_weight[0]) : _amount[0] *_weight[0]
+					_amount[1]= _weight[1] <0 ?  1+ (_amount[1]*_weight[1]) : _amount[1] *_weight[1]
+					_amount[2]= _weight[2] <0 ?  1+ (_amount[2]*_weight[2]) : _amount[2] *_weight[2]
+
+				}
+					else
+				{
+					_amount[0]= _weight <0 ?  1+ (_amount[0]*_weight) : _amount[0] *_weight
+					_amount[1]= _weight <0 ?  1+ (_amount[1]*_weight) : _amount[1] *_weight
+					_amount[2]= _weight <0 ?  1+ (_amount[2]*_weight) : _amount[2] *_weight
+				}
+					if _link != PULSE_LINK_TO.COLOR_MAP 
+					{
+						_amount=  median(_amount[0],_amount[1],_amount[2])
+					}
+
+			}
+				else
+			{
+				if is_array(_weight)
+				{
+					_weight = _weight[0]
+				}
+						_amount= _weight <0 ?  1+( _amount*_weight) : _amount *_weight
+			}
+			
 			return _amount
 		}	
+		
 				
 		#region SPEED
 		
 		var _amount = 0
 		// early exit if there is no range to interpret the property
-		if part_type.speed[0]==part_type.speed[1]
-		{
-			_p.speed		=	part_type.speed[0]
-		}
-		else
+
+		if _p.speed == undefined
 		{
 			if distr_speed == PULSE_DISTRIBUTION.RANDOM
 			{
@@ -1180,18 +1242,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_speed == PULSE_DISTRIBUTION.LINKED_CURVE || distr_speed == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__speed_link,_p)
-					
-					if (__speed_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __speed_link == PULSE_LINK_TO.COLOR_MAP 
-					{
-						_amount=  median(	(_amount[0]*__speed_weight[0]),
-											(_amount[1]*__speed_weight[1]),
-											(_amount[2]*__speed_weight[2]));
-					}
-						else
-					{
-						_amount=_amount*__speed_weight
-					}
+					_amount = get_link_value(__speed_link,_p,__speed_weight)
 				}
 				else
 				{
@@ -1209,12 +1260,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		#region life
 		
-		// early exit if there is no range to interpret the property
-		if part_type.life[0]==part_type.life[1]
-		{
-			_p.life		=	part_type.life[0]
-		}
-		else
+		if _p.life		== undefined
 		{
 			if distr_life == PULSE_DISTRIBUTION.RANDOM
 			{
@@ -1224,18 +1270,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_life == PULSE_DISTRIBUTION.LINKED_CURVE || distr_life == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__life_link,_p)
+					_amount = get_link_value(__life_link,_p,__life_weight)
 					
-					if (__life_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __life_link == PULSE_LINK_TO.COLOR_MAP 
-					{
-						_amount=  median(	(_amount[0]*__life_weight[0]),
-											(_amount[1]*__life_weight[1]),
-											(_amount[2]*__life_weight[2]));
-					}
-						else
-					{
-						_amount=_amount*__life_weight
-					}
 				}
 				else
 				{
@@ -1259,18 +1295,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_orient == PULSE_DISTRIBUTION.LINKED_CURVE || distr_orient == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__orient_link,_p)
-					
-					if (__orient_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __orient_link == PULSE_LINK_TO.COLOR_MAP 
-					{
-						_amount=  median(	(_amount[0]*__orient_weight[0]),
-											(_amount[1]*__orient_weight[1]),
-											(_amount[2]*__orient_weight[2]));
-					}
-						else
-					{
-						_amount=_amount*__orient_weight
-					}
+					_amount = get_link_value(__orient_link,_p,__orient_weight)
 				}
 				else
 				{
@@ -1294,20 +1319,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				if distr_size == PULSE_DISTRIBUTION.LINKED_CURVE || distr_size == PULSE_DISTRIBUTION.LINKED
 				{
-					var _amount_x = get_link_value(__size_link,_p)
+					var _amount_x = get_link_value(__size_link,_p,__size_weight)
 					var _amount_y =	_amount_x
-					if (__size_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __size_link == PULSE_LINK_TO.COLOR_MAP 
-					{
-						_amount_x=  median(	(_amount_x[0]*__size_weight[0]),
-											(_amount_x[1]*__size_weight[1]),
-											(_amount_x[2]*__size_weight[2]));
-						_amount_y =	_amount_x
-					}
-						else
-					{
-						_amount_x=_amount_x*__size_weight
-						_amount_y =	_amount_x
-					}
 				}
 				else
 				{
@@ -1336,18 +1349,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__frame_link,_p)
-					
-					if (__frame_link == PULSE_LINK_TO.DISPL_MAP && is_array(_amount)) || __frame_link == PULSE_LINK_TO.COLOR_MAP 
-					{
-						_amount=  median(	(_amount[0]*__frame_weight[0]),
-											(_amount[1]*__frame_weight[1]),
-											(_amount[2]*__frame_weight[2]));
-					}
-						else
-					{
-						_amount=_amount*__frame_weight
-					}
+					_amount = get_link_value(__frame_link,_p,__frame_weight)
 				}
 				else
 				{
@@ -1369,13 +1371,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			if distr_color_mix == PULSE_DISTRIBUTION.LINKED  || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
 			{
-				_amount = get_link_value(__color_mix_link,_p)
-				if __color_mix_link == PULSE_LINK_TO.DISPL_MAP  
-				{
-					_amount=  median(	lerp(0,_amount[0],__color_mix_weight[0]),
-										lerp(0,_amount[1],__color_mix_weight[1]),
-										lerp(0,_amount[2],__color_mix_weight[2]));
-				}
+				_amount = get_link_value(__color_mix_link,_p,__color_mix_weight)
 			}
 			else
 			{
@@ -1574,8 +1570,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			var _a =power(_e.edge*edge_external,2)-power(_p.length,2)
 			var _length_to_edge	= sqrt(abs(_a)) 
 						
-			//This second formula should work with any angle, but it doesn't work atm
-			//var _length_to_edge	= radius_external*sin(degtorad(dir-90))
 		}
 		else if abs(angle_difference(_p.dir,_p.normal))<=75	//NORMAL AWAY FROM CENTER
 		{	
@@ -1583,7 +1577,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if _p.length>=0
 			{
 				var _length_to_edge	=	(_e.edge*edge_external)-_p.length
-				//var _length_to_radius	=	(_e.ext*radius_external)-_p.length
 			}
 			else
 			{
@@ -1607,7 +1600,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					if _p.length>=0
 					{
-						var _length_to_edge	=	abs(_p.length)
+						var _length_to_edge	=	_p.length
 					}
 					else
 					{
@@ -1618,19 +1611,20 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 					
 		//Then we calculate the Total Displacement of the particle over its life
-		var _accel		=	part_type.speed[2]*_p.life
-		var _displacement = (_p.speed*_p.life)+_accel
+		_p.accel ??=  part_type.speed[2]*(_p.life*_p.life)*.5
+		var _displacement = (_p.speed*_p.life)+_p.accel
 
 		// If the particle moves beyond the edge of the radius, change either its speed or life
 		if	_displacement > _length_to_edge
 		{
 			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
-				_p.speed	=	(_length_to_edge-_accel)/_p.life
+				_p.speed	=	(_length_to_edge-_p.accel)/_p.life
+				_displacement = (_p.speed*_p.life)+_p.accel
 			} 
 			else if boundary == PULSE_BOUNDARY.LIFE || boundary == PULSE_BOUNDARY.FOCAL_LIFE
 			{
-				_p.life	=	(_length_to_edge-_accel)/_p.speed
+				_p.life	=	(_length_to_edge-_p.accel)/_p.speed
 			}
 			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
 			_p.to_edge	=	true
@@ -1724,119 +1718,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return _p
 	}
 	
-	static __apply_color_map		=	function(_p,_e)
-	{
-		var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
-		u = u>1||u<0 ?  abs(frac(u)): u ;
-		var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
-		v = v>1||v<0 ?  abs(frac(v)): v ;
-					
-		var _color = color_map.buffer.GetNormalised(u,v)
-				_p.r_h =  lerp(255,_color[0],color_map.color_blend)
-				_p.g_s =  lerp(255,_color[1],color_map.color_blend)
-				_p.b_v =  lerp(255,_color[2],color_map.color_blend)
-				var _size = lerp(0,part_type.size[1],(_color[3]/255)) //Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
-				_p.size = array_create(4,_size)
-	}
-	
-	static __apply_displacement		=	function(_p,_e)
-	{
-		var u = displacement_map.scale_u * (_p.u_coord+displacement_map.offset_u);
-		u = u>1||u<0 ?  abs(frac(u)): u ;
-		var v = displacement_map.scale_v * (_p.v_coord+displacement_map.offset_v);
-		v = v>1||v<0 ?  abs(frac(v)): v ;
-					
-		var pixel = displacement_map.buffer.GetNormalised(u,v)
-					
-		if is_array(pixel)
-		{
-			// if the returned value is an array we can use individual channels
-			pixel[0] =pixel[0]/255  //RED
-			pixel[1] =pixel[1]/255  //GREEN
-			pixel[2] =pixel[2]/255  //BLUE
-			pixel[3] =pixel[3]/255  //ALPHA
-			disp_value = mean(pixel[0],pixel[1],pixel[2])
-		}
-		else
-		{
-			//else you are probably using Dragonite's noise generator Macaw
-			var disp_value= pixel/255
-		}
-					
-		if displacement_map.position.active		&& displacement_map.position.weight	!=0
-		{
-			_p.length		=	lerp(_p.length,lerp(_e.int*radius_internal+_p.length,_e.ext*radius_external+_p.length,disp_value),displacement_map.position.weight)
-		}
-		if displacement_map.speed.active		&& displacement_map.speed.weight	!=0
-		{
-			var _displace = disp_value
-			if is_array(pixel)
-			{
-				var _chan = displacement_map.speed.channels
-				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-			}
-			_p.speed		=	lerp(_p.speed,lerp(displacement_map.speed.range[0],displacement_map.speed.range[1],_displace),displacement_map.speed.weight)
-		}
-		if displacement_map.life.active			&& displacement_map.life.weight		!=0
-		{
-			var _displace = disp_value
-			if is_array(pixel)
-			{
-				var _chan = displacement_map.life.channels
-				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-			}
-			_p.life		=	lerp(_p.life,lerp(displacement_map.life.range[0],displacement_map.life.range[1],_displace),displacement_map.life.weight)
-		}
-		if displacement_map.orientation.active	&& displacement_map.orient.weight	!=0
-		{
-			_p.orient		=	lerp(part_type.orient[0],part_type.orient[1],disp_value*displacement_map.orient.weight)
-		}
-		if displacement_map.color_A_to_B		&& distr_color_mix		!= PULSE_COLOR.COLOR_MAP
-		{
-			if is_array(pixel)
-			{
-				// lerping between the user-provided colors A and B , using the normalized pixel value for the coordinate (most usually between black (0) and white (1) )
-				//In this case, pixel is an array, so there are individual values for all channels
-				_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],pixel[0])
-				_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],pixel[1])
-				_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],pixel[2])
-			}
-			else
-			{
-				//While here, all channels are compressed into a single channel (Probably when generating a texture with Dragonite's Macaw)
-				_p.r_h =  lerp(displacement_map.color_A[0],displacement_map.color_B[0],disp_value)
-				_p.g_s =  lerp(displacement_map.color_A[1],displacement_map.color_B[1],disp_value)
-				_p.b_v =  lerp(displacement_map.color_A[2],displacement_map.color_B[2],disp_value)
-			}
-
-			if distr_color_mix == PULSE_COLOR.A_TO_B_RGB
-			{
-				// "Blend" here is refering to the blending if the particle sprite has colors. If its mixed with pure white it wont change.
-				_p.r_h =  lerp(255,_p.r_h,displacement_map.color_blend)
-				_p.g_s =  lerp(255,_p.g_s,displacement_map.color_blend)
-				_p.b_v =  lerp(255,_p.b_v,displacement_map.color_blend)
-			}
-			else if distr_color_mix == PULSE_COLOR.A_TO_B_HSV
-			{
-				//Same but for HSV
-				_p.r_h =  lerp(0,_p.r_h,displacement_map.color_blend)
-				_p.g_s =  lerp(0,_p.g_s,displacement_map.color_blend)
-				_p.b_v =  lerp(255,_p.b_v,displacement_map.color_blend)
-			}
-		}
-		if displacement_map.size.active			&& displacement_map.size.weight		!=0
-		{
-			var _displace = disp_value
-						
-			if is_array(pixel)
-			{
-				var _chan = displacement_map.size.channels
-				_displace = mean( (pixel[0]* _chan[0]) , (pixel[1]*_chan[1]) , (pixel[2]*_chan[2]) , (pixel[3]*_chan[3]) )
-			}
-			_p.size = lerp(displacement_map.size.range[0],displacement_map.size.range[1],_displace)*displacement_map.size.weight
-		}
-	}
-	
 	#endregion
 	
 	 /**
@@ -1925,7 +1806,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		var _points		= [] ,
 		 _ray			= {u_coord : 0 , length : 0} ,
 		 _fail			= 0 ,
-		 _dir_stencil	= animcurve_point_find_closest(_points, stencil_offset),
 		 _l				= (mask_end - mask_start )/_rays
 		 
 		 for(var i =mask_start; i <= mask_end ; i +=_l)
@@ -1991,33 +1871,38 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @context pulse_emitter
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
 	{
-		
-		if part_system.index = -1
+		if !_cache
 		{
-			if part_system.wake_on_emit
+			if part_system.index = -1
 			{
-				part_system.make_awake()
+				if part_system.wake_on_emit
+				{
+					part_system.make_awake()
+				}
+				else
+				{
+					__pulse_show_debug_message($"System \"{part_system.name}\" is currently asleep!", 1)
+					exit
+				}
 			}
-			else
+			if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
 			{
-				__pulse_show_debug_message($"System \"{part_system.name}\" is currently asleep!", 1)
-				exit
-			}
-		}
-		if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
-		{
-			if _amount_request >= part_system.threshold
-			{
-				part_system.factor *= (part_system.threshold/_amount_request)
-			}
+				if _amount_request >= part_system.threshold
+				{
+					part_system.factor *= (part_system.threshold/_amount_request)
+				}
 				
-			time_source_reset(part_system.count)
-			time_source_start(part_system.count)
-		}
+				time_source_reset(part_system.count)
+				time_source_start(part_system.count)
+			}
 		
-		var _amount = floor((_amount_request*part_system.factor)*global.pulse.particle_factor)
-		if _amount	== 0 exit
-	
+			var _amount = floor((_amount_request*part_system.factor)*global.pulse.particle_factor)
+			if _amount	== 0 exit
+		}
+		else
+		{
+			var cache = array_create(_amount,0)
+		}
 		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
 
 		if stencil_profile ==undefined
@@ -2033,16 +1918,24 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		i		=	0
 
-		var _check_forces = array_length(forces)>0 ? true : false
-		
-		if _cache != false
+		var _check_forces = array_length(forces)>0 ? true : false ,
+			_life = undefined ,
+			_accel = part_type.speed[2] == 0 ? 0 : undefined ,
+			_speed =  undefined
+			
+		if part_type.life[0]==part_type.life[1]
 		{
-			var cache = array_create(_amount,0)
+			_life		=	part_type.life[0]
+			_accel		=	part_type.speed[2]*(_life*_life)*.5
 		}
 		
+		if part_type.speed[0]==part_type.speed[1]
+		{
+			_speed		=	part_type.speed[0]
+		}
 		repeat(_amount)
 		{
-			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined, speed: undefined , life: undefined }
+			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined, speed: _speed , life: _life , accel: _accel, part_system:	part_system.index	, particle:	part_type }
 			var emitter_struct	= { }
 			// ----- Assigns where the particle will spawn in normalized space (u_coord)
 			//ASSIGN U COORDINATE
@@ -2078,19 +1971,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				__assign_properties(particle_struct)
 			
-			#region DISPLACEMENT MAP
-			/*	
-			if displacement_map != undefined
-			{
-				__apply_displacement(particle_struct,emitter_struct)
-			}
-			if color_map != undefined && distr_color_mix == PULSE_COLOR.COLOR_MAP
-			{
-				__apply_color_map(particle_struct,emitter_struct)
-			}*/
-				
-			#endregion	
-	
 			// ----- Form culling changes the life or speed of the particle so it doesn't travel past a certain point
 			// FORM COLLIDE (speed/life change) Depending on direction change speed to conform to form
 
@@ -2103,11 +1983,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			
 			if particle_struct.life <=1 continue
-			if (boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED) && particle_struct.speed<=1
-			{	continue }
+			/*
+			if (boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED) && particle_struct.speed<=.1
+			{	continue }*/
 
-			particle_struct.part_system	=	part_system.index
-			particle_struct.particle	=	part_type
 			if particle_struct.to_edge && ( particle_struct.particle.subparticle != undefined && particle_struct.particle.on_collision)
 			{
 				particle_struct.particle	= particle_struct.particle.subparticle
@@ -2151,6 +2030,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 function	pulse_cache(_emitter , _cache=[] ) constructor
 {
 	emitter = _emitter
+	part_system = _emitter.part_system
 	index	= 0
 	shuffle = true
 	cache	= _cache
@@ -2192,6 +2072,32 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	/// @param {real} y			Y coordinate, relative to the stored position
 	static	pulse = function(_amount,x,y)
 	{
+		if part_system.index = -1
+		{
+			if part_system.wake_on_emit
+			{
+				part_system.make_awake()
+			}
+			else
+			{
+				__pulse_show_debug_message($"System \"{part_system.name}\" is currently asleep!", 1)
+				exit
+			}
+		}
+		if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
+		{
+			if _amount >= part_system.threshold
+			{
+				part_system.factor *= (part_system.threshold/_amount)
+			}
+				
+			time_source_reset(part_system.count)
+			time_source_start(part_system.count)
+		}
+		
+		_amount = floor((_amount*part_system.factor)*global.pulse.particle_factor)
+		if _amount	== 0 exit
+			
 		do{
 			if (index + _amount) >length
 			{

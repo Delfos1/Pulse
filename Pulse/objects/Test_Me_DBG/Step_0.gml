@@ -1,12 +1,12 @@
-emitter.pulse(e_amount,x,y,false)			// avg ~600
-//cache.pulse(127,x,y) // avg ~1500
-
-//sys.stencil_offset = (sys.stencil_offset+.001)%1
-//sys.check_collision(x,y,,false,64)
-
+if counter % e_freq == 0
+{
+emitter.pulse(e_amount,x,y,false)	;	
+};
+++counter
 
 
 #region Emitter
+
 if e_shape != e_shape_prev
 {
 	switch(e_shape)
@@ -124,7 +124,7 @@ if e_stencils_tween != e_stencils_tween_prev
 
 if e_collide
 {
-		emitter.check_collision(x,y)
+	emitter.check_collision(x,y)
 }
 
 if e_dist_v_offset != e_dist_v_offset_prev
@@ -144,10 +144,4 @@ if e_dist_u_offset != e_dist_u_offset_prev
 
 #endregion
 
-
-#region Particle
-
-
-
-#endregion
 

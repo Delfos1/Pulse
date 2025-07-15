@@ -387,11 +387,11 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 			}
 
 			_new_part.reset()
+			__pulse_show_debug_message($"Particle {_new_part.name} was imported succesfully",)
 			return  pulse_store_particle(_new_part,true)
 		}
 
 		// else return the existintg particle
-		file_text_close(_particle_file)
 		return global.pulse.part_types[$ _parsed.name];
 }
 
@@ -495,7 +495,7 @@ function pulse_import_system	(_system_file, _overwrite = false)
 			return  pulse_store_system(_new_sys,true)
 		}
 
-		file_text_close(_system_file)
+		//file_text_close(_system_file)
 		// else return the existintg particle
 		return global.pulse.systems[$ _parsed.name];
 }
@@ -556,10 +556,10 @@ function pulse_import_emitter	(file, _overwrite = false)
 {
 	// Import Particle and System
 	
-		var _dir = filename_path(file),
-		_fname = filename_name(file),
-		_fpartname = string_concat(_dir,_fname,"_particle",".pulse"),
-		_fsysname = string_concat(_dir,_fname,"_system",".pulse")
+	//	var _dir = filename_path(file),
+		var _fname = filename_change_ext(file,""),
+		_fpartname = string_concat(_fname,"_particle",".pulsep"),
+		_fsysname = string_concat(_fname,"_system",".pulses")
 
 	var _parta =  pulse_import_particle	(_fpartname,false),
 	_part = pulse_store_particle(_parta) ,
@@ -878,7 +878,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 
 	#endregion
 	
-	boundary		=	_parsed.boundary
+	boundary			=	_parsed.boundary
 	alter_direction		=	_parsed.alter_direction	
 	
 	//Image maps

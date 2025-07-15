@@ -125,8 +125,6 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			{
 				part_type_color2(index,color[0],color[1])
 			}
-			
-			
 		}
 		else
 		{
@@ -145,7 +143,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		#endregion
 	static set_alpha		=	function(alpha1,alpha2=-1,alpha3=-1)
 	{
-		if alpha3 != -1
+
+		if alpha3 >= 0
 		{
 			alpha1 = clamp(alpha1,0,1)
 			alpha2 = clamp(alpha2,0,1)
@@ -154,7 +153,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			alpha=[alpha1,alpha2,alpha3]	
 			part_type_alpha3(index,alpha[0],alpha[1],alpha[2])
 		}
-		else if alpha2 != -1 
+		else if alpha2 >= 0
 		{
 			alpha1 = clamp(alpha1,0,1)
 			alpha2 = clamp(alpha2,0,1)
@@ -950,10 +949,17 @@ function pulse_store_particle		(_particle,_override = false)
 	
 	if  pulse_exists_particle(_name) > 0  && !_override
 	{
-		/// Change name if the name already exists
-		var l		=	struct_names_count(global.pulse.part_types)		
-		_name		=	$"{_name}_{l}";	
-		_particle.name = _name
+		if !_override
+		{
+			/// Change name if the name already exists
+			var l		=	struct_names_count(global.pulse.part_types)		
+			_name		=	$"{_name}_{l}";	
+			_particle.name = _name
+		}
+		else
+		{
+			pulse_destroy_particle(_particle.name)
+		}
 	}
 	
 	__pulse_show_debug_message($" Stored particle \"{_name}\"",3);
