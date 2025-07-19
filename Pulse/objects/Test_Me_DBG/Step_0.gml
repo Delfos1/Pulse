@@ -1,5 +1,6 @@
 if counter % e_freq == 0
 {
+	particle.reset()
 emitter.pulse(e_amount,x,y,false)	;	
 };
 ++counter
@@ -96,13 +97,11 @@ if !array_equals(e_stencils,e_stencils_prev) || e_stencils_mode != e_stencils_mo
 {
 	if e_stencils[0] != undefined
 	{
-		//emitter.set_stencil(ac_Shape,e_stencils[0],e_stencils_mode,0)
 		emitter.set_stencil(ac_Polygons,e_stencils[0],e_stencils_mode,0)
 		e_stencils_prev[0] = e_stencils[0]
 	}
 	if e_stencils[1] != undefined
 	{
-		//emitter.set_stencil(ac_Shape,e_stencils[1],e_stencils_mode,1)
 		emitter.set_stencil(ac_Polygons,e_stencils[1],e_stencils_mode,1)
 		e_stencils_prev[1] = e_stencils[1]
 	}

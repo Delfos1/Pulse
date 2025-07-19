@@ -614,16 +614,27 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @context pulse_emitter
 	static set_distribution_color_mix=  function ( _color_A, _color_B,_curve,_link_to = PULSE_LINK_TO.NONE,_weight = 1,_color_mode = PULSE_COLOR.NONE )
 	{
-		__color_mix_A[0] = color_get_blue(_color_A)
-		__color_mix_A[1] = color_get_green(_color_A)
-		__color_mix_A[2] = color_get_red(_color_A)
+		if _color_mode ==  PULSE_COLOR.A_TO_B_RGB
+		{
+			__color_mix_A[0] = color_get_blue(_color_A)
+			__color_mix_A[1] = color_get_green(_color_A)
+			__color_mix_A[2] = color_get_red(_color_A)
 		
-		__color_mix_B[0] = color_get_blue(_color_B)
-		__color_mix_B[1] = color_get_green(_color_B)
-		__color_mix_B[2] = color_get_red(_color_B)
+			__color_mix_B[0] = color_get_blue(_color_B)
+			__color_mix_B[1] = color_get_green(_color_B)
+			__color_mix_B[2] = color_get_red(_color_B)
+		}
+		else if  _color_mode ==  PULSE_COLOR.A_TO_B_HSV
+		{
+			__color_mix_A[2] = color_get_hue(_color_A)
+			__color_mix_A[1] = color_get_saturation(_color_A)
+			__color_mix_A[0] = color_get_value(_color_A)
 		
+			__color_mix_B[2] = color_get_hue(_color_B)
+			__color_mix_B[1] = color_get_saturation(_color_B)
+			__color_mix_B[0] = color_get_value(_color_B)
+		}
 		distr_color_mix_type = _color_mode
-		
 		var _mode = PULSE_DISTRIBUTION.RANDOM
 		_weight = clamp(_weight,0,1)
 		
@@ -872,23 +883,22 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		if buffer_exists(_map.noise)
 		{
 			displacement_map	=	new __pulse_map(_map,self) 
-			return displacement_map
 		}
 		else
 		{		
 		__pulse_show_debug_message("Displacement Map is of the wrong format",2)
 		}
+		return self
 	}
 	
 	/// @description	Sets a sprite to be used as a displacement map.
 	/// @param {Struct.__buffered_sprite}	_map : Buffered sprite created using buffer_from_sprite() or buffer_from_surface()
 	/// @context pulse_emitter
-	static	set_color_map			=	function(_map,_blend=1)
+	static	set_color_map			=	function(_map)
 	{
 		if  is_instanceof(_map, __buffered_sprite) 
 		{
-			color_map			=	new __pulse_color_map(_map, self) 
-			color_map.set_color_map(_blend)
+			color_map			=	new __pulse_map(_map, self) 
 		}
 		else
 		{
@@ -992,11 +1002,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		draw_line_width_color(x,y,_anend_x,_anend_y,1,c_green,c_green)
 		
 		// draw direction
-		var _directionrange_x = x+lengthdir_x(ext_x/2,direction_range[0])
-		var _directionrange_y = y+lengthdir_y(ext_y/2,direction_range[0])
 		var angle = (direction_range[0]+direction_range[1])/2
-
-		draw_arrow(x,y,_directionrange_x,_directionrange_y,10)
+		var _directionrange_x = x+ (ext_x + int_x )/2 + lengthdir_x(20,angle)
+		var _directionrange_y = y +lengthdir_y(20,angle)
+		
+		draw_set_color(c_red)
+		draw_arrow(x+((ext_x + int_x )/2),y,_directionrange_x,_directionrange_y,10)
+		draw_set_color(c_white)
 	}
 	
 	/// @description	Adds a collision element to be checked by the collision function.
@@ -1055,50 +1067,91 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	static __calculate_stencil		=	function(_p, _e={})
 	{
 		var eval, eval_a, eval_b, eval_c;
-			
+		
+		_p.to_edge	=	0
+		
+		var dir_stencil = (stencil_offset+_p.u_coord)%1;
 		// early exit if there are no stencils
 		if stencil_mode == PULSE_STENCIL.NONE 
-		{
+		{			
 			_e.ext		= 1
 			_e.int		= 1
-			_e.total	= 1
-			_e.edge		= 1
+			if is_colliding
+			{
+				var eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+//eval_c*(edge_external/radius_external)
+				_e.edge		= eval_c
+				if eval_c < 1
+				{
+					_p.to_edge	=	1
+				}
+			}
+			else
+			{
+				_e.edge		= 1
+			}
+
 			return _e
 		}
 			
-		var dir_stencil = (stencil_offset+_p.u_coord)%1;
-			
-		eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
-		eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
 		
-		eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
-
-		eval	=	lerp(eval_a,eval_b,stencil_tween)
-				
+			
 		switch (stencil_mode)
 		{
 			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
 			{
+				eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+				eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+				eval	=	lerp(eval_a,eval_b,stencil_tween)
+				
 				_e.ext		= min(eval_a,(eval_c*(edge_external/radius_external)))
 				_e.int		= eval_b
 				_e.total	= eval
 				_e.edge		= min(eval_a,eval_c)
+				
+				var _dif = (_e.ext - eval_a) + (_e.edge - eval_a )
+				if _dif < -.1
+				{
+					_p.to_edge	=	1
+				}
+
 				break;
 			}
 			case PULSE_STENCIL.EXTERNAL: //BOTH SHAPES ARE EXTERNAL, MODULATED BY TWEEN
 			{
-				_e.ext		= min(eval,(eval_c*(edge_external/radius_external)))
+				eval_a	=	stencil_tween== 1 ? 0 : clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+				eval_b	=	stencil_tween== 0 ? 0 : clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+				eval	=	lerp(eval_a,eval_b,stencil_tween)
+				
+				_e.ext		= eval
 				_e.int		= 1
-				_e.total		= eval
 				_e.edge		= min(eval,eval_c)
+				
+				var _dif = (_e.ext - eval) + (_e.edge - eval )
+				if _dif < -.1
+				{
+					_p.to_edge	=	1
+				}
 				break;
 			}
 			case PULSE_STENCIL.INTERNAL: //BOTH SHAPES ARE INTERNAL, MODULATED BY TWEEN
 			{
+				eval_a	=	stencil_tween== 1 ? 0 : clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
+				eval_b	=	stencil_tween== 0 ? 0 : clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+				eval	=	lerp(eval_a,eval_b,stencil_tween)
+				
 				_e.ext		= 1
 				_e.int		= eval
-				_e.total	= eval
 				_e.edge		= min(1,eval_c)
+				
+				if _e.edge != 1
+				{
+					_p.to_edge	=	1
+				}
+				
 				break;
 			}
 		}
@@ -1111,8 +1164,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		if radius_internal==radius_external
 		{
 			// If the 2 radius are equal, then there is no need to randomize
-			_p.v_coord		??=	_e.total				//"total" can be 1 if there is no Stencil, or a number between 0 to 1 depending on the evaluated curve
-			_p.length		=	_e.total*radius_external;
+			_p.v_coord		??=	_e.ext			
+			_p.length		=	_e.ext*radius_external;
 		}
 		else if distr_along_v_coord == PULSE_DISTRIBUTION.RANDOM
 		{
@@ -1140,7 +1193,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	static __assign_properties		=	function(_p)
 	{				
-		function get_link_value(_link,_p,_weight)
+		function get_link_value(_link,_p,_weight,_save)
 		{
 			var _amount
 			switch( _link )
@@ -1161,6 +1214,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					_amount	=	_p.v_coord
 				break
 				case PULSE_LINK_TO.DISPL_MAP:
+				if _save[$ "displ"] == undefined
+				{
 					var u = displacement_map.scale_u * (_p.u_coord+displacement_map.offset_u);
 					u = u>1||u<0 ?  abs(frac(u)): u ;
 					var v = displacement_map.scale_v * (_p.v_coord+displacement_map.offset_v);
@@ -1182,14 +1237,28 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						//else you are probably using Dragonite's noise generator Macaw
 						_amount= _amount/255
 					}
+					_save.displ = _amount
+				}
+				else
+				{
+					_amount = _save.displ
+				}
 				break
 				case PULSE_LINK_TO.COLOR_MAP:
+				if _save[$ "color"] == undefined
+				{
 					var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
 					u = u>1||u<0 ?  abs(frac(u)): u ;
 					var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
 					v = v>1||v<0 ?  abs(frac(v)): v ;
 					
 					 _amount = color_map.buffer.GetNormalised(u,v)
+					 _save.color = _amount
+				}
+				else
+				{
+					_amount = _save.color
+				}
 				break
 			}
 			
@@ -1226,10 +1295,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			return _amount
 		}	
 		
-				
 		#region SPEED
 		
-		var _amount = 0
+		var _amount = 0,
+			_save = {}
 		// early exit if there is no range to interpret the property
 
 		if _p.speed == undefined
@@ -1242,7 +1311,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_speed == PULSE_DISTRIBUTION.LINKED_CURVE || distr_speed == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__speed_link,_p,__speed_weight)
+					_amount = get_link_value(__speed_link,_p,__speed_weight,_save)
 				}
 				else
 				{
@@ -1270,7 +1339,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_life == PULSE_DISTRIBUTION.LINKED_CURVE || distr_life == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__life_link,_p,__life_weight)
+					_amount = get_link_value(__life_link,_p,__life_weight,_save)
 					
 				}
 				else
@@ -1295,7 +1364,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_orient == PULSE_DISTRIBUTION.LINKED_CURVE || distr_orient == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__orient_link,_p,__orient_weight)
+					_amount = get_link_value(__orient_link,_p,__orient_weight,_save)
 				}
 				else
 				{
@@ -1319,7 +1388,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				if distr_size == PULSE_DISTRIBUTION.LINKED_CURVE || distr_size == PULSE_DISTRIBUTION.LINKED
 				{
-					var _amount_x = get_link_value(__size_link,_p,__size_weight)
+					var _amount_x = get_link_value(__size_link,_p,__size_weight,_save)
 					var _amount_y =	_amount_x
 				}
 				else
@@ -1349,7 +1418,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__frame_link,_p,__frame_weight)
+					_amount = get_link_value(__frame_link,_p,__frame_weight,_save)
 				}
 				else
 				{
@@ -1371,7 +1440,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			if distr_color_mix == PULSE_DISTRIBUTION.LINKED  || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
 			{
-				_amount = get_link_value(__color_mix_link,_p,__color_mix_weight)
+				_amount = get_link_value(__color_mix_link,_p,__color_mix_weight,_save)
 			}
 			else
 			{
@@ -1420,9 +1489,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_p.color_mode = distr_color_mix_type
 			}
 					
-			
-	
-	
 		}
 	
 		#endregion
@@ -1554,7 +1620,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	static __check_form_collide		=	function(_p,_e,x,y)
 	{
-		_p.to_edge	=	false
+		
 		//If we wish to cull the particle to the "edge" , proceed
 		if boundary == PULSE_BOUNDARY.NONE
 		{
@@ -1627,7 +1693,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				_p.life	=	(_length_to_edge-_p.accel)/_p.speed
 			}
 			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
-			_p.to_edge	=	true
+			_p.to_edge	+=	1
 		}
 				
 		return _p 		
@@ -1847,12 +1913,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			return undefined
 		}
 		
-
-		if stencil_mode == PULSE_STENCIL.NONE
-		{
-			stencil_mode = PULSE_STENCIL.EXTERNAL
-		} 
-
 		if _occlude		
 		{
 			animcurve_point_add(_points,0,1,false)
@@ -1965,7 +2025,19 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				__assign_direction(particle_struct)
 			// ----- Alter a whole set of particle properties based on a pre-processed sprite or surface
-			
+			div_v++
+			if div_v	>	divisions_v+divisions_v_offset
+			{
+				div_v	=	1 + divisions_v_offset
+				if div_v>2 div_v -= 1
+		
+				div_u ++
+				if div_u > divisions_u + divisions_u_offset
+				{
+				 	div_u	=	1 + divisions_u_offset
+					if div_u>2 div_u -= 1
+				}
+			}
 			// ----- Particle speed and life need to be known before launching the particle, so they can be calculated for form culling
 			//SPEED AND LIFE SETTINGS
 				
@@ -1983,11 +2055,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			
 			if particle_struct.life <=1 continue
-			/*
-			if (boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED) && particle_struct.speed<=.1
-			{	continue }*/
+			
+			if (boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED) && particle_struct.speed<=.01
+			{	continue }
 
-			if particle_struct.to_edge && ( particle_struct.particle.subparticle != undefined && particle_struct.particle.on_collision)
+			if particle_struct.to_edge == 2 && ( particle_struct.particle.subparticle != undefined && particle_struct.particle.on_collision)
 			{
 				particle_struct.particle	= particle_struct.particle.subparticle
 			}
@@ -2001,20 +2073,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				part_type.launch(particle_struct)
 			}
-				
-			div_v++
-			if div_v	>	divisions_v+divisions_v_offset
-			{
-				div_v	=	1 + divisions_v_offset
-				if div_v>2 div_v -= 1
-		
-				div_u ++
-				if div_u > divisions_u + divisions_u_offset
-				{
-				 	div_u	=	1 + divisions_u_offset
-					if div_u>2 div_u -= 1
-				}
-			}
+
 		}
 		if _cache
 		{ 

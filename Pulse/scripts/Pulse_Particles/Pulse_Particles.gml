@@ -11,7 +11,6 @@ global.pulse =
 /// @return {Struct}
 function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
-	
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
 		/// @desc    Sets the size of the particle, as a percentage of the sprite, 1 == 100%. 
@@ -110,6 +109,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 					}
 				break
 				default: 		//		case __PULSE_COLOR_MODE.COLOR :
+				_mode = __PULSE_COLOR_MODE.COLOR
 					part_type_color3(index,color[0],color[1],color[2])
 				break
 			}
@@ -123,6 +123,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 				part_type_color_mix(index,color[0],color[1])
 			}else		// __PULSE_COLOR_MODE.COLOR
 			{
+				_mode = __PULSE_COLOR_MODE.COLOR
 				part_type_color2(index,color[0],color[1])
 			}
 		}
@@ -320,12 +321,15 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		{
 			//If factor is one, nothing to be done here
 			if _factor ==1 exit
-		
 			// Record the changes to be able to reset it later
-			time_factor		=	time_factor*_factor
+			time_factor		*=_factor
 			
+			var _displ = gravity[0]*(life[0]*life[0])*.5
+
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
-			set_gravity(gravity[0]*_factor,gravity[1])	
+			
+			var _grav =( 2*_displ) / ( (life[0]*(1/_factor))*(life[0]*(1/_factor)))
+			set_gravity(_grav,gravity[1])	
 
 			//flip percentage
 			_factor = 1/_factor
@@ -367,7 +371,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 				set_size([size[0]*_factor,size[1]*_factor],[size[2]*_factor,size[3]*_factor],[size[4]*_factor,size[5]*_factor],[size[6]*_factor,size[7]*_factor])
 			}
 			
-			scale_factor *= _factor
+			space_factor *= _factor
 
 			return self
 		}
@@ -612,7 +616,6 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		}		
 	}
 	reset()
-	
 }
 
 /// @description			Private constructor used to create sub-particles, which are particles that share most properties with another particle to simulate more dynamic particles.
@@ -812,9 +815,7 @@ function __pulse_particle_class		(_name) constructor
 	/// @description		Sets the particle's properties to the ones saved by Pulse
 	static reset	=	function()
 	{
-		time_factor		=	1
-		scale_factor	=	1
-		
+	
 		part_type_scale(index,scale[0],scale[1]);
 		
 		if size[0]!=size[1] or size[2]!=size[3] or size[4]!=size[5] or size[6]!=size[7]
@@ -914,7 +915,7 @@ function __pulse_particle_class		(_name) constructor
 		}
 		if death_type != undefined 
 		{
-			if is_instanceof(death_type,__pulse_particle)
+			if is_instanceof(death_type,__pulse_particle_class)
 			{
 				part_type_death(index,death_number,death_type.index)
 			}

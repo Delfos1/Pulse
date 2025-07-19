@@ -7,7 +7,7 @@ system = pulse_store_system( new pulse_system("sys_1") )
 
 particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
 created_maps = false
-
+particle.set_death_on_collision(5,particle)
 
 #region Particle
 
@@ -196,13 +196,13 @@ p_color = [c_blue,c_aqua,c_white]
 
 dbg_drop_down(ref_create(self,"p_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black"],"Color 1")
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Gray","Dark Gray","Black"],"Color 1")
 dbg_drop_down(ref_create(self,"p_color",1),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
 dbg_drop_down(ref_create(self,"p_color",2),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
 
 
 dbg_button("Apply",function()
@@ -298,6 +298,15 @@ line_y_ref = ref_create(self,"line_y")
 #endregion
 
 dbg_section("General Properties",true)
+
+#region Boundary
+dbg_text_separator("Boundary")
+
+e_bound = "None"
+e_bound_prev = "None"
+dbg_drop_down(ref_create(self,"e_bound"),["None","Life","Speed","Focal Life","Focal Speed"],["None","Life","Speed","Focal Life","Focal Speed"],"Boundary")
+#endregion
+
 #region Radius
 dbg_text_separator("Radius")
 e_radius_prev	= [0,150,0,150]
@@ -331,8 +340,8 @@ dbg_slider(ref_create(self,"e_mask_v",1),0,1,"Maximum Mask V")
 #region Stencil
 dbg_text_separator("Stencil")
 
-e_stencils = [undefined,undefined]
-e_stencils_prev = [undefined,undefined]
+e_stencils = ["Triangle","Triangle"]
+e_stencils_prev = ["Triangle","Triangle"]
 e_stencils_mode = PULSE_STENCIL.NONE
 e_stencils_mode_prev = PULSE_STENCIL.NONE
 e_stencils_off		= 0
@@ -349,13 +358,7 @@ dbg_slider(ref_create(self,"e_stencils_off"),0,1,"Stencil Offset")
 dbg_slider(ref_create(self,"e_stencils_tween"),0,1,"Stencil Tween")
 #endregion
 
-#region Boundary
-dbg_text_separator("Boundary")
 
-e_bound = "Life"
-e_bound_prev = "Life"
-dbg_drop_down(ref_create(self,"e_bound"),["Life","Speed","Focal Life","Focal Speed","None"],["Life","Speed","Focal Life","Focal Speed","None"],"Boundary")
-#endregion
 
 dbg_section("Direction Modifiers",true)
 #region Direction
@@ -365,8 +368,8 @@ e_dir = [0,0]
 e_dir_prev = [0,0]
 e_collide = false
 e_collide_prev = false
-dbg_slider(ref_create(self,"e_dir",0),-360,360,"Minimum Direction")
-dbg_slider(ref_create(self,"e_dir",1),-360,360,"Maximum Direction")
+dbg_slider(ref_create(self,"e_dir",0),0,360,"Minimum Direction")
+dbg_slider(ref_create(self,"e_dir",1),0,360,"Maximum Direction")
 dbg_checkbox(ref_create(emitter,"alter_direction"),"Alter Particle's Default Direction");
 dbg_checkbox(ref_create(self,"e_collide"),"Activate collisions");
 #endregion
@@ -520,15 +523,15 @@ e_dist_color_type = PULSE_COLOR.NONE
 
 dbg_drop_down(ref_create(self,"e_dist_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black"],"Color 1")
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Mid Gray","Dark Gray","Black"],"Color 1")
 dbg_drop_down(ref_create(self,"e_dist_color",1),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
-c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Mid Gray","Dark Gray","Black"],"Color 2")
 
 dbg_drop_down(ref_create(self,"e_dist_color_input"),[undefined,"Linear","EaseInOut","EaseIn","EaseOut"],["None","Linear","Ease In-Out","Ease In","Ease Out"],"Animation Curve")
 dbg_drop_down(ref_create(self,"e_dist_color_link"),[PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP],
 													["None",			"Direction",			"Path Speed",			"Speed",			"U Coord",				"V Coord" , "Displacement Map" , "Color Map"],"Link To")
-dbg_drop_down(ref_create(self,"e_dist_color_type"),[PULSE_COLOR.A_TO_B_HSV,PULSE_COLOR.A_TO_B_RGB,PULSE_COLOR.COLOR_MAP,PULSE_COLOR.NONE],["A to B - RGB","A to B HSV","Color Map","None"],"Animation Curve")
+dbg_drop_down(ref_create(self,"e_dist_color_type"),[PULSE_COLOR.A_TO_B_RGB,PULSE_COLOR.A_TO_B_HSV,PULSE_COLOR.COLOR_MAP,PULSE_COLOR.NONE],["A to B - RGB","A to B HSV","Color Map","None"],"Animation Curve")
 dbg_button("Apply Distribution", function()
 {
 	var _curve = e_dist_color_input== undefined ? undefined : [Distribution_Sample,e_dist_color_input]
