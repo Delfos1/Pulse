@@ -49,8 +49,15 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		/// @param   {Real} [_scalex] : Scale of the x axis.  DEFAULT = 0
 		/// @param   {Real} [_scaley] : Scale of the y axis.  DEFAULT = 0
 		#endregion
-	static set_scale		=	function(_scalex=1,_scaley=1)
+	static set_scale		=	function(_scalex=undefined,_scaley=undefined)
 	{
+		if _scalex == undefined && _scaley == undefined 
+		{
+			return self
+		}
+		
+		_scalex ??= scale[0]
+		_scaley ??= scale[1]
 		scale			= [_scalex,_scaley]
 		part_type_scale(index,scale[0],scale[1]);
 		return self
@@ -135,7 +142,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		}
 		color_mode		= _mode
 		return self
-	}
+	} 
 		#region jsDoc
 			/// @desc    It sets the alpha of a particle. It can use from one to three values.
 			/// @param   {Real} alpha1 : Alpha (transparency) value from 0 to 1
@@ -932,63 +939,7 @@ function __pulse_particle_class		(_name) constructor
 	}
 }
 
-/// @description			Stores a Pulse Particle into the global struct. Allows the use of the particle by calling its name as a string. Returns a reference to the global struct.
-/// @param {Struct.__pulse_particle_class}	_particle : Pulse Particle to store.
-/// @param {Bool}							[_override] : If there is a particle by the same name, override it (true) or change the new particle's name (false).
-/// @return {Struct}
-function pulse_store_particle		(_particle,_override = false)
-{
-	// If using the default name, count particles and rename so there are no repeated entries
-		/// Check if it is a Pulse Particle
-	if !is_instanceof(_particle,__pulse_particle_class)
-	{
-		__pulse_show_debug_message("Argument provided is not a Pulse Particle",3)
-		return
-	}
-	
-	var _name =  _particle.name
-	
-	if  pulse_exists_particle(_name) > 0  && !_override
-	{
-		if !_override
-		{
-			/// Change name if the name already exists
-			var l		=	struct_names_count(global.pulse.part_types)		
-			_name		=	$"{_name}_{l}";	
-			_particle.name = _name
-		}
-		else
-		{
-			pulse_destroy_particle(_particle.name)
-		}
-	}
-	
-	__pulse_show_debug_message($" Stored particle \"{_name}\"",3);
-		global.pulse.part_types[$_name] = variable_clone(_particle)
-		return  global.pulse.part_types[$_name]
-}
 
-/// @description			Fetches a Pulse Particle from the global struct. Returns a reference to the global struct, or undefined if particle is not found.
-/// @param {String}	_particle : Pulse Particle name to fetch.
-/// @return {Struct}
-function pulse_fetch_particle		(_name)
-{
-	/// Check if it is a Pulse System
-	if !is_string(_name)
-	{
-		__pulse_show_debug_message("Argument provided is not a String",3)
-		return undefined
-	}
-	
-	if pulse_exists_particle(_name) > 0 
-	{
-		return global.pulse.part_types[$_name]
-	}
-	
-	__pulse_show_debug_message($"System named '{_name}' not found",3);
-	
-	return undefined
-}
 				
 
 

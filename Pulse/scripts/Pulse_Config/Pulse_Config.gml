@@ -1,23 +1,26 @@
 enum __PULSE_COLOR_MODE
-{// Color mode use internally to set to particles
+{// Color mode used with particles
 	COLOR,
 	RGB,
 	MIX,
 	HSV
 }
+
 enum PULSE_FORM
 {
 	PATH,
 	ELLIPSE,
-	LINE,
+	LINE
 }
+
 enum PULSE_STENCIL
 {
 	INTERNAL			=	10,
 	EXTERNAL			=	11,
 	A_TO_B				=	12,
-	NONE				=	13,
+	NONE				=	13
 }
+
 enum PULSE_DISTRIBUTION
 {
 	RANDOM				=	20,
@@ -25,44 +28,46 @@ enum PULSE_DISTRIBUTION
 	EVEN				=	22,
 	LINKED				=	23,
 	LINKED_CURVE		=	24,
-	NONE,
+	NONE				=	25
 }
 
 enum PULSE_COLOR
 {// Color mode used by emitter
-	A_TO_B_RGB			=30,
-	A_TO_B_HSV			=31,
-	COLOR_MAP			=32,
-	RGB					=33,
-	NONE				=34,
+	A_TO_B_RGB			=	30,
+	A_TO_B_HSV			=	31,
+	COLOR_MAP			=	32,
+	RGB					=	33,
+	NONE				=	34
 }
+
 enum PULSE_BOUNDARY
 {
-	NONE=40,
-	SPEED=41,
-	LIFE=42,
-	FOCAL_SPEED = 43,
-	FOCAL_LIFE	= 44,
+	NONE				=	40,
+	SPEED				=	41,
+	LIFE				=	42,
+	FOCAL_SPEED			=	43,
+	FOCAL_LIFE			=	44
 }
+
 enum PULSE_LINK_TO
 {
-	U_COORD ,
-	V_COORD,
-	PATH_SPEED,
-	SPEED,
-	DIRECTION,
-	DISPL_MAP,
-	COLOR_MAP,
-	NONE
+	U_COORD				=	50,
+	V_COORD				=	51,
+	PATH_SPEED			=	52,
+	SPEED				=	53,
+	DIRECTION			=	54,
+	DISPL_MAP			=	55,
+	COLOR_MAP			=	56,
+	NONE				=	57
 }
 
 enum PULSE_FORCE
 {
-	DIRECTION,
-	POINT,
-	RANGE_INFINITE,
-	RANGE_RADIAL,
-	RANGE_DIRECTIONAL,
+	DIRECTION			=	60,
+	POINT				=	61,
+	RANGE_INFINITE		=	62,
+	RANGE_RADIAL		=	63,
+	RANGE_DIRECTIONAL	=	64
 }
 /// @description  0: No extra , 1: Warning , 2 : Error , 3: Success
 function __pulse_show_debug_message(_message,_type = 0)
@@ -88,7 +93,7 @@ function __pulse_show_debug_message(_message,_type = 0)
 	if __PULSE_SHOW_DEBUG_STACK
 	{
 		var _stack = debug_get_callstack(3)
-		show_debug_message($"{_pre} {_message} : {_stack}");
+		show_debug_message($"{_pre} {_message} : {_stack[2]}");
 	}else{
 		show_debug_message($"{_pre} {_message}");
 	}
@@ -154,10 +159,10 @@ function __pulse_show_debug_message(_message,_type = 0)
 //Whether the emitter changes the direction of the particle is emitting
 #macro __PULSE_DEFAULT_EMITTER_ALTER_DIRECTION			true
 
-#macro __PULSE_DEFAULT_EMITTER_BOUNDARY			PULSE_BOUNDARY.LIFE
+#macro __PULSE_DEFAULT_EMITTER_BOUNDARY					PULSE_BOUNDARY.LIFE
 
 #macro __PULSE_DEFAULT_DISTR_PROPERTY					PULSE_DISTRIBUTION.RANDOM
 
 // Systems can reduce their particle count after a certain amount of frames.
-#macro __PULSE_DEFAULT_COUNT_TIMER		80
+#macro __PULSE_DEFAULT_COUNT_TIMER						80
 

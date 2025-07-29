@@ -1102,7 +1102,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		}
 			
 			
-		for(var _i= 0; _i < _l; _i+= _t)
+		for(var _i= 0, _n = 0; _i < _l; {_i+= _t ; _n+=1 ;})
 		{
 			var _point = {x:0,y:0,speed:0,normal:0,transversal:0}
 				
@@ -1123,14 +1123,14 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 				
 			if _i != 0
 			{
-				polyline[_i-1].transversal	= point_direction(polyline[_i-1].x,polyline[_i-1].y,_point.x,_point.y)
-				polyline[_i-1].normal		= polyline[_i-1].transversal + 90
-				_total_length		+=	point_distance(polyline[_i-1].x,polyline[_i-1].y,_point.x,_point.y) 
+				polyline[_n-1].transversal	= point_direction(polyline[_n-1].x,polyline[_n-1].y,_point.x,_point.y)
+				polyline[_n-1].normal		= polyline[_n-1].transversal + 90
+				_total_length		+=	point_distance(polyline[_n-1].x,polyline[_n-1].y,_point.x,_point.y) 
 				_point.l			= _total_length
 				if _i+_t == _l
 				{
-					_point.transversal = polyline[_i-1].transversal
-					_point.normal = polyline[_i-1].normal
+					_point.transversal = polyline[_n-1].transversal
+					_point.normal = polyline[_n-1].normal
 				}
 			}
 			else
@@ -1146,14 +1146,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			}
 
 			_point.cached	= false
-			polyline[_i] = _point
+			polyline[_n] = _point
 		}
-
-		_cache_gen  = false
-		_length_gen = true
-		type = PATHPLUS.LINEAR
-		l = _l
-		return 
 	}
 	///Transforms all the points in cache into control points of a GM Path
 	static BakeToPath		= function()

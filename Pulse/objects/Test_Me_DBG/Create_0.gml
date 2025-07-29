@@ -1,14 +1,153 @@
 debug = true
 show_debug_overlay(debug)
-
+debug_resources()
 // Welcome to Pulse!
 
 system = pulse_store_system( new pulse_system("sys_1") )
 
 particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
 created_maps = false
-particle.set_death_on_collision(5,particle)
+collision_particle =  pulse_store_particle( new pulse_particle("collision_particle"))
+collision_particle.set_direction(0,365).set_shape(pt_shape_line).set_color(c_yellow,c_orange).set_alpha(1,1,.6).set_speed(3,5,-.01).set_life(10,20)
 
+particle.set_death_on_collision(2,collision_particle)
+emitter = new pulse_emitter("sys_1","a_particle_name");
+
+path_plus = new PathPlus(ExamplePath,true) 
+
+
+//////////////////////////
+//////////////////////////
+///////   SYSTEM  ////////
+//////////////////////////
+//////////////////////////
+#region System
+dbg_view("System",true,30,50,350,0)
+dbg_section("Import / Export",false)
+dbg_button("Import",function(){
+	
+	var _p = get_open_filename("system.pulses","system.pulses")
+	
+	if _p != ""
+	{
+		pulse_destroy_system(system.name)
+		system = pulse_import_system(_p,true);
+		emitter.set_system(system)
+	}
+	})
+dbg_same_line()
+dbg_button("Export",function(){
+	pulse_export_system(system)})
+
+dbg_section("Status",true)
+
+s_status = "System is Awake"
+ref_s_status= ref_create(self,"s_status")
+dbg_text(ref_s_status)	
+
+ref_s_part_amount = ref_create(system,"particle_amount")
+dbg_text(ref_s_part_amount)	
+ref_s_thresh = ref_create(system,"limit")
+dbg_text(ref_s_thresh)	
+ref_s_i = ref_create(system,"index")
+dbg_text(ref_s_i)	
+
+dbg_section("Automatic Updates",false)
+
+s_draw = true
+s_update = true
+s_sampling = 1
+s_supersample = false
+s_resampling = 1
+dbg_checkbox(ref_create(self,"s_draw"),"Automatically Draw")
+dbg_checkbox(ref_create(self,"s_update"),"Automatically Update")
+dbg_button("Apply",function()
+{
+	system.set_update(s_update)
+	system.set_draw(s_draw)
+})
+	
+dbg_text_separator("Super-sampling")	
+dbg_text("Super-sampling allows to speed up or slow down particles by controlling their update cycles")
+	
+dbg_checkbox(ref_create(self,"s_supersample"),"Super-sample")
+dbg_slider(ref_create(self,"s_sampling"),1,10,"Baseline samples",1)
+dbg_slider(ref_create(self,"s_resampling"),0.1,2,"Live Re-sampling",.1)
+dbg_button("Apply",function()
+{
+	system.set_super_sampling(s_supersample,s_sampling)
+	p_time_factor = 1/s_sampling
+	particle.scale_time_abs(p_time_factor)
+	s_update  = !s_supersample
+	
+})
+	
+dbg_section("Sleep/Awake/Treshold ",false)
+
+s_wakeup		= true
+s_fallasleep	= true
+s_limit			= 0
+dbg_checkbox(ref_create(self,"s_wakeup"),"Wake up on Emit")
+
+dbg_text(ref_s_status)
+dbg_button("Make Asleep",function(){
+	system.make_asleep(s_wakeup)})
+	dbg_same_line()
+dbg_button("Make Awake",function(){
+	system.make_awake()})
+dbg_text_separator("")
+dbg_checkbox(ref_create(self,"s_fallasleep"),"Sleep When Empty")
+dbg_text_input(ref_create(self,"s_limit"),"Max Amount of particles in the System","i")
+dbg_button("Limit Particles",function(){
+	system.set_particle_limit(s_limit, s_fallasleep)})
+
+dbg_section("Properties",false)
+
+s_layer = "Same_as_Obstacles"
+s_depth = 300
+s_position = [0,0]
+s_angle = 0
+s_color = [c_white,1]
+/// Depth
+dbg_drop_down(ref_create(self,"s_layer"),["Same_as_Obstacles","Above_Obstacles","Below_Obstacles"],["Same as Obstacles","Above Obstacles","Below Obstacles"],"Layer")
+dbg_slider_int(ref_create(self,"s_depth"),200,400,"Depth")
+
+dbg_button("Apply Depth",function(){
+	system.set_depth(s_depth)
+})
+dbg_same_line()
+dbg_button("Apply Layer",function(){
+	system.set_layer(s_layer)
+})
+//Position
+dbg_text_separator("Position")
+dbg_text_input(ref_create(self,"s_position",0),"Position X")
+dbg_text_input(ref_create(self,"s_position",1),"Position Y")
+dbg_button("Apply",function(){
+	system.set_position(s_position[0], s_position[1])
+})
+/// Angle
+dbg_text_separator("Angle")
+dbg_slider(ref_create(self,"s_angle"),0,365,"Angle",.5)
+dbg_button("Apply",function(){
+	system.set_angle(s_angle)
+})
+/// Color
+dbg_drop_down(ref_create(self,"s_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Gray","Dark Gray","Black"],"Color")	
+dbg_slider(ref_create(self,"s_color",1),0,1,"Alpha")
+dbg_button("Apply",function(){
+	system.set_color(s_color[0],s_color[1])
+})
+
+#endregion
+
+//////////////////////////
+//////////////////////////
+///////   PARTICLE  ///////
+//////////////////////////
+//////////////////////////
 #region Particle
 
 dbg_view("Particle",true,30,70,350,600)
@@ -105,6 +244,7 @@ dbg_sprite(p_sprite_ref,p_sp_frame_ref,"Sprite")
 dbg_button("Apply",function(){
 	particle.set_sprite(p_sprite,p_anim,p_stretch,p_sp_random,p_sp_frame)
 						})
+
 
 dbg_section("Size",false)
 
@@ -203,11 +343,13 @@ c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_g
 dbg_drop_down(ref_create(self,"p_color",2),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
 c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
 ["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
-
+p_blend = false
+dbg_checkbox(ref_create(self,"p_blend"),"Additive Blending")
 
 dbg_button("Apply",function()
 {
 	particle.set_color(p_color[0],p_color[1],p_color[2])
+	particle.set_blend(p_blend)
 })
 
 dbg_text_separator("Alpha")
@@ -245,8 +387,13 @@ dbg_button("Apply",function()
 })
 #endregion
 
+//////////////////////////
+//////////////////////////
+///////   EMITTER  ///////
+//////////////////////////
+//////////////////////////
 
-emitter = new pulse_emitter("sys_1","a_particle_name");
+
 
 emitter.add_collisions(o_Collider)
 emitter.set_radius(0,150)
@@ -295,8 +442,21 @@ line_y_prev = 0
 line_x_ref = ref_create(self,"line_x")
 line_y_ref = ref_create(self,"line_y")
 
+dbg_text_input(line_x_ref, "Line Point B - X " , "r")
+dbg_text_input(line_y_ref, "Line Point B - Y " , "r")
+
 #endregion
 
+#region Path
+
+dbg_text_separator("Path Properties")
+e_path = ExamplePath
+dbg_drop_down(ref_create(self,"e_path"),[ExamplePath,path_plus],["GM Path","Path Plus"],"Path to be used")
+
+dbg_button("Apply",function(){
+	emitter.form_path(e_path)		})
+	
+#endregion
 dbg_section("General Properties",true)
 
 #region Boundary
@@ -360,7 +520,7 @@ dbg_slider(ref_create(self,"e_stencils_tween"),0,1,"Stencil Tween")
 
 
 
-dbg_section("Direction Modifiers",true)
+dbg_section("Direction Modifiers",false)
 #region Direction
 dbg_text_separator("Direction Range")
 
@@ -383,7 +543,17 @@ dbg_text_input(ref_create(self,"e_focal",0),"Focal Point X","f")
 dbg_text_input(ref_create(self,"e_focal",1),"Focal Point Y","f")
 
 #endregion
+dbg_text_separator("Forces")
+
+dbg_button("Create New Directional Force", function()
+{
+	var _f = instance_create_layer(x-50,y-50,"Below_Obstacles",o_Force_Directional,{image_xscale:3,image_yscale:3})
+	emitter.add_force(_f.force)
+})
+
+
 dbg_section("Distributions",true)
+
 #region Distributions
 
 dbg_text_separator("U axis")

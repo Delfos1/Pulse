@@ -1,43 +1,56 @@
-/// @desc Destroys all particle types, particle systems, and emitters
+#region LOOK UP Helper functions
 
-function pulse_destroy_all()
-{	var sys, part, i
+function __pulse_lookup_system	(_name)
+{
+	var system_found = pulse_exists_system(_name)
 	
-	sys		= struct_get_names(global.pulse.systems)
-	part	= struct_get_names(global.pulse.part_types)
-
-	if array_length(sys)>0
+	switch(system_found)
 	{
-		for(i=0;i==array_length(sys);i++)
-		{
-			part_system_destroy(global.pulse.systems[$sys[i]].index)
-			if time_source_exists(global.pulse.systems[$sys[i]].count)
-			{
-				time_source_destroy(global.pulse.systems[$sys[i]].count,true)
-			}
-		}
-		global.pulse.systems={}
-		
-		__pulse_show_debug_message("Systems destroyed",3);
+		case 2:
+				return _name
+		break
+		case 1:
+				return global.pulse.systems[$_name];
+		break
+		case 0:
+				__pulse_show_debug_message($"System {_name} not found, creating system by that name",1)
+				return new pulse_system(_name);
+		break
+		case -1:
+				__pulse_show_debug_message($"System {_name} not found, creating system with default name",1)
+				return new pulse_system(__PULSE_DEFAULT_SYS_NAME);
+		break
 	}
 	
-	if array_length(part)>0
+}
+
+function __pulse_lookup_particle(_name)
+{
+	var particle_found = pulse_exists_particle(_name)
+	
+	switch(particle_found)
 	{
-		for(i=0;i==array_length(part);i++)
-		{
-			part_type_destroy(global.pulse.part_types[$part[i]].index)
-			if global.pulse.part_types[$part[i]].subparticle != undefined 
-			{
-				part_type_destroy(global.pulse.part_types[$part[i]].subparticle.index)
-			}
-		}
-		global.pulse.part_types={}
-		
-		__pulse_show_debug_message("Particles destroyed",3);
+		case 2:
+				return _name
+		break
+		case 1:
+				return global.pulse.part_types[$_name];
+		break
+		case 0:
+				__pulse_show_debug_message($"Particle \"{_name}\" not found, creating particle with that name",1)
+				return	pulse_store_particle(new pulse_particle(_name));
+		break
+		case -1:
+				__pulse_show_debug_message($"Particle argument is not a string or a Pulse Particle, creating particle with default name" ,1)
+				return new pulse_particle(__PULSE_DEFAULT_PART_NAME);
+		break
 	}
 	
-}	
+}
 
+#endregion
+
+#region CLONE
 /// @desc Duplicates the given system. Returns a reference to the system.
 /// @param {string} __name The name of the system to clone
 /// @param {string} __new_name Optional: The name of the cloned system. By default it appends "_copy" to the original name 
@@ -91,6 +104,10 @@ function pulse_clone_particle	(__name,__new_name=__name)
 	
 	return global.pulse.part_types[$__new_name]
 }
+
+#endregion
+
+#region DESTROY
 
 /// @desc Destroys a system both from the GameMaker index as from Pulse's data
 /// @param {string} _name The name of the system to destroy
@@ -151,6 +168,50 @@ function pulse_destroy_particle	(_name)
 	}
 
 }
+
+/// @desc Destroys all particle types, particle systems, and emitters
+
+function pulse_destroy_all()
+{	var sys, part, i
+	
+	sys		= struct_get_names(global.pulse.systems)
+	part	= struct_get_names(global.pulse.part_types)
+
+	if array_length(sys)>0
+	{
+		for(i=0;i==array_length(sys);i++)
+		{
+			part_system_destroy(global.pulse.systems[$sys[i]].index)
+			if time_source_exists(global.pulse.systems[$sys[i]].count)
+			{
+				time_source_destroy(global.pulse.systems[$sys[i]].count,true)
+			}
+		}
+		global.pulse.systems={}
+		
+		__pulse_show_debug_message("Systems destroyed",3);
+	}
+	
+	if array_length(part)>0
+	{
+		for(i=0;i==array_length(part);i++)
+		{
+			part_type_destroy(global.pulse.part_types[$part[i]].index)
+			if global.pulse.part_types[$part[i]].subparticle != undefined 
+			{
+				part_type_destroy(global.pulse.part_types[$part[i]].subparticle.index)
+			}
+		}
+		global.pulse.part_types={}
+		
+		__pulse_show_debug_message("Particles destroyed",3);
+	}
+	
+}	
+
+#endregion
+
+#region EXISTS
 
 /// Checks if a system exists with the name provided as string or if its a struct.
 /// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
@@ -246,6 +307,9 @@ function pulse_exists_emitter	(_name)
 	
 	return emitter_found
 }
+
+#endregion
+
 /// @description			   
 ///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
 ///							Particles are named after the emitter they are on.
@@ -296,6 +360,8 @@ function pulse_convert_particles(part_system)
 	l++
 	}
 }
+
+#region IMPORTING / EXPORTING
 
 //////// Particles
 
@@ -473,7 +539,7 @@ function pulse_import_system	(_system_file, _overwrite = false)
 				with _new_sys{
 					layer			=	_parsed.layer
 					depth			=	_parsed.depth
-					threshold		=	_parsed.threshold
+					limit		=	_parsed.limit
 					draw			=	_parsed.draw
 					draw_oldtonew	=	_parsed.draw_oldtonew
 					update			=	_parsed.update
@@ -876,6 +942,13 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	__color_mix_link		=	_parsed.__color_mix_link
 	__frame_link			=	_parsed.__frame_link	
 
+	__speed_weight			=	_parsed.__speed_weight
+	__life_weight			=	_parsed.__life_weight
+	__orient_weight			=	_parsed.__orient_weight
+	__size_weight			=	_parsed.__size_weight
+	__color_mix_weight		=	_parsed.__color_mix_weight
+	__frame_weight			=	_parsed.__frame_weight
+	
 	#endregion
 	
 	boundary			=	_parsed.boundary
@@ -934,50 +1007,173 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	return  _new_emitter
 }
 
-function __pulse_lookup_system	(_name)
+#endregion
+
+#region STORE / FETCH
+
+/// @description			Stores a Pulse Particle into the global struct. Allows the use of the particle by calling its name as a string. Returns a reference to the global struct.
+/// @param {Struct.__pulse_particle_class}	_particle : Pulse Particle to store.
+/// @param {Bool}							[_override] : If there is a particle by the same name, override it (true) or change the new particle's name (false).
+/// @return {Struct}
+function pulse_store_particle		(_particle,_override = false)
 {
-	var system_found = pulse_exists_system(_name)
-	
-	switch(system_found)
+	// If using the default name, count particles and rename so there are no repeated entries
+		/// Check if it is a Pulse Particle
+	if !is_instanceof(_particle,__pulse_particle_class)
 	{
-		case 2:
-				return _name
-		break
-		case 1:
-				return global.pulse.systems[$_name];
-		break
-		case 0:
-				__pulse_show_debug_message($"System {_name} not found, creating system by that name",1)
-				return new pulse_system(_name);
-		break
-		case -1:
-				__pulse_show_debug_message($"System {_name} not found, creating system with default name",1)
-				return new pulse_system(__PULSE_DEFAULT_SYS_NAME);
-		break
+		__pulse_show_debug_message("Argument provided is not a Pulse Particle",3)
+		return
 	}
 	
+	var _name =  _particle.name
+	
+	if  pulse_exists_particle(_name) > 0
+	{
+		if !_override
+		{
+			/// Change name if the name already exists
+			var l		=	struct_names_count(global.pulse.part_types)		
+			_name		=	$"{_name}_{l}";	
+			_particle.name = _name
+		}
+		else
+		{
+			pulse_destroy_particle(_particle.name)
+		}
+	}
+	
+	__pulse_show_debug_message($" Stored particle \"{_name}\"",3);
+		global.pulse.part_types[$_name] = variable_clone(_particle)
+		return  global.pulse.part_types[$_name]
 }
 
-function __pulse_lookup_particle(_name)
+/// @description			Fetches a Pulse Particle from the global struct. Returns a reference to the global struct, or undefined if particle is not found.
+/// @param {String}	_particle : Pulse Particle name to fetch.
+/// @return {Struct}
+function pulse_fetch_particle		(_name)
 {
-	var particle_found = pulse_exists_particle(_name)
-	
-	switch(particle_found)
+	/// Check if it is a Pulse System
+	if !is_string(_name)
 	{
-		case 2:
-				return _name
-		break
-		case 1:
-				return global.pulse.part_types[$_name];
-		break
-		case 0:
-				__pulse_show_debug_message($"Particle \"{_name}\" not found, creating particle with that name",1)
-				return	pulse_store_particle(new pulse_particle(_name));
-		break
-		case -1:
-				__pulse_show_debug_message($"Particle argument is not a string or a Pulse Particle, creating particle with default name" ,1)
-				return new pulse_particle(__PULSE_DEFAULT_PART_NAME);
-		break
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return undefined
 	}
 	
+	if pulse_exists_particle(_name) > 0 
+	{
+		return global.pulse.part_types[$_name]
+	}
+	
+	__pulse_show_debug_message($"System named '{_name}' not found",3);
+	
+	return undefined
 }
+
+/// @description			Store a emitter in Pulse's Global storage. If there is a emitter of the same name it will override it or change the name.
+/// @param {Struct.pulse_emitter}			_emitter : Pulse emitter to store
+/// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter.
+/// @return {Struct}
+function pulse_store_emitter			(_emitter,_name , _override = false)
+{
+	/// Check if it is a Pulse emitter
+	if !is_instanceof(_emitter,pulse_emitter)
+	{
+		__pulse_show_debug_message("Argument provided is not a Pulse emitter",3)
+		return
+	}
+	
+	_emitter.name = string(_name)
+
+	if pulse_exists_emitter(_name) > 0 && !_override
+	{
+		/// Change name if the name already exists
+		var l		=	struct_names_count(global.pulse.emitters)		
+		_name		=	$"{_name}_{l}";	
+		_emitter.name = _name
+	}
+	
+	__pulse_show_debug_message($"Created emitter by the name {_name}",3);
+	global.pulse.emitters[$_name] = variable_clone(_emitter)
+	return  global.pulse.emitters[$_name]
+}
+
+/// @description			Fetches a Pulse emitter from the global struct. Returns a reference to the global struct.
+/// @param {String}	_name : Pulse emitter name to fetch, as a string.
+/// @return {Struct}
+function pulse_fetch_emitter			(_name)
+{
+	/// Check if it is a Pulse emitter
+	if !is_string(_name)
+	{
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return undefined
+	}
+	
+	if pulse_exists_emitter(_name) > 0 
+	{
+		return global.pulse.emitters[$_name]
+	}
+	
+	__pulse_show_debug_message($"emitter named '{_name}' not found",3);
+	
+	return undefined
+}
+
+/// @description			Store a system in Pulse's Global storage. If there is a system of the same name it will override it or change the name.
+/// @param {Struct.pulse_system}			_system : Pulse System to store
+/// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system.
+/// @return {Struct}
+function pulse_store_system			(_system,_override = false)
+{
+	/// Check if it is a Pulse System
+	if !is_instanceof(_system,pulse_system)
+	{
+		__pulse_show_debug_message("Argument provided is not a Pulse System",3)
+		return
+	}
+	
+	var _name =  _system.name
+
+	if pulse_exists_system(_name) > 0 
+	{
+		if !_override
+		{
+			/// Change name if the name already exists
+			var l		=	struct_names_count(global.pulse.systems)		
+			_name		=	$"{_name}_{l}";	
+			_system.name = _name
+		}
+		else
+		{
+			pulse_destroy_system(_name)	
+		}	
+	}
+	
+	__pulse_show_debug_message($"Created system by the name {_name}",3);
+	global.pulse.systems[$_name] = variable_clone(_system)
+	return  global.pulse.systems[$_name]
+}
+
+/// @description			Fetches a Pulse System from the global struct. Returns a reference to the global struct.
+/// @param {String}	_name : Pulse System name to fetch, as a string.
+/// @return {Struct}
+function pulse_fetch_system			(_name)
+{
+	/// Check if it is a Pulse System
+	if !is_string(_name)
+	{
+		__pulse_show_debug_message("Argument provided is not a String",3)
+		return undefined
+	}
+	
+	if pulse_exists_system(_name) > 0 
+	{
+		return global.pulse.systems[$_name]
+	}
+	
+	__pulse_show_debug_message($"System named '{_name}' not found",3);
+	
+	return undefined
+}
+
+#endregion

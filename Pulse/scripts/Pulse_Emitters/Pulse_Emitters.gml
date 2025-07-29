@@ -157,13 +157,24 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	debug_col_rays =[]
 
-	#region EMITTER SETTINGS
+	#region COMPONENTS
 	
 	static set_particle_type		=	function(_particle)
 	{
 		part_type =  __pulse_lookup_particle(_particle)
 		return		
 	}
+	
+	static set_system				=	function(_system)
+	{
+		system =  __pulse_lookup_particle(_system)
+		return		
+	}
+	
+	#endregion
+
+	#region EMITTER SETTINGS
+	
 	/// @description	Sets an animation curves as a stencil
 	/// @param {Asset.GMAnimCurve}	__ac_curve : Animation curve
 	/// @param {Real, String}		_ac_channel : Channel's string name or number
@@ -1079,7 +1090,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if is_colliding
 			{
 				var eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
-//eval_c*(edge_external/radius_external)
 				_e.edge		= eval_c
 				if eval_c < 1
 				{
@@ -1620,7 +1630,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	static __check_form_collide		=	function(_p,_e,x,y)
 	{
-		
 		//If we wish to cull the particle to the "edge" , proceed
 		if boundary == PULSE_BOUNDARY.NONE
 		{
@@ -1686,7 +1695,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 				_p.speed	=	(_length_to_edge-_p.accel)/_p.life
-				_displacement = (_p.speed*_p.life)+_p.accel
 			} 
 			else if boundary == PULSE_BOUNDARY.LIFE || boundary == PULSE_BOUNDARY.FOCAL_LIFE
 			{
@@ -1703,7 +1711,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	static __check_forces			=	function(_p,x,y)
 	{
 		// For each local force, analyze reach and influence over particle
-		for (var k=0;k<array_length(forces);k++)
+		var _forces_length  = array_length(forces)
+		for (var k=0;k<_forces_length;k++)
 		{
 			var _weight = 0;
 						
@@ -1933,11 +1942,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		if !_cache
 		{
-			if part_system.index = -1
+			var _awaken = false
+			if part_system.index == -1
 			{
 				if part_system.wake_on_emit
 				{
-					part_system.make_awake()
+					_awaken = true
 				}
 				else
 				{
@@ -1945,19 +1955,31 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					exit
 				}
 			}
-			if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
+			if part_system.limit > 0 
 			{
-				if _amount_request >= part_system.threshold
+				if time_source_exists( part_system.count)
 				{
-					part_system.factor *= (part_system.threshold/_amount_request)
+					if time_source_get_state(part_system.count) != time_source_state_active
+					{
+						time_source_start(part_system.count)
+					}
 				}
-				
-				time_source_reset(part_system.count)
-				time_source_start(part_system.count)
+				if _amount_request >= part_system.limit
+				{
+					part_system.factor *= (part_system.limit/_amount_request)
+				}
 			}
 		
 			var _amount = floor((_amount_request*part_system.factor)*global.pulse.particle_factor)
-			if _amount	== 0 exit
+			if _amount	== 0
+			{
+				exit
+			}
+			if 	_awaken
+			{
+				part_system.make_awake()
+			}
+			
 		}
 		else
 		{
@@ -2088,14 +2110,29 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}						_cache : An array populated by a Pulse emitter's output. By default is empty. Particles can be added with the add_particles() methods
 function	pulse_cache(_emitter , _cache=[] ) constructor
 {
-	emitter = _emitter
-	part_system = _emitter.part_system
-	index	= 0
-	shuffle = true
-	cache	= _cache
-	length	= array_length(_cache)
-	flag_stencil = false
+	emitter			= _emitter
+	part_system		= _emitter.part_system
+	index			= 0
+	shuffle			= true
+	cache			= _cache
+	length			= array_length(_cache)
+	flag_stencil	= false
 	
+	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
+						{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
+	_channel_03			=	animcurve_get_channel(stencil_profile,0)
+	
+	is_colliding		=	false
+	forces				=	[]
+	radius_external		=	_emitter.radius_external
+	radius_internal		=	_emitter.radius_internal
+	edge_external		=	_emitter.edge_external
+	edge_internal		=	_emitter.edge_internal
+	mask_start			=	_emitter.mask_start
+	mask_end			=	_emitter.mask_end
+	boundary			=	_emitter.boundary
+	x_focal_point		=	_emitter.x_focal_point
+	y_focal_point		=	_emitter.y_focal_point
 	
 	/// @desc Adds particles to the cache
 	/// @param {Array} array with the results of a pulse emit.
@@ -2105,23 +2142,340 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		length	= array_length(cache)
 	}
 	
-	/// @desc Sets the flag for the cache to regenerate its stencil. This is useful for recalculating collisions.
-	static	regen_stencil = function()
+		/// @description	Adds a collision element to be checked by the collision function.
+	/// @param {Any}	_object : Can be an object, instance, tile or anything admitable 
+	/// @context pulse_emitter
+	static	add_collisions			=	function(_object)
 	{
-		flag_stencil = true
-		index = 0
+		array_push(collisions,_object)
+		
+		return self
+	}
+		 /**
+	 * @desc Generates a modified stencil which adapts to colliding objects. Returns an array that contains the IDs of all colliding instances 
+	 * @param {Real} _x X coordinate
+	 * @param {Real} _y Y coordinate
+	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions
+	 * @param {bool}[_prec] Whether the collision is precise (true, slow) or not (false, fast)
+	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
+	 */
+	static	check_collision = function(x,y,_collision_obj, _occlude = true, _prec = false , _rays = 32 )
+	{
+		if is_array(_collision_obj){
+		if array_length(_collision_obj)==0
+			return undefined
+		}
+		/// Check for collision of emitter by bbox
+		switch (form_mode)
+		{
+			case PULSE_FORM.PATH:
+			{
+				/// if path, find bounding box of path, then check with collision
+				var _bbox = path_get_bbox(path,edge_external,mask_start,mask_end)
+				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
+
+				break;
+			}
+			case PULSE_FORM.ELLIPSE:
+			{
+				if x_scale != 1 or y_scale != 1
+				{
+					var _collision = collision_ellipse((edge_external-x)*x_scale,(edge_external-y)*y_scale,(edge_external+x)*x_scale,(edge_external+y)*y_scale,_collision_obj,_prec, false)
+				}
+				else
+				{
+					var _collision = collision_circle(x,y,edge_external,_collision_obj,_prec, false)
+				}
+			break;
+			}
+			case PULSE_FORM.LINE:
+			{
+				var transv		= point_direction(x,y,x+line[0],y+line[1])
+				var normal		= ((transv+90)>=360) ? transv-270 : transv+90;
+				
+				var b	= [x+line[0],y+line[1]]
+				var a	= [x,y]
+				var c = [0,0]		
+				var d = [0,0]	
+				
+				var dir_x = (lengthdir_x(edge_external,normal)*x_scale);
+				var dir_y = (lengthdir_y(edge_external,normal)*y_scale);
+				
+				c[0] =	a[0] + dir_x
+				c[1] =	a[1] + dir_y
+				d[0] =	b[0] + dir_x
+				d[1] =	b[1] + dir_y
+				
+				var left	= min(a[0],b[0],c[0],d[0])
+				var right	= max(a[0],b[0],c[0],d[0])
+				var top		= min(a[1],b[1],c[1],d[1])
+				var bottom	= max(a[1],b[1],c[1],d[1])
+				
+				var _collision = collision_rectangle(left,top,right,bottom,_collision_obj,_prec,true)
+
+				break;
+			}
+		}
+		if _collision == undefined || _collision == noone
+		{
+			if is_colliding
+			{
+				// Reset the Curve to its original state
+				var _array = []
+				animcurve_point_add(_array,0,1)
+				animcurve_point_add(_array,1,1)
+				animcurve_points_set(stencil_profile, "c",_array)
+				is_colliding = false
+			}
+			return undefined
+		}
+		
+		is_colliding = true
+		array_resize(colliding_entities,0)
+		
+		// Emit 32 rays and check for collisions
+		var _points		= [] ,
+		 _ray			= {u_coord : 0 , length : 0} ,
+		 _fail			= 0 ,
+		 _l				= (mask_end - mask_start )/_rays
+		 
+		 for(var i =mask_start; i <= mask_end ; i +=_l)
+		{
+			_ray.u_coord	= i ;
+			var _length		=	edge_external ;
+			_ray			= __set_normal_origin(_ray,x,y) ;
+			animcurve_point_add(_points,i,1)
+			var _ray_collision	= __pulse_raycast(_ray.x_origin,_ray.y_origin,_collision_obj,_ray.normal,_length,_prec,true)
+			
+			if _ray_collision != noone
+			{
+				var _value = point_distance(_ray.x_origin,_ray.y_origin,_ray_collision.x,_ray_collision.y)/edge_external
+				
+				animcurve_point_add(_points,i,_value,true)
+				
+				// Add colliding entity to an array
+				if !array_contains(colliding_entities,_ray_collision.z)
+				{
+					array_push(colliding_entities,_ray_collision.z)		
+				}
+			}
+			else
+			{
+				_fail ++
+			}
+		}
+		if _fail = _rays //array_length(_points)
+		{
+			if is_colliding
+			{
+				// Reset the Curve to its original state
+				var _array = []
+				animcurve_point_add(_array,0,1)
+				animcurve_point_add(_array,1,1)
+				animcurve_points_set(stencil_profile, "c",_array)
+				is_colliding = false
+			}
+			return undefined
+		}
+		
+		if _occlude		
+		{
+			animcurve_point_add(_points,0,1,false)
+			animcurve_point_add(_points,1,1,false)
+			animcurve_points_set(stencil_profile,"c",_points)
+		}
+	
+		return colliding_entities
+	}
+
+	#region FORCES
+	
+	/// @description	Adds a force to the current emitter. Force must be a Pulse Force
+	/// @param {Struct.pulse_force}	_force : Pulse force to be added to the emitter
+	/// @context pulse_emitter
+	static	add_force			=	function(_force)
+	{
+		if is_instanceof(_force,pulse_force)
+		{
+			array_push(forces,_force)
+		}
+		return self
+	}
+	/// @description	Removes a force already applied to the current emitter. Force must be a Pulse Force
+	/// @param {Struct.pulse_force}	_force : Pulse force to be removed from the emitter
+	/// @context pulse_emitter
+	static	remove_force		=	function(_force)
+	{
+		if is_instanceof(_force,pulse_force)
+		{
+			var _i = array_get_index(forces,_force)
+			if _i != -1
+			{
+				array_delete(forces,_i,1)
+			}
+		}
+		return self
+	}
+	#endregion
+	
+	static __check_form_collide		=	function(_p)
+	{
+		//If we wish to cull the particle to the "edge" , proceed
+		if boundary == PULSE_BOUNDARY.NONE
+		{
+			return _p 
+		}
+		//First we define where the EDGE is, where our particle should stop
+		var _edge = clamp(animcurve_channel_evaluate(_channel_03,_p.u_coord),0,1);
+		var to_transversal = abs(angle_difference(_p.dir,_p.transv))
+		
+		if to_transversal <=30	or 	 abs(to_transversal-180) <=30//TRANSVERSAL
+		{
+			// Find half chord of the coordinate to the circle (distance to the edge)
+			var _a =power(_edge*edge_external,2)-power(_p.length,2)
+			var _length_to_edge	= sqrt(abs(_a)) 
+						
+		}
+		else if abs(angle_difference(_p.dir,_p.normal))<=75	//NORMAL AWAY FROM CENTER
+		{	
+			//Edge is the distance remaining from the spawn point to the radius
+			if _p.length>=0
+			{
+				var _length_to_edge	=	(_edge*edge_external)-_p.length
+			}
+			else
+			{
+				var _length_to_edge	=	(_edge*edge_internal)+_p.length
+			}
+		}
+		else											//NORMAL TOWARDS CENTER
+		{	
+			// If particle is going towards a focal point and thats the limit to be followed
+			if boundary == PULSE_BOUNDARY.FOCAL_LIFE || boundary == PULSE_BOUNDARY.FOCAL_SPEED
+			{
+					var _length_to_edge	=	point_distance(x+x_focal_point,y+y_focal_point,_p.x_origin,_p.y_origin)
+			}
+			else
+			{
+				return _p 
+			}
+		}
+					
+		//Then we calculate the Total Displacement of the particle over its life
+		_p.accel ??=  part_type.speed[2]*(_p.life*_p.life)*.5
+		var _displacement = (_p.speed*_p.life)+_p.accel
+
+		// If the particle moves beyond the edge of the radius, change either its speed or life
+		if	_displacement > _length_to_edge
+		{
+			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
+			{
+				_p.speed	=	(_length_to_edge-_p.accel)/_p.life
+			} 
+			else if boundary == PULSE_BOUNDARY.LIFE || boundary == PULSE_BOUNDARY.FOCAL_LIFE
+			{
+				_p.life	=	(_length_to_edge-_p.accel)/_p.speed
+			}
+			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
+			_p.to_edge	+=	1
+		}
+				
+		return _p 		
+				
 	}
 	
-	static	__update_stencil	=	function(_index,_amount)
+	static __check_forces			=	function(_p,x,y)
 	{
-		if emitter == undefined return
-		
+		// For each local force, analyze reach and influence over particle
+		var _forces_length  = array_length(forces)
+		for (var k=0;k<_forces_length;k++)
+		{
+			var _weight = 0;
+						
+			if forces[k].weight <= 0 continue //no weight, nothing to do here!
+						
+			if forces[k].range == PULSE_FORCE.RANGE_INFINITE
+			{
+				_weight = forces[k].weight //then weight is the force's full strength
+			}
+			else if forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
+			{
+				var __force_x,__force_y
+
+					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
+					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
+
+				// relative position of the particle to the force
+				var _x_relative = _p.x_origin - __force_x
+				var _y_relative = _p.y_origin - __force_y
+							
+				//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
+				var _coordx = _x_relative<0 ? forces[k].east : forces[k].west
+				var _coordy = _y_relative<0 ? forces[k].north : forces[k].south
+							
+				// if particle origin is within the area of influence OR the influence is infinite (==-1)
+				if (abs(_x_relative)< _coordx || _coordx==-1) 
+					&& (abs(_y_relative)< _coordy || _coordy==-1)
+				{
+					//within influence, calculate weight!
+					// If the influence is infinite, apply weight as defined
+					// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
+					var _weightx = _coordx==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_x_relative)/_coordx )
+					var _weighty = _coordy==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_y_relative)/_coordy )
+								
+					//Average of vertical and horizontal influences
+					_weight= (_weightx+_weighty)/2
+				}
+				else continue //not within influence. Byebye!
+			}
+			else if forces[k].range == PULSE_FORCE.RANGE_RADIAL
+			{
+				var __force_x,__force_y
+
+					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
+					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
+
+							
+				var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
+				if _dist < forces[k].radius
+				{
+					_weight= lerp(0,forces[k].weight,_dist/forces[k].radius )
+				}
+				else continue //not within influence. 
+			}
+						
+			if (_weight==0) continue; //no weight, nothing to do here!
+						
+			if forces[k].type == PULSE_FORCE.DIRECTION
+			{
+				// convert to vectors
+				var _vec2 =[0,0];
+				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
+				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
+				// add force's vectors
+				_vec2[0] = _vec2[0]+(forces[k].vec[0]*_weight)
+				_vec2[1] = _vec2[1]+(forces[k].vec[1]*_weight)
+				// convert back to direction and speed
+				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
+				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
+			}
+			else if forces[k].type = PULSE_FORCE.POINT
+			{
+				var dir_force	=	(point_direction( (x+forces[k].x),(y+forces[k].y),x_origin,y_origin)+forces[k].direction)%360
+				_p.dir = lerp_angle(_p.dir,dir_force,forces[k].weight)
+			}
+						
+		}
+		return _p
+	}
+	
+	static	__update	=	function(_index,_amount,x,y)
+	{
 		for(var _i =_index; _i < _amount ; _i++)
 		{
 			var _p	= cache[_i]
-			var _e	= emitter.__calculate_stencil(_p)
-				_p	= emitter.__assign_properties(_p)
-				_p	= emitter.__check_form_collide(_p,_e)
+				_p	= __check_form_collide(_p)
+				_p	= __check_forces(_p,x,y)
 		}
 	}
 	
@@ -2143,11 +2497,11 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				exit
 			}
 		}
-		if part_system.threshold != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
+		if part_system.limit != 0 && ( time_source_get_state(part_system.count) != time_source_state_active)
 		{
-			if _amount >= part_system.threshold
+			if _amount >= part_system.limit
 			{
-				part_system.factor *= (part_system.threshold/_amount)
+				part_system.factor *= (part_system.limit/_amount)
 			}
 				
 			time_source_reset(part_system.count)
@@ -2160,7 +2514,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		do{
 			if (index + _amount) >length
 			{
-				if flag_stencil {__update_stencil(index,length-index)}
+				if flag_stencil {__update(index,length-index,x,y)}
 				for(var _i = index ; _i < length-index ; _i++)
 				{
 					cache[_i].particle.launch(cache[_i],x,y)
@@ -2170,7 +2524,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 			}
 			else
 			{
-				if flag_stencil {__update_stencil(index,index+_amount)}
+				if flag_stencil {__update(index,index+_amount,x,y)}
 				for(var _i = index ; _i < index+_amount ; _i++)
 				{
 					cache[_i].particle.launch(cache[_i],x,y)
@@ -2187,58 +2541,6 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		} until(_amount = 0)
 	}
 }
-
-/// @description			Store a emitter in Pulse's Global storage. If there is a emitter of the same name it will override it or change the name.
-/// @param {Struct.pulse_emitter}			_emitter : Pulse emitter to store
-/// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter.
-/// @return {Struct}
-function pulse_store_emitter			(_emitter,_name , _override = false)
-{
-	/// Check if it is a Pulse emitter
-	if !is_instanceof(_emitter,pulse_emitter)
-	{
-		__pulse_show_debug_message("Argument provided is not a Pulse emitter",3)
-		return
-	}
-	
-	_emitter.name = string(_name)
-
-	if pulse_exists_emitter(_name) > 0 && !_override
-	{
-		/// Change name if the name already exists
-		var l		=	struct_names_count(global.pulse.emitters)		
-		_name		=	$"{_name}_{l}";	
-		_emitter.name = _name
-	}
-	
-	__pulse_show_debug_message($"Created emitter by the name {_name}",3);
-	global.pulse.emitters[$_name] = variable_clone(_emitter)
-	return  global.pulse.emitters[$_name]
-}
-
-/// @description			Fetches a Pulse emitter from the global struct. Returns a reference to the global struct.
-/// @param {String}	_name : Pulse emitter name to fetch, as a string.
-/// @return {Struct}
-function pulse_fetch_emitter			(_name)
-{
-	/// Check if it is a Pulse emitter
-	if !is_string(_name)
-	{
-		__pulse_show_debug_message("Argument provided is not a String",3)
-		return undefined
-	}
-	
-	if pulse_exists_emitter(_name) > 0 
-	{
-		return global.pulse.emitters[$_name]
-	}
-	
-	__pulse_show_debug_message($"emitter named '{_name}' not found",3);
-	
-	return undefined
-}
-
-
 
 
 /// @desc Throws a vector until it hits an object. Returns Vector3(x, y, id) if it hits.

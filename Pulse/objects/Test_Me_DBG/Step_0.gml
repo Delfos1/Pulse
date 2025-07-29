@@ -1,10 +1,19 @@
 if counter % e_freq == 0
 {
 	particle.reset()
-emitter.pulse(e_amount,x,y,false)	;	
+emitter.pulse(e_amount*s_resampling,x,y,false)	;	
 };
 ++counter
 
+s_status = system.index != -1 ?  "System is Awake" : "System is Asleep"
+if system.index != 1
+{
+	system.get_particle_count()
+	if s_supersample && !s_update
+	{
+		system.update_system(s_resampling)
+	}
+}
 
 #region Emitter
 
@@ -19,7 +28,7 @@ if e_shape != e_shape_prev
 		emitter.form_line(line_x,line_y)
 	break
 	case "Path": 
-		emitter.form_path(Path10)
+		//emitter.form_path(ExamplePath)
 	break
 	}
 	

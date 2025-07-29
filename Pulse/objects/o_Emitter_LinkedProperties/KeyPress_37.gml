@@ -1,1 +1,1 @@
-emitter_diffuse.form_path(Path10)
+emitter_diffuse.form_path(ExamplePath)

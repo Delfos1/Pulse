@@ -7,6 +7,7 @@
 function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=true) constructor
 {
 	name = string(_name)
+	index = -1
 	
 	if layer_exists(_layer)
 	{
@@ -29,8 +30,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		depth			=	0;
 	}
 	
-	threshold		=	0
-
+	limit			=	0
 	draw			=	true;
 	draw_oldtonew	=	true;
 	update			=	true;
@@ -40,15 +40,16 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	samples			=	1;
 	persistent		=	_persistent;
 	factor			=	1;
-	color			=	c_white
-	alpha			=	1
-	global_space	=	false
-	particle_amount =	0
+	color			=	c_white;
+	alpha			=	1;
+	global_space	=	false;
+	particle_amount =	0;
 	
 	// wake-sleep rules
-	
+
 	wake_on_emit		= true
 	sleep_when_empty	= true
+	count				= undefined
 	
 	#region jsDoc
 		/// @desc    Sets the draw depth of the system
@@ -68,7 +69,24 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
+	/// @desc    Sets the system on a defined layer to draw it onto.
+	/// @param   {Id.Layer} _layer : The layer to set the system to.
+	#endregion
+	static set_layer				= function(_layer)
+	{
+		layer	=	_layer;
+		
+		if index == -1 
+		{
+			__pulse_show_debug_message("System is asleep",1)
+			return self
+		}
+		part_system_layer(index,layer);
+		
+		return self
+	}
+	#region jsDoc
 		/// @desc    Sets whether the system is updating automatically every step or not. By default this is true.
 		/// @param   {Bool} _bool : Whether the system updates with every step automatically (true) or not (false)
 		#endregion
@@ -85,7 +103,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc    Sets whether the system is drawing automatically every step or not. By default this is true.
 		/// @param   {Bool} _bool : Whether the system draws with every step automatically (true) or not (false)
 		#endregion
@@ -103,24 +121,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-		#region jsDoc
-		/// @desc    Sets the system on a defined layer to draw it onto.
-		/// @param   {Id.Layer} _layer : The layer to set the system to.
-		#endregion
-	static set_layer				= function(_layer)
-	{
-		layer	=	_layer;
-		
-		if index == -1 
-		{
-			__pulse_show_debug_message("System is asleep",1)
-			return self
-		}
-		part_system_layer(index,layer);
-		
-		return self
-	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc    Sets in which order particles are drawn.
 		/// @param   {Bool} _bool : Whether the system draws the new particles on top (true) or on the bottom (false)
 		#endregion
@@ -136,7 +137,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc    Sets the position of the system in room coordinates
 		/// @param   {Real} _x : X Room coordinate
 		/// @param   {Real} _y : Y Room coordinate
@@ -154,7 +155,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc    Sets the angle of the system
 		/// @param   {Real} _angle : new angle of the system, in degrees
 		#endregion
@@ -171,7 +172,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc    Turns super-sampling on or off. Super-Sampling allows to de-couple system ticks and game steps. WARNING: Super sampling turns auto-updating off.
 		/// @param   {Bool} _active : Whether to turn super sampling on or off.
 		/// @param   {Real} _samples : Amount of system ticks that will happen per step.
@@ -189,7 +190,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		}
 		return self
 	}
-		#region jsDoc
+	#region jsDoc
 		/// @desc   Sets the color and alpha of the whole system
 		/// @param   {Real} _color : Color for the system. c_white displays the system normally
 		/// @param   {Real} _alpha : Alpha for the system, from 0 (transparent) to 1 (opaque)
@@ -221,7 +222,6 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			part_system_global_space(index,_enable)
 		return self
 	}
-	
 	static reset					= function()
 	{
 		if index == -1 
@@ -269,15 +269,19 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		}
 		else
 		{
-			part_system_update(index)
+			_resample = max(1,_resample)
+			repeat(_resample)
+			{
+				part_system_update(index)
+			}
 		}
 	}
-	/// @desc    Draws the Particle System
+
 	static get_particle_count		= function()
 	{
 		if index == -1 
 		{
-			__pulse_show_debug_message("System is asleep",1)
+			particle_amount = 0
 			return 0
 		}
 		particle_amount =  part_particles_count(index)
@@ -302,23 +306,40 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	#region jsDoc
 	/// @desc    Makes the system asleep. This frees the system from memory but doesn't detroy its configuration.
 	#endregion
-	static make_asleep				= function()
+	static make_asleep				= function(_wake_on_emit=true)
 	{
+		wake_on_emit		= _wake_on_emit
+		if time_source_exists(count)
+		{
+			if time_source_get_state(count) != time_source_state_stopped
+			{
+				time_source_stop(count)
+			}
+		}
 		if index == -1 
 		{
 			__pulse_show_debug_message("System is already asleep",1)
+			return self
 		}
 		part_system_destroy(index)
 		index = -1
+		return self
 	}
 	#region jsDoc
 	/// @desc    Makes the system awake. This makes the system available for changes and for emition.
 	#endregion
 	static make_awake				= function()
 	{
+		
 		if index != -1 
 		{
 			__pulse_show_debug_message("System is already awake",1)
+			return self
+		}
+		
+		if time_source_exists(count) && monitoring
+		{
+			time_source_resume(count)
 		}
 		
 		if layer != -1
@@ -330,84 +351,57 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			index	=	part_system_create()
 		}
 		reset()
+		return self
 	}
-	
-	
-	count			=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
+	#region jsDoc
+	/// @desc   Limits the amount of particles sustainable by the system
+	#endregion
+	static set_particle_limit		= function(max_amount,_sleep_when_empty=true)
+	{
+		limit = max(0,max_amount)
+		
+		if !time_source_exists(count)
 		{
-				if index != -1 && threshold > 0
-				{
-					particle_amount =  part_particles_count(index)
-								
-					// if there are more particles than desired threshold
-					if particle_amount-threshold > threshold*.1
-					{
-						factor *= (threshold/particle_amount)
-					} 
-					else if threshold-particle_amount > threshold*.1 && factor<1
-					{
-						factor /= (particle_amount/threshold)
-						factor = min(1,factor)
-					}
-					else if particle_amount == 0
-					{
-						time_source_stop(count)
-						if sleep_when_empty { make_asleep() }
-					}
-				}
-				else
+			count	=	time_source_create(time_source_game,__PULSE_DEFAULT_COUNT_TIMER,time_source_units_frames,function()
+			{
+				if index == -1
 				{
 					time_source_stop(count)
+					exit
 				}
+				particle_amount =  part_particles_count(index)
+				// if there are more particles than desired limit
+				if particle_amount-limit > limit*.1
+				{
+					factor *= (limit/particle_amount)
+				} 
+				else if limit-particle_amount > limit*.1 && factor<1
+				{
+					factor /= (particle_amount/limit)
+					factor = min(1,factor)
+				}
+				else if particle_amount == 0
+				{
+					if sleep_when_empty 
+					{ 
+						make_asleep(wake_on_emit) 
+					}
+					else
+					{
+						time_source_stop(count)
+					}
+				}
+	
 			},[],-1)
+		}
+		
+		if time_source_get_state(count) != time_source_state_active
+		{
+			time_source_start(count)
+		}
+		
+		return self
+	}
+
 }
 
-/// @description			Store a system in Pulse's Global storage. If there is a system of the same name it will override it or change the name.
-/// @param {Struct.pulse_system}			_system : Pulse System to store
-/// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system.
-/// @return {Struct}
-function pulse_store_system			(_system,_override = false)
-{
-	/// Check if it is a Pulse System
-	if !is_instanceof(_system,pulse_system)
-	{
-		__pulse_show_debug_message("Argument provided is not a Pulse System",3)
-		return
-	}
-	
-	var _name =  _system.name
-
-	if pulse_exists_system(_name) > 0 && !_override
-	{
-		/// Change name if the name already exists
-		var l		=	struct_names_count(global.pulse.systems)		
-		_name		=	$"{_name}_{l}";	
-		_system.name = _name
-	}
-	
-	__pulse_show_debug_message($"Created system by the name {_name}",3);
-	global.pulse.systems[$_name] = variable_clone(_system)
-	return  global.pulse.systems[$_name]
-}
-
-/// @description			Fetches a Pulse System from the global struct. Returns a reference to the global struct.
-/// @param {String}	_name : Pulse System name to fetch, as a string.
-/// @return {Struct}
-function pulse_fetch_system			(_name)
-{
-	/// Check if it is a Pulse System
-	if !is_string(_name)
-	{
-		__pulse_show_debug_message("Argument provided is not a String",3)
-		return undefined
-	}
-	
-	if pulse_exists_system(_name) > 0 
-	{
-		return global.pulse.systems[$_name]
-	}
-	
-	__pulse_show_debug_message($"System named '{_name}' not found",3);
-	
-	return undefined
-}

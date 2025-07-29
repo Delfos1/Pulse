@@ -1,1 +1,0 @@
-emit.rotation+=10
