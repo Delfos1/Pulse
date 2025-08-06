@@ -1103,9 +1103,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 
 			return _e
 		}
-			
 		
-			
 		switch (stencil_mode)
 		{
 			case PULSE_STENCIL.A_TO_B: //SHAPE A IS EXTERNAL, B IS INTERNAL
@@ -1688,7 +1686,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		//Then we calculate the Total Displacement of the particle over its life
 		_p.accel ??=  part_type.speed[2]*(_p.life*_p.life)*.5
 		var _displacement = (_p.speed*_p.life)+_p.accel
-
+		_p.disp = _displacement
 		// If the particle moves beyond the edge of the radius, change either its speed or life
 		if	_displacement > _length_to_edge
 		{
@@ -1704,6 +1702,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			_p.to_edge	+=	1
 		}
 				
+
 		return _p 		
 				
 	}
@@ -1983,6 +1982,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		else
 		{
+			var _amount = _amount_request
 			var cache = array_create(_amount,0)
 		}
 		var div_v,div_u,_xx,_yy,i,j,x1,y1,r_h,g_s,b_v;
@@ -2099,6 +2099,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		if _cache
 		{ 
+			cache= _array_clean(cache)
 				return cache
 		}
 	}
@@ -2110,20 +2111,23 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}						_cache : An array populated by a Pulse emitter's output. By default is empty. Particles can be added with the add_particles() methods
 function	pulse_cache(_emitter , _cache=[] ) constructor
 {
-	emitter			= _emitter
+//	emitter			= _emitter
+	path			= _emitter.path
+	path_res		= _emitter.path_res
+		line		= _emitter.line
 	part_system		= _emitter.part_system
 	index			= 0
 	shuffle			= true
-	cache			= _cache
+	cache			= _array_clean(_cache)
+	
 	length			= array_length(_cache)
 	flag_stencil	= false
 	
 	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
 						{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
 	_channel_03			=	animcurve_get_channel(stencil_profile,0)
-	
-	is_colliding		=	false
-	forces				=	[]
+
+	form_mode			=	_emitter.form_mode	
 	radius_external		=	_emitter.radius_external
 	radius_internal		=	_emitter.radius_internal
 	edge_external		=	_emitter.edge_external
@@ -2131,9 +2135,13 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	mask_start			=	_emitter.mask_start
 	mask_end			=	_emitter.mask_end
 	boundary			=	_emitter.boundary
-	x_focal_point		=	_emitter.x_focal_point
-	y_focal_point		=	_emitter.y_focal_point
-	
+	x_scale				=	_emitter.x_scale
+	y_scale				=	_emitter.y_scale
+	collide				= false							// Whether to perform the collision code
+	is_colliding		= false							// Whether the cached emitter is colliding or not
+	colliding_cache		= undefined						// modified cache for collisions
+	colliding_entities	= _emitter.colliding_entities	// Entities to search for collisions
+	collisions			= _emitter.collisions			// Entities currently colliding with cached emitter
 	/// @desc Adds particles to the cache
 	/// @param {Array} array with the results of a pulse emit.
 	static	add_particles = function(array)
@@ -2159,7 +2167,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	 * @param {bool}[_prec] Whether the collision is precise (true, slow) or not (false, fast)
 	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
 	 */
-	static	check_collision = function(x,y,_collision_obj, _occlude = true, _prec = false , _rays = 32 )
+	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
 	{
 		if is_array(_collision_obj){
 		if array_length(_collision_obj)==0
@@ -2287,52 +2295,89 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	
 		return colliding_entities
 	}
-
-	#region FORCES
-	
-	/// @description	Adds a force to the current emitter. Force must be a Pulse Force
-	/// @param {Struct.pulse_force}	_force : Pulse force to be added to the emitter
-	/// @context pulse_emitter
-	static	add_force			=	function(_force)
+	static __set_normal_origin		=	function(_p,x,y)
 	{
-		if is_instanceof(_force,pulse_force)
+		switch (form_mode)
 		{
-			array_push(forces,_force)
-		}
-		return self
-	}
-	/// @description	Removes a force already applied to the current emitter. Force must be a Pulse Force
-	/// @param {Struct.pulse_force}	_force : Pulse force to be removed from the emitter
-	/// @context pulse_emitter
-	static	remove_force		=	function(_force)
-	{
-		if is_instanceof(_force,pulse_force)
-		{
-			var _i = array_get_index(forces,_force)
-			if _i != -1
+			case PULSE_FORM.PATH:
 			{
-				array_delete(forces,_i,1)
+				// path_res -100 is a PathPlus
+				if path_res != -100
+				{
+					var j			= 1/path_res
+					_p.x_origin	= path_get_x(path,_p.u_coord)
+					_p.y_origin	= path_get_y(path,_p.u_coord)
+					var x1			= path_get_x(path,_p.u_coord+j)
+					var y1			= path_get_y(path,_p.u_coord+j)
+					_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
+							
+					/*// Direction Increments only work with non-GM Particles
+					var x2	= path_get_x(path,u_coord+(j*2))
+					var y2	= path_get_y(path,u_coord+(j*2))
+					_p.arch		= angle_difference(transv, point_direction(x_origin,y_origin,x2,y2))/point_distance(x_origin,y_origin,x2,y2) 
+					*/
+					_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
+				}
+				else
+				{
+					var _path = path.SampleFromCache(_p.u_coord)
+					_p.x_origin	= _path.x
+					_p.y_origin	= _path.y
+					_p.transv	= _path.transversal
+					_p.normal	= _path.normal
+				}
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
+						
+						
+				break;
+			}
+			case PULSE_FORM.ELLIPSE:
+			{
+				_p.normal		=	(_p.u_coord*360)%360
+						
+				_p.x_origin	=	x
+				_p.y_origin	=	y
+						
+
+				_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+				_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
+	
+				_p.transv		=	((_p.normal-90)<0) ? _p.normal+270 : _p.normal-90;
+	
+			break;
+			}
+			case PULSE_FORM.LINE:
+			{
+				_p.transv		= point_direction(x,y,x+line[0],y+line[1])
+				_p.normal		= ((_p.transv+90)>=360) ? _p.transv-270 : _p.transv+90;
+				_p.x_origin	= lerp(x,x+line[0],_p.u_coord)
+				_p.y_origin	= lerp(y,y+line[1],_p.u_coord)
+						
+				if _p.v_coord != 0
+				{
+					_p.x_origin	+= (lengthdir_x(_p.length,_p.normal)*x_scale);
+					_p.y_origin	+= (lengthdir_y(_p.length,_p.normal)*y_scale);
+				}
+
 			}
 		}
-		return self
-	}
-	#endregion
-	
+			return _p
+		}
 	static __check_form_collide		=	function(_p)
 	{
-		//If we wish to cull the particle to the "edge" , proceed
-		if boundary == PULSE_BOUNDARY.NONE
-		{
-			return _p 
-		}
+		var dir_stencil = _p.u_coord%1;
+		var eval	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+		
+		if eval >= 1 { return _p}
 		//First we define where the EDGE is, where our particle should stop
-		var _edge = clamp(animcurve_channel_evaluate(_channel_03,_p.u_coord),0,1);
+		
 		var to_transversal = abs(angle_difference(_p.dir,_p.transv))
 		
 		if to_transversal <=30	or 	 abs(to_transversal-180) <=30//TRANSVERSAL
 		{
 			// Find half chord of the coordinate to the circle (distance to the edge)
-			var _a =power(_edge*edge_external,2)-power(_p.length,2)
+			var _a =power(eval*edge_external,2)-power(_p.length,2)
 			var _length_to_edge	= sqrt(abs(_a)) 
 						
 		}
@@ -2341,14 +2386,14 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 			//Edge is the distance remaining from the spawn point to the radius
 			if _p.length>=0
 			{
-				var _length_to_edge	=	(_edge*edge_external)-_p.length
+				var _length_to_edge	=	(eval*edge_external)-_p.length
 			}
 			else
 			{
-				var _length_to_edge	=	(_edge*edge_internal)+_p.length
+				var _length_to_edge	=	(eval*edge_internal)+_p.length
 			}
 		}
-		else											//NORMAL TOWARDS CENTER
+		else			//NORMAL TOWARDS CENTER
 		{	
 			// If particle is going towards a focal point and thats the limit to be followed
 			if boundary == PULSE_BOUNDARY.FOCAL_LIFE || boundary == PULSE_BOUNDARY.FOCAL_SPEED
@@ -2357,17 +2402,36 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 			}
 			else
 			{
-				return _p 
+				if edge_internal >= 0
+				{
+					var _length_to_edge	=	abs(_p.length)-(edge_internal*_e.int)
+				}
+				else
+				{
+					if _p.length>=0
+					{
+						var _length_to_edge	=	_p.length
+					}
+					else
+					{
+						var _length_to_edge	=	abs(edge_internal*_e.int)
+					}
+				}	
 			}
 		}
-					
-		//Then we calculate the Total Displacement of the particle over its life
-		_p.accel ??=  part_type.speed[2]*(_p.life*_p.life)*.5
-		var _displacement = (_p.speed*_p.life)+_p.accel
-
-		// If the particle moves beyond the edge of the radius, change either its speed or life
-		if	_displacement > _length_to_edge
+		if _length_to_edge < 0
 		{
+			return undefined
+		}
+				_p.accel ??=  _p.particle.speed[2]*(_p.life*_p.life)*.5
+				_p[$ "disp"] ??= (_p.speed*_p.life)+_p.accel
+		// If the particle moves beyond the edge of the radius, change either its speed or life
+		
+		if	_p.disp > _length_to_edge
+		{
+			
+			var _p2 = variable_clone(_p)
+			_p=_p2
 			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 				_p.speed	=	(_length_to_edge-_p.accel)/_p.life
@@ -2381,103 +2445,8 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		}
 				
 		return _p 		
-				
 	}
-	
-	static __check_forces			=	function(_p,x,y)
-	{
-		// For each local force, analyze reach and influence over particle
-		var _forces_length  = array_length(forces)
-		for (var k=0;k<_forces_length;k++)
-		{
-			var _weight = 0;
-						
-			if forces[k].weight <= 0 continue //no weight, nothing to do here!
-						
-			if forces[k].range == PULSE_FORCE.RANGE_INFINITE
-			{
-				_weight = forces[k].weight //then weight is the force's full strength
-			}
-			else if forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
-			{
-				var __force_x,__force_y
 
-					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
-					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
-
-				// relative position of the particle to the force
-				var _x_relative = _p.x_origin - __force_x
-				var _y_relative = _p.y_origin - __force_y
-							
-				//If the particle is to the left/right, up/down of the force, retrieve appropriate limit							
-				var _coordx = _x_relative<0 ? forces[k].east : forces[k].west
-				var _coordy = _y_relative<0 ? forces[k].north : forces[k].south
-							
-				// if particle origin is within the area of influence OR the influence is infinite (==-1)
-				if (abs(_x_relative)< _coordx || _coordx==-1) 
-					&& (abs(_y_relative)< _coordy || _coordy==-1)
-				{
-					//within influence, calculate weight!
-					// If the influence is infinite, apply weight as defined
-					// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
-					var _weightx = _coordx==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_x_relative)/_coordx )
-					var _weighty = _coordy==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_y_relative)/_coordy )
-								
-					//Average of vertical and horizontal influences
-					_weight= (_weightx+_weighty)/2
-				}
-				else continue //not within influence. Byebye!
-			}
-			else if forces[k].range == PULSE_FORCE.RANGE_RADIAL
-			{
-				var __force_x,__force_y
-
-					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
-					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
-
-							
-				var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
-				if _dist < forces[k].radius
-				{
-					_weight= lerp(0,forces[k].weight,_dist/forces[k].radius )
-				}
-				else continue //not within influence. 
-			}
-						
-			if (_weight==0) continue; //no weight, nothing to do here!
-						
-			if forces[k].type == PULSE_FORCE.DIRECTION
-			{
-				// convert to vectors
-				var _vec2 =[0,0];
-				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
-				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
-				// add force's vectors
-				_vec2[0] = _vec2[0]+(forces[k].vec[0]*_weight)
-				_vec2[1] = _vec2[1]+(forces[k].vec[1]*_weight)
-				// convert back to direction and speed
-				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
-				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
-			}
-			else if forces[k].type = PULSE_FORCE.POINT
-			{
-				var dir_force	=	(point_direction( (x+forces[k].x),(y+forces[k].y),x_origin,y_origin)+forces[k].direction)%360
-				_p.dir = lerp_angle(_p.dir,dir_force,forces[k].weight)
-			}
-						
-		}
-		return _p
-	}
-	
-	static	__update	=	function(_index,_amount,x,y)
-	{
-		for(var _i =_index; _i < _amount ; _i++)
-		{
-			var _p	= cache[_i]
-				_p	= __check_form_collide(_p)
-				_p	= __check_forces(_p,x,y)
-		}
-	}
 	
 	/// @desc Emits the particles stored in the cache. X,Y coordinates are relative to the stored position.
 	/// @param {real} _amount    Amount of particles to emit
@@ -2511,34 +2480,41 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		_amount = floor((_amount*part_system.factor)*global.pulse.particle_factor)
 		if _amount	== 0 exit
 			
-		do{
+		do
+		{
+			var _target , _i  = index
+			
 			if (index + _amount) >length
 			{
-				if flag_stencil {__update(index,length-index,x,y)}
-				for(var _i = index ; _i < length-index ; _i++)
-				{
-					cache[_i].particle.launch(cache[_i],x,y)
-				}
-				_amount -=  (length - index)
+				_target = length-index
 				index = 0
+				_amount -=  _target
 			}
 			else
 			{
-				if flag_stencil {__update(index,index+_amount,x,y)}
-				for(var _i = index ; _i < index+_amount ; _i++)
-				{
-					cache[_i].particle.launch(cache[_i],x,y)
-				}
-				index = (index + _amount) % length
+				_target = index+_amount
+				index = _target % length
 				_amount = 0
 			}
+			
+			for(_i = _i  ; _i < _target ; _i++)
+			{
+				if collide && is_colliding
+				{
+					var _particle = __check_form_collide(cache[_i])
+					if _particle == undefined continue
+					cache[_i].particle.launch(_particle,x,y)
+				} else {
+					cache[_i].particle.launch(cache[_i],x,y)
+				}
+			}
+			
 			if  index == 0
 			{
-				flag_stencil = false
-			
-			if shuffle array_shuffle_ext(cache,irandom_range(0,floor(length/2)),length/2)
+				
+				if shuffle array_shuffle_ext(cache,irandom_range(0,floor(length/2)),length/2)
 			}
-		} until(_amount = 0)
+		} until(_amount == 0)
 	}
 }
 

@@ -713,6 +713,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_t =  _w != 0 ? _l / _w : _l
 		}
 	
+
 		_point = { x : lerp(cache[_ind].x,cache[_ind2].x,_t), y : lerp(cache[_ind].y,cache[_ind2].y,_t)}
 		_point.transversal = lerp_angle(cache[_ind].transversal,cache[_ind2].transversal,_t)
 		_point.normal = _point.transversal + 90
@@ -1790,7 +1791,7 @@ function _array_clean(array)
 	
 	for(var _i = 0 ; _i < l ; _i++ )
 	{
-		if array[_i] != 0
+		if array[_i] != 0 
 		{
 			array_push(_new_array,array[_i])	
 		}

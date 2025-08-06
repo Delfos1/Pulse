@@ -1,7 +1,15 @@
 if counter % e_freq == 0
 {
+	if cacheing
+	{
+		cache.check_collision(x,y)
+		cache.pulse(e_amount*s_resampling,0,0)
+	}
+	else
+	{
 	particle.reset()
-emitter.pulse(e_amount*s_resampling,x,y,false)	;	
+	emitter.pulse(e_amount*s_resampling,x,y,false)	;
+	}
 };
 ++counter
 

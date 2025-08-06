@@ -12,9 +12,9 @@ collision_particle.set_direction(0,365).set_shape(pt_shape_line).set_color(c_yel
 
 particle.set_death_on_collision(2,collision_particle)
 emitter = new pulse_emitter("sys_1","a_particle_name");
-
+cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
-
+cacheing = false
 
 //////////////////////////
 //////////////////////////
@@ -250,6 +250,16 @@ dbg_section("Size",false)
 
 dbg_text_separator("Size")
 
+p_scale = [1,1]
+
+dbg_text_input(ref_create(self,"p_scale",0),"Scale X","f")
+dbg_text_input(ref_create(self,"p_scale",1),"Scale Y","f")
+dbg_button("Apply",function(){
+	particle.set_scale(p_scale[0],p_scale[1])
+})
+
+dbg_text_separator("Size")
+
 p_size = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_size",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_size",1),"Range Maximum","f")
@@ -409,12 +419,24 @@ dbg_button("Import",function(){
 		pulse_destroy_particle(particle.name)
 		emitter = pulse_import_emitter(_p,true)	
 		particle =  emitter.part_type
+		system =  emitter.part_system
 	}
 	})
 dbg_same_line()
 dbg_button("Export",function(){
 	pulse_export_emitter(emitter)})
 	
+dbg_button("Save to Cache",function(){
+		
+	cache = new pulse_cache(emitter, emitter.pulse(e_amount*20.5,x,y,true))
+	cacheing = true
+	cache.collide = true
+})
+dbg_button("Swap to live",function(){
+		
+	cache = undefined
+	cacheing = false
+})
 e_amount = 50
 e_freq = 1
 counter = 0
@@ -528,8 +550,8 @@ e_dir = [0,0]
 e_dir_prev = [0,0]
 e_collide = false
 e_collide_prev = false
-dbg_slider(ref_create(self,"e_dir",0),0,360,"Minimum Direction")
-dbg_slider(ref_create(self,"e_dir",1),0,360,"Maximum Direction")
+dbg_slider(ref_create(self,"e_dir",0),0,360,"Minimum Direction",1)
+dbg_slider(ref_create(self,"e_dir",1),0,360,"Maximum Direction",1)
 dbg_checkbox(ref_create(emitter,"alter_direction"),"Alter Particle's Default Direction");
 dbg_checkbox(ref_create(self,"e_collide"),"Activate collisions");
 #endregion
@@ -707,5 +729,9 @@ dbg_button("Apply Distribution", function()
 	var _curve = e_dist_color_input== undefined ? undefined : [Distribution_Sample,e_dist_color_input]
 	emitter.set_distribution_color_mix(e_dist_color[0],e_dist_color[1],_curve,e_dist_color_link,,e_dist_color_type)
 })
+
+
+
+
 #endregion
 

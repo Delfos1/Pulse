@@ -408,6 +408,58 @@ function pulse_export_particle	(_particle, file = undefined)
 /// @param {Bool}			_overwrite : Whether to overwrite a particle of the same name if it already exists (true) or not (false). DEFAULT: False
 function pulse_import_particle	(_particle_file , _overwrite = false)
 {	
+	function __assign(_parsed)
+	{
+		var _new_part = new pulse_particle(_parsed.name)
+		with _new_part
+		{
+				size					=	_parsed.size
+				scale					=	_parsed.scale
+				life					=	_parsed.life
+				color					=	_parsed.color
+				color_mode				=	_parsed.color_mode
+				alpha					=	_parsed.alpha
+				blend					=	_parsed.blend
+				speed					=	_parsed.speed
+				shape					=	_parsed.shape
+				sprite					=	_parsed.sprite
+				orient					=	_parsed.orient
+				gravity					=	_parsed.gravity
+				direction				=	_parsed.direction
+				set_to_sprite			=	_parsed.set_to_sprite
+				death_type				=	_parsed.death_type
+				death_number			=	_parsed.death_number
+				subparticle				=	_parsed.subparticle
+				on_collision			=   _parsed.on_collision
+				step_type				=	_parsed.step_type
+				step_number				=	_parsed.step_number
+				time_factor				=	_parsed.time_factor
+				space_factor			=	_parsed.space_factor
+				altered_acceleration	=	_parsed.altered_acceleration
+			}
+			if _new_part.step_type != undefined 
+			{
+				var _step = pulse_fetch_particle(_new_part.step_type.name)
+					_step ??= __assign(_new_part.step_type)
+					_new_part.set_step_particle(_new_part.step_number,_step)
+
+			}
+			if _new_part.death_type != undefined 
+			{
+				var _death = pulse_fetch_particle(_new_part.step_type.name)
+				_death ??= __assign(_new_part.death_type)
+				_new_part.set_death_particle(_new_part.death_number,_death)
+			}
+			if _new_part.subparticle != undefined 
+			{
+				var _subp = pulse_fetch_particle(_new_part.subparticle.death_type.name)
+				 _subp ??= __assign(_new_part.subparticle.death_type)
+				_new_part.set_death_on_collision(_new_part.subparticle.death_number,_subp)
+			}
+			
+			return _new_part
+	}
+	
 	if filename_ext(_particle_file) != ".pulsep"
 	{
 		__pulse_show_debug_message("Particle wasn't imported (Wrong type provided)",2)
@@ -423,6 +475,8 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 		var _exists = pulse_exists_particle(_parsed.name)
 		if  ( _exists == 1 && _overwrite ) or _exists == 0
 		{
+			var _new_part = __assign(_parsed)
+			/*
 			var _new_part = new pulse_particle(_parsed.name)
 			with _new_part
 			{
@@ -447,10 +501,18 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 				step_type				=	_parsed.step_type
 				step_number				=	_parsed.step_number
 				time_factor				=	_parsed.time_factor
-				scale_factor			=	_parsed.scale_factor
+				space_factor			=	_parsed.space_factor
 				altered_acceleration	=	_parsed.altered_acceleration
-				subparticle				=	_parsed.subparticle
 			}
+			if _new_part.step_type != undefined 
+			{
+				
+				_new_part.set_step_particle(_new_part.step_number,_new_part.step_type)
+			}
+			
+			
+			_new_part.set_death_on_collision(_new_part.subparticle.death_number,_new_part.subparticle.death_type)
+*/
 
 			_new_part.reset()
 			__pulse_show_debug_message($"Particle {_new_part.name} was imported succesfully",)
@@ -696,9 +758,9 @@ function pulse_import_emitter	(file, _overwrite = false)
 	__color_mix_B		=	_parsed.__color_mix_B
 	
 if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	undefined ||
-	_parsed.__speed_channel		!=	undefined  ||	_parsed.__life_channel		=	undefined ||
+	_parsed.__speed_channel		!=	undefined  ||	_parsed.__life_channel		!=	undefined ||
 	_parsed.__orient_channel	!=	undefined  ||	_parsed.__size_x_channel	!=	undefined ||
-	_parsed.__size_y_channel	!=	undefined  || 	_parsed.__color_mix_chanel	!=	undefined ||
+	_parsed.__size_y_channel	!=	undefined  || 	_parsed.__color_mix_channel	!=	undefined ||
 	_parsed.__frame_channel		!=	undefined
 	{
 		interpolations = animcurve_really_create( {curve_name : "interpolations" , channels : []})
