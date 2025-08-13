@@ -582,10 +582,12 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		
 	#endregion 
 
-	static	launch		=	function(_struct,x=0,y=0)
+	static	launch		=	function(_struct,x=0,y=0,_sys_index= undefined)
 	{
 		with(_struct)
 		{
+			_sys_index ??= part_system
+			
 			part_type_life(particle.index,life,life);
 			part_type_speed(particle.index,speed,speed,particle.speed[2],particle.speed[3])
 			part_type_direction(particle.index,dir,dir,particle.direction[2],particle.direction[3])
@@ -617,9 +619,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 					part_type_color_hsv(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
 				}
 			}
-			particle.prelaunch(_struct)
 			
-			part_particles_create(part_system, x_origin+x,y_origin+y,particle.index, 1);
+			part_particles_create(_sys_index, x_origin+x,y_origin+y,particle.index, 1);
 		}		
 	}
 	reset()
@@ -817,7 +818,6 @@ function __pulse_particle_class		(_name) constructor
 	altered_acceleration = 0
 	subparticle = undefined
 	
-	prelaunch		= function(_struct){}
 	
 	/// @description		Sets the particle's properties to the ones saved by Pulse
 	static reset	=	function()

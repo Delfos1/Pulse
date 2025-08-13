@@ -226,7 +226,7 @@ dbg_text_separator("Sprite")
 /// Sprite selection
 p_sprite = flame_01
 p_sprite_ref = ref_create(self,"p_sprite")
-dbg_drop_down(p_sprite_ref,[flame_01,s_hand,pt_snow_cartoon,Smoke_center___200_200_],["Flame","Hand","Snow","Smoke"])
+dbg_drop_down(p_sprite_ref,[flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal],["Flame","Hand","Smoke","Arrow"])
 
 /// Sprite Properties
 
@@ -403,7 +403,7 @@ dbg_button("Apply",function()
 //////////////////////////
 //////////////////////////
 
-
+dbg_cache = undefined
 
 emitter.add_collisions(o_Collider)
 emitter.set_radius(0,150)
@@ -426,17 +426,45 @@ dbg_same_line()
 dbg_button("Export",function(){
 	pulse_export_emitter(emitter)})
 	
-dbg_button("Save to Cache",function(){
+dbg_button("Save and swap to Cache",function(){
 		
 	cache = new pulse_cache(emitter, emitter.pulse(e_amount*20.5,x,y,true))
 	cacheing = true
 	cache.collide = true
+	
+	dbg_cache = dbg_section("Cache Export",true)
+	dbg_button("Export Cache",function()
+	{
+		pulse_export_cache(cache,"cache_export","e")
+	})
+	dbg_same_line()
+	dbg_button("Import Cache",function()
+	{
+		var _c = get_open_filename("*.pulsec"," ")
+	
+		if _c != ""
+		{
+			cache = pulse_import_cache(_c)
+		}
+		
+	})
+	
 })
+dbg_same_line()
 dbg_button("Swap to live",function(){
 		
 	cache = undefined
 	cacheing = false
+	
+	if dbg_section_exists(dbg_cache)
+	{
+		dbg_section_delete(dbg_cache)
+	}
 })
+
+
+	
+
 e_amount = 50
 e_freq = 1
 counter = 0
@@ -445,12 +473,15 @@ dbg_slider_int(ref_create(self,"e_freq"),1,120,"Frequency for emitter burst")
 
 e_dbg_check = true
 dbg_checkbox(ref_create(self,"e_dbg_check"),"Draw debug helpers")
-#region Shape
-dbg_section("Shape",true)
 
-e_shape = "Ellipse"
-e_shape_prev = "Ellipse"
-dbg_drop_down(ref_create(self,"e_shape"),["Ellipse","Path","Line"],["Ellipse","Path","Line"],"Shape")
+
+#region Shape
+dbg_section("Form",true)
+
+
+dbg_button("Apply Ellipse",function(){
+	emitter.form_ellipse()		})
+
 
 #endregion
 
@@ -467,6 +498,9 @@ line_y_ref = ref_create(self,"line_y")
 dbg_text_input(line_x_ref, "Line Point B - X " , "r")
 dbg_text_input(line_y_ref, "Line Point B - Y " , "r")
 
+dbg_button("Apply Line",function(){
+	emitter.form_line(line_x,line_y)		})
+
 #endregion
 
 #region Path
@@ -475,11 +509,11 @@ dbg_text_separator("Path Properties")
 e_path = ExamplePath
 dbg_drop_down(ref_create(self,"e_path"),[ExamplePath,path_plus],["GM Path","Path Plus"],"Path to be used")
 
-dbg_button("Apply",function(){
+dbg_button("Apply Path",function(){
 	emitter.form_path(e_path)		})
 	
 #endregion
-dbg_section("General Properties",true)
+dbg_section("Form General Properties",false)
 
 #region Boundary
 dbg_text_separator("Boundary")
@@ -540,8 +574,6 @@ dbg_slider(ref_create(self,"e_stencils_off"),0,1,"Stencil Offset")
 dbg_slider(ref_create(self,"e_stencils_tween"),0,1,"Stencil Tween")
 #endregion
 
-
-
 dbg_section("Direction Modifiers",false)
 #region Direction
 dbg_text_separator("Direction Range")
@@ -558,24 +590,33 @@ dbg_checkbox(ref_create(self,"e_collide"),"Activate collisions");
 
 #region Focal Point
 dbg_text_separator("Focal Point")
-
+dbg_text(" By default a Focal point is at\n the center of the form, but this can be\n changed to achieve different effects")
 e_focal =[0,0]
 e_focal_prev =[0,0]
 dbg_text_input(ref_create(self,"e_focal",0),"Focal Point X","f")
 dbg_text_input(ref_create(self,"e_focal",1),"Focal Point Y","f")
 
 #endregion
+
+
 dbg_text_separator("Forces")
 
-dbg_button("Create New Directional Force", function()
+dbg_text("Create New:")
+dbg_button("Directional Force", function()
 {
 	var _f = instance_create_layer(x-50,y-50,"Below_Obstacles",o_Force_Directional,{image_xscale:3,image_yscale:3})
 	emitter.add_force(_f.force)
 })
+dbg_button("Radial Force", function()
+{
+	var _f = instance_create_layer(x-50,y-50,"Below_Obstacles",o_Force_Radial,{image_xscale:1,image_yscale:1})
+	emitter.add_force(_f.force)
+})
+dbg_text("Forces are distinct structs that can affect the direction of one or multiple emitters")
 
+dbg_section("Distributions",false)
 
-dbg_section("Distributions",true)
-
+dbg_text("Certain properties can be ⁂ Uniformly random /n ⁂ Random affected by an Animation Curve /n ⁂ Directly linked to a different property /n ⁂ Linked and affected by an animation curve /n/n When linked it will link the range of one property with the range of the other property (min to min and max to max).")
 #region Distributions
 
 dbg_text_separator("U axis")

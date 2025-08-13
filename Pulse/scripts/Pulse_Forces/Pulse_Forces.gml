@@ -59,4 +59,8 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION, _force 
 		vec[0]		= lengthdir_x(force,direction)
 		vec[1]		= lengthdir_y(force,direction)
 	}
+	static set_type = function(_type)
+	{
+		type		= _type
+	}
 }

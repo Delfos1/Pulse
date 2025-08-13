@@ -1717,16 +1717,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						
 			if forces[k].weight <= 0 continue //no weight, nothing to do here!
 						
+			var __force_x,__force_y
+
+			__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
+			__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
+						
 			if forces[k].range == PULSE_FORCE.RANGE_INFINITE
 			{
 				_weight = forces[k].weight //then weight is the force's full strength
 			}
 			else if forces[k].range == PULSE_FORCE.RANGE_DIRECTIONAL
 			{
-				var __force_x,__force_y
-
-					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
-					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
 
 				// relative position of the particle to the force
 				var _x_relative = _p.x_origin - __force_x
@@ -1753,40 +1754,41 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 			else if forces[k].range == PULSE_FORCE.RANGE_RADIAL
 			{
-				var __force_x,__force_y
-
-					__force_x = forces[k].local ? (x+forces[k].x) : forces[k].x
-					__force_y = forces[k].local ? (y+forces[k].y) : forces[k].y
-
 							
-				var _dist = point_distance(x_origin,y_origin,__force_x,__force_y) 
+				var _dist = point_distance(_p.x_origin,_p.y_origin,__force_x,__force_y) 
 				if _dist < forces[k].radius
 				{
-					_weight= lerp(0,forces[k].weight,_dist/forces[k].radius )
+					_weight= lerp(forces[k].weight,0,_dist/forces[k].radius )
 				}
 				else continue //not within influence. 
 			}
 						
 			if (_weight==0) continue; //no weight, nothing to do here!
-						
-			if forces[k].type == PULSE_FORCE.DIRECTION
+					
+			var _vec2f =[0,0];		
+			if forces[k].type = PULSE_FORCE.POINT
 			{
+				var dir_force	=	(point_direction( __force_x,__force_y,_p.x_origin,_p.y_origin)+forces[k].direction)%360
+				
+				_vec2f[0] = lengthdir_x(forces[k].force*_weight,dir_force);
+				_vec2f[1] = lengthdir_y(forces[k].force*_weight,dir_force);
+			}else
+			{
+				_vec2f[0] =(forces[k].vec[0]*_weight)
+				_vec2f[1] =(forces[k].vec[1]*_weight)
+			}
+						
+
 				// convert to vectors
 				var _vec2 =[0,0];
 				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
 				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
 				// add force's vectors
-				_vec2[0] = _vec2[0]+(forces[k].vec[0]*_weight)
-				_vec2[1] = _vec2[1]+(forces[k].vec[1]*_weight)
+				_vec2[0] = _vec2[0]+_vec2f[0] 
+				_vec2[1] = _vec2[1]+_vec2f[1]
 				// convert back to direction and speed
 				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
 				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
-			}
-			else if forces[k].type = PULSE_FORCE.POINT
-			{
-				var dir_force	=	(point_direction( (x+forces[k].x),(y+forces[k].y),x_origin,y_origin)+forces[k].direction)%360
-				_p.dir = lerp_angle(_p.dir,dir_force,forces[k].weight)
-			}
 						
 		}
 		return _p
@@ -2111,20 +2113,22 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Array}						_cache : An array populated by a Pulse emitter's output. By default is empty. Particles can be added with the add_particles() methods
 function	pulse_cache(_emitter , _cache=[] ) constructor
 {
-//	emitter			= _emitter
-	path			= _emitter.path
-	path_res		= _emitter.path_res
-		line		= _emitter.line
-	part_system		= _emitter.part_system
-	index			= 0
-	shuffle			= true
-	cache			= _array_clean(_cache)
-	
-	length			= array_length(_cache)
-	flag_stencil	= false
-	
-	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
-						{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
+
+	path				= _emitter.path
+	path_res			= _emitter.path_res
+	line				= _emitter.line
+	part_system			= _emitter.part_system
+	index				= 0
+	shuffle				= true
+	cache				= _array_clean(_cache)
+	length				= array_length(_cache)
+	flag_stencil		= false
+	if length > 0
+	{
+		particle = pulse_fetch_particle(cache[0].particle.name)	
+	}
+
+	stencil_profile		=	animcurve_really_create({curve_name: "stencil_profile",channels:[	{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
 	_channel_03			=	animcurve_get_channel(stencil_profile,0)
 
 	form_mode			=	_emitter.form_mode	
@@ -2148,6 +2152,8 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	{
 		cache = array_concat(cache,array)
 		length	= array_length(cache)
+		
+		particle = pulse_fetch_particle(cache[0].particle.name)	
 	}
 	
 		/// @description	Adds a collision element to be checked by the collision function.
@@ -2164,7 +2170,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	 * @param {Real} _x X coordinate
 	 * @param {Real} _y Y coordinate
 	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions
-	 * @param {bool}[_prec] Whether the collision is precise (true, slow) or not (false, fast)
+	 * @param {bool} [_prec] Whether the collision is precise (true, slow) or not (false, fast)
 	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
 	 */
 	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
@@ -2447,7 +2453,6 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		return _p 		
 	}
 
-	
 	/// @desc Emits the particles stored in the cache. X,Y coordinates are relative to the stored position.
 	/// @param {real} _amount    Amount of particles to emit
 	/// @param {real} x			X coordinate, relative to the stored position
@@ -2497,18 +2502,24 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				_amount = 0
 			}
 			
-			for(_i = _i  ; _i < _target ; _i++)
+
+			if collide && is_colliding
 			{
-				if collide && is_colliding
+				//var _cache = variable_clone(cache)
+				//array_copy(_cache,_i ,cache,_i,_target-_i)
+				for(_i = _i  ; _i < _target ; _i++)
 				{
 					var _particle = __check_form_collide(cache[_i])
 					if _particle == undefined continue
-					cache[_i].particle.launch(_particle,x,y)
-				} else {
-					cache[_i].particle.launch(cache[_i],x,y)
+					particle.launch(_particle,x,y,part_system.index)
+				}
+			} else {
+				for(_i = _i  ; _i < _target ; _i++)
+				{
+					particle.launch(cache[_i],x,y,part_system.index)
 				}
 			}
-			
+	
 			if  index == 0
 			{
 				

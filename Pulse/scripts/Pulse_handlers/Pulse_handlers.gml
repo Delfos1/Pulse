@@ -408,6 +408,9 @@ function pulse_export_particle	(_particle, file = undefined)
 /// @param {Bool}			_overwrite : Whether to overwrite a particle of the same name if it already exists (true) or not (false). DEFAULT: False
 function pulse_import_particle	(_particle_file , _overwrite = false)
 {	
+	/// __assign
+	/// @description			Assigns properties to the newly created particle
+	/// @param {Sruct}			_parsed : the json parsed particle
 	function __assign(_parsed)
 	{
 		var _new_part = new pulse_particle(_parsed.name)
@@ -469,51 +472,13 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 	var _buffer = buffer_load(_particle_file)
 		buffer_seek(_buffer, buffer_seek_start, 0);
 	var _string = buffer_read(_buffer, buffer_string) ,
-		_parsed = json_parse(_string,	,	false) 
+		_parsed = json_parse(_string) 
 		buffer_delete(_buffer)
 		
 		var _exists = pulse_exists_particle(_parsed.name)
 		if  ( _exists == 1 && _overwrite ) or _exists == 0
 		{
 			var _new_part = __assign(_parsed)
-			/*
-			var _new_part = new pulse_particle(_parsed.name)
-			with _new_part
-			{
-				size					=	_parsed.size
-				scale					=	_parsed.scale
-				life					=	_parsed.life
-				color					=	_parsed.color
-				color_mode				=	_parsed.color_mode
-				alpha					=	_parsed.alpha
-				blend					=	_parsed.blend
-				speed					=	_parsed.speed
-				shape					=	_parsed.shape
-				sprite					=	_parsed.sprite
-				orient					=	_parsed.orient
-				gravity					=	_parsed.gravity
-				direction				=	_parsed.direction
-				set_to_sprite			=	_parsed.set_to_sprite
-				death_type				=	_parsed.death_type
-				death_number			=	_parsed.death_number
-				subparticle				=	_parsed.subparticle
-				on_collision			=   _parsed.on_collision
-				step_type				=	_parsed.step_type
-				step_number				=	_parsed.step_number
-				time_factor				=	_parsed.time_factor
-				space_factor			=	_parsed.space_factor
-				altered_acceleration	=	_parsed.altered_acceleration
-			}
-			if _new_part.step_type != undefined 
-			{
-				
-				_new_part.set_step_particle(_new_part.step_number,_new_part.step_type)
-			}
-			
-			
-			_new_part.set_death_on_collision(_new_part.subparticle.death_number,_new_part.subparticle.death_type)
-*/
-
 			_new_part.reset()
 			__pulse_show_debug_message($"Particle {_new_part.name} was imported succesfully",)
 			return  pulse_store_particle(_new_part,true)
@@ -522,22 +487,6 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 		// else return the existintg particle
 		return global.pulse.part_types[$ _parsed.name];
 }
-
-function pulse_import_particle_ext	(_dir , _overwrite = false)
-{
-	if !GM_is_sandboxed 
-	{
-		if directory_exists(filename_dir(_dir))
-		{
-			return pulse_import_particle	(_dir , _overwrite = false)
-		}
-	}
-	else
-	{
-		return
-	}
-}
-
 
 //////// Systems
 
@@ -587,11 +536,10 @@ function pulse_import_system	(_system_file, _overwrite = false)
 		return
 	}
 	
-	file_text_open_read(_system_file)
 	var _buffer = buffer_load(_system_file)
 		buffer_seek(_buffer, buffer_seek_start, 0);
 	var _string = buffer_read(_buffer, buffer_string) ,
-		_parsed = json_parse(_string,	,	false) 
+		_parsed = json_parse(_string) 
 		buffer_delete(_buffer)
 		
 		var _exists = pulse_exists_system(_parsed.name)
@@ -623,7 +571,6 @@ function pulse_import_system	(_system_file, _overwrite = false)
 			return  pulse_store_system(_new_sys,true)
 		}
 
-		//file_text_close(_system_file)
 		// else return the existintg particle
 		return global.pulse.systems[$ _parsed.name];
 }
@@ -683,11 +630,10 @@ function pulse_export_emitter	(_emitter)
 function pulse_import_emitter	(file, _overwrite = false)
 {
 	// Import Particle and System
-	
-	//	var _dir = filename_path(file),
-		var _fname = filename_change_ext(file,""),
-		_fpartname = string_concat(_fname,"_particle",".pulsep"),
-		_fsysname = string_concat(_fname,"_system",".pulses")
+
+	var _fname = filename_change_ext(file,""),
+	_fpartname = string_concat(_fname,"_particle",".pulsep"),
+	_fsysname = string_concat(_fname,"_system",".pulses")
 
 	var _parta =  pulse_import_particle	(_fpartname,false),
 	_part = pulse_store_particle(_parta) ,
@@ -700,15 +646,15 @@ function pulse_import_emitter	(file, _overwrite = false)
 	var _string = buffer_read(_buffer, buffer_string) ,
 		_parsed = json_parse(_string) 
 		buffer_delete(_buffer)
-		//file_text_close(file)
+
 		
-			var _new_emitter  = new pulse_emitter(_sys,_part)
-			with _new_emitter
-			{
-					#region Emitter Form
-	stencil_mode		=	_parsed.stencil_mode
-	form_mode			=	_parsed.form_mode
-	path				=	_parsed.path
+	var _new_emitter  = new pulse_emitter(_sys,_part)
+	with _new_emitter
+	{
+		#region Emitter Form
+		stencil_mode		=	_parsed.stencil_mode
+		form_mode			=	_parsed.form_mode
+		path				=	_parsed.path
 	if path == -1 && form_mode == PULSE_FORM.PATH 
 	{
 		form_mode = PULSE_FORM.ELLIPSE
@@ -1067,6 +1013,77 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 
 			}
 	return  _new_emitter
+}
+
+/////// Cache
+
+function pulse_export_cache	(_cache,_cache_name,file = undefined)
+{
+	if !is_instanceof(_cache,pulse_cache) 
+	{
+		__pulse_show_debug_message($"System wasn't exported (Wrong type provided)",2)
+		return
+	}
+	_cache_name = string(_cache_name)
+	
+	if file == undefined 
+	{
+		file = __PULSE_DEFAULT_DIRECTORY+$"cache_{_cache_name}.pulsec"
+	}
+	else if !directory_exists( filename_dir(file))
+	{
+		file = get_save_filename("*.pulsec", $"{_cache_name}.pulsec")
+		if (file == "") return
+	}
+	
+	if filename_ext(file) != ".pulsec"
+	{
+		file = filename_change_ext(file,".pulsec")
+	}
+	
+	var	 _stringy = json_stringify(_cache , true),
+			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+	buffer_write(_buff, buffer_text, _stringy);
+	buffer_save(_buff, file);
+	buffer_delete(_buff);
+		
+	__pulse_show_debug_message($"Cache '{_cache_name}' was exported succesfully" ,3)
+
+	return file
+}
+
+function pulse_import_cache	(_cache_file, _overwrite = false)
+{
+	if filename_ext(_cache_file) != ".pulsec"	
+	{
+		__pulse_show_debug_message("Cache wasn't imported (Wrong type provided)",2)
+		return
+	}
+
+
+	var _buffer = buffer_load(_cache_file)
+	
+	if _buffer == -1 return undefined
+	
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string) 
+		buffer_delete(_buffer)
+
+	var _new_cache = new pulse_cache(_parsed,_parsed.cache)
+
+	_new_cache.shuffle				= _parsed.shuffle
+
+	var _exists = pulse_exists_system(_parsed.part_system.name)
+	var _sys = pulse_fetch_system(_parsed.part_system.name)
+	if  _sys == undefined
+	{
+		__pulse_show_debug_message("Cache imported doesn't have a system. Please assign one before use",2)
+	}
+	_new_cache.part_system = _sys
+
+	return _new_cache
 }
 
 #endregion

@@ -1,1 +1,0 @@
-room_goto(Room_02_Start)

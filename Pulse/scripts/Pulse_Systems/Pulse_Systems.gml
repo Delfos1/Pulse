@@ -337,7 +337,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			return self
 		}
 		
-		if time_source_exists(count) && monitoring
+		if time_source_exists(count)
 		{
 			time_source_resume(count)
 		}

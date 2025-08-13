@@ -25,23 +25,6 @@ if system.index != 1
 
 #region Emitter
 
-if e_shape != e_shape_prev
-{
-	switch(e_shape)
-	{
-	case "Ellipse": 
-		emitter.form_ellipse()
-	break
-	case "Line": 
-		emitter.form_line(line_x,line_y)
-	break
-	case "Path": 
-		//emitter.form_path(ExamplePath)
-	break
-	}
-	
-	 e_shape_prev = e_shape
-}
 if e_bound != e_bound_prev
 {
 	switch(e_bound)
