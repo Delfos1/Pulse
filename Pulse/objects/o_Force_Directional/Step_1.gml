@@ -10,14 +10,6 @@ if action == 1
 	force.x = x
 	force.y = y
 }
-else if action == 2
-{
-	var a = point_direction(x,y,mouse_start[0],mouse_start[1])
-	var b = point_direction(x,y,mouse_x,mouse_y)
-	image_angle -= angle_difference(a,b)
-	
-	force.set_direction(image_angle)
-}
 else if action == 3
 {
 	image_xscale = 1

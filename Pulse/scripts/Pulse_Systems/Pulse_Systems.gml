@@ -342,14 +342,8 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			time_source_resume(count)
 		}
 		
-		if layer != -1
-		{
-			index	=	part_system_create_layer(layer,_persistent);
-		}
-		else
-		{
-			index	=	part_system_create()
-		}
+		index	=	part_system_create()
+		
 		reset()
 		return self
 	}

@@ -1,17 +1,17 @@
 debug = true
 show_debug_overlay(debug)
-debug_resources()
+//debug_resources()
 // Welcome to Pulse!
 
 system = pulse_store_system( new pulse_system("sys_1") )
 
-particle =  pulse_store_particle( new pulse_particle("a_particle_name"))
+particle =  DBG_General.particle[0]
 created_maps = false
 collision_particle =  pulse_store_particle( new pulse_particle("collision_particle"))
 collision_particle.set_direction(0,365).set_shape(pt_shape_line).set_color(c_yellow,c_orange).set_alpha(1,1,.6).set_speed(3,5,-.01).set_life(10,20)
 
 particle.set_death_on_collision(2,collision_particle)
-emitter = new pulse_emitter("sys_1","a_particle_name");
+emitter = new pulse_emitter("sys_1",particle);
 cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
 cacheing = false
@@ -151,7 +151,12 @@ dbg_button("Apply",function(){
 #region Particle
 
 dbg_view("Particle",true,30,70,350,600)
-dbg_text(particle.name)
+
+
+dbg_section("Selector",false)
+dbg_drop_down(ref_create(self,"particle"),DBG_General.particle,DBG_General.particle_names,"Particle Select")
+
+dbg_section("Test",false)
 
 dbg_button("Import",function(){
 	
@@ -183,6 +188,23 @@ dbg_text_input(ref_create(self,"p_speed",2),"Acceleration","f")
 dbg_text_input(ref_create(self,"p_speed",3),"Wiggle","f")
 dbg_button("Apply",function(){
 	particle.set_speed(p_speed[0],p_speed[1],p_speed[2],p_speed[3])			})
+
+dbg_text_separator("Final Speed")
+dbg_text("Change the acceleration parameter by \n determining the final speed of the particle")
+p_final_speed = [0,0,0]
+dbg_text_input(ref_create(self,"p_final_speed",0),"Final Speed","f")
+dbg_drop_down(ref_create(self,"p_final_speed",1),[2,0,1],["Average","Slowest, Shortest Lived","Fastest, Longest Lived"],"Mode")
+dbg_text_input(ref_create(self,"p_final_speed",2),"Steps","f")
+
+dbg_button("Apply",function(){
+	
+	var _step = p_final_speed[2] >= p_life[1] || p_final_speed[2] == 0 ? undefined : max(1,p_final_speed[2])
+	particle.set_final_speed(p_final_speed[0],p_final_speed[1])
+	p_speed[0] = particle.speed[0]
+	p_speed[1] = particle.speed[1]
+	p_speed[2] = particle.speed[2]
+	p_speed[3] = particle.speed[3]
+})
 
 dbg_text_separator("Direction")
 p_dir = [1,2,0,0]
@@ -327,7 +349,7 @@ p_size_final_mode = 0
 	dbg_checkbox(ref_create(self,"p_size_final_split"),"Split into X and Y dimensions")
 	dbg_text_input(ref_create(self,"p_size_final",0),"Size X","f")
 	dbg_text_input(ref_create(self,"p_size_final",1),"Size Y","f")
-dbg_drop_down(ref_create(self,"p_size_final_mode"),[0,1,2],["Average","Shortest Side","Largest Side"],"Mode")
+dbg_drop_down(ref_create(self,"p_size_final_mode"),[2,0,1],["Average","Shortest Side","Largest Side"],"Mode")
 	dbg_button("Apply",function(){
 	if p_size_final_split
 	{
@@ -462,8 +484,6 @@ dbg_button("Swap to live",function(){
 	}
 })
 
-
-	
 
 e_amount = 50
 e_freq = 1
@@ -607,12 +627,13 @@ dbg_button("Directional Force", function()
 	var _f = instance_create_layer(x-50,y-50,"Below_Obstacles",o_Force_Directional,{image_xscale:3,image_yscale:3})
 	emitter.add_force(_f.force)
 })
+dbg_same_line()
 dbg_button("Radial Force", function()
 {
 	var _f = instance_create_layer(x-50,y-50,"Below_Obstacles",o_Force_Radial,{image_xscale:1,image_yscale:1})
 	emitter.add_force(_f.force)
 })
-dbg_text("Forces are distinct structs that can affect the direction of one or multiple emitters")
+dbg_text("Forces can affect the direction of one or multiple emitters")
 
 dbg_section("Distributions",false)
 

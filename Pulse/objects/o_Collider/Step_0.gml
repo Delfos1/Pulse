@@ -3,21 +3,14 @@ if move
 	x = mouse_x
 	y = mouse_y
 	
-	if xprevious != x || yprevious != y
-	{/*
-		with ParticlesParent
+	if !instance_exists(DBG_Emitter) return
+	
+	if (xprevious != x || yprevious != y)  
+	{
+		with (DBG_Emitter)
 		{
-			var col = emitter.check_collision(x,y)
-			
-			/*
-			if (col != undefined)
-			{
-				if array_contains(col,other.id)
-				{
-					sys.cache_update_collisions(cache)
-				}
-			}*/
-		//}
+			activate_collision =  true
+		}
 	}
 }
 

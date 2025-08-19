@@ -294,25 +294,47 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 	#endregion
 	static set_death_particle=	function(_amount,_death_particle)
 	{
-		death_type		=	_death_particle
-		death_number	=	_amount
-		if is_instanceof(death_type,pulse_particle)
+		if is_instanceof(_death_particle,pulse_particle)
 		{
-			part_type_death(index,death_number,death_type.index)
+			if _death_particle.name == name
+			{
+				return self
+			}
+			
+			part_type_death(index,_amount,_death_particle.index)
 		}
 		else
 		{
-			part_type_death(index,death_number,death_type)
+			if _death_particle == index
+			{
+				return self
+			}
+			part_type_death(index,_amount,_death_particle)
 		}
+		
+		death_type		=	_death_particle
+		death_number	=	_amount
 		return self
 	}
 		#region jsDoc
 			/// @desc    Sets a particle to be emitted at death when Pulse detects a collision with the emitter. This creates a subparticle that mirrors the parent particle, but with a death particle.
-			/// @param   {Real} _amount : The amount of particles emitted
+			/// @param   {Real} _amount : The amount of particles emitted. Set to 0 to turn this property off.
 			/// @param   {Struct.__pulse_particle_class} _death_particle : The particle to emit
 	#endregion
 	static set_death_on_collision=	function(_amount,_death_particle)
 	{
+		if _amount == 0
+		{
+			if subparticle != undefined
+			{
+				part_type_destroy(subparticle.index)
+			}
+			subparticle = undefined
+			on_collision	= false
+			
+			return self
+		}
+		
 		subparticle		= new __pulse_subparticle(self,_amount,_death_particle)
 		on_collision	= true
 		return self

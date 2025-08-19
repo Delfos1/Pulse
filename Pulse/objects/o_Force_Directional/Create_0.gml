@@ -1,5 +1,27 @@
 force = new pulse_force(x,y,0,PULSE_FORCE.DIRECTION,20,1,false)
 
+var name = $"Linear Force : {id} "
+dbg_view(name,true,700,50,100,100)
+dbg_section("Properties",true)
+
+dbg_text("Position X")
+dbg_same_line()
+dbg_text(ref_create(self,"x"))
+dbg_text("Position Y")
+dbg_same_line()
+dbg_text(ref_create(self,"y"))
+
+dbg_text_separator("")
+
+dir = 0
+dbg_slider(ref_create(force,"weight"),0,1,"Weight")
+dbg_slider(ref_create(force,"force"),0,100,"Force")
+dbg_slider(ref_create(self,"dir"),0,360,"Direction")
+dbg_button("Apply",function()
+{
+	force.set_direction(dir)
+})
+
 mouse_start = [0,0]
 action = 0 // 0 nothing, 1  move , 2 rotate
 hover = false

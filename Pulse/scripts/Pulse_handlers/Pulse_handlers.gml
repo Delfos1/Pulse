@@ -137,6 +137,10 @@ function pulse_destroy_system	(_name)
 		{
 			time_source_destroy(_name.count,true)
 		}
+		if struct_exists(global.pulse.systems,_name.name)
+		{
+			variable_struct_remove(global.pulse.systems,_name.name)
+		}
 	}
 
 }
@@ -164,6 +168,10 @@ function pulse_destroy_particle	(_name)
 		if _name.subparticle != undefined 
 		{
 			part_type_destroy(_name.subparticle.index)
+		}
+		if struct_exists(global.pulse.part_types,_name.name)
+		{
+			variable_struct_remove(global.pulse.part_types,_name.name)
 		}
 	}
 
@@ -1150,6 +1158,7 @@ function pulse_fetch_particle		(_name)
 
 /// @description			Store a emitter in Pulse's Global storage. If there is a emitter of the same name it will override it or change the name.
 /// @param {Struct.pulse_emitter}			_emitter : Pulse emitter to store
+/// @param {String}			_name : Name for the emitter
 /// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter.
 /// @return {Struct}
 function pulse_store_emitter			(_emitter,_name , _override = false)

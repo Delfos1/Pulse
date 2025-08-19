@@ -1711,6 +1711,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		// For each local force, analyze reach and influence over particle
 		var _forces_length  = array_length(forces)
+		var _vec2f =[0,0];	
 		for (var k=0;k<_forces_length;k++)
 		{
 			var _weight = 0;
@@ -1744,8 +1745,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					//within influence, calculate weight!
 					// If the influence is infinite, apply weight as defined
 					// Otherwise, the weight is a linear proportion between 0 (furthest point) and weight (center point of force)								
-					var _weightx = _coordx==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_x_relative)/_coordx )
-					var _weighty = _coordy==-1? forces[k].weight : lerp(0,forces[k].weight,abs(_y_relative)/_coordy )
+					var _weightx = _coordx==-1? forces[k].weight : lerp(forces[k].weight,0,abs(_x_relative)/_coordx )
+					var _weighty = _coordy==-1? forces[k].weight : lerp(forces[k].weight,0,abs(_y_relative)/_coordy )
 								
 					//Average of vertical and horizontal influences
 					_weight= (_weightx+_weighty)/2
@@ -1765,32 +1766,34 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						
 			if (_weight==0) continue; //no weight, nothing to do here!
 					
-			var _vec2f =[0,0];		
+				
 			if forces[k].type = PULSE_FORCE.POINT
 			{
 				var dir_force	=	(point_direction( __force_x,__force_y,_p.x_origin,_p.y_origin)+forces[k].direction)%360
 				
-				_vec2f[0] = lengthdir_x(forces[k].force*_weight,dir_force);
-				_vec2f[1] = lengthdir_y(forces[k].force*_weight,dir_force);
+				_vec2f[0] += lengthdir_x(forces[k].force*_weight,dir_force);
+				_vec2f[1] += lengthdir_y(forces[k].force*_weight,dir_force);
 			}else
 			{
-				_vec2f[0] =(forces[k].vec[0]*_weight)
-				_vec2f[1] =(forces[k].vec[1]*_weight)
+				_vec2f[0] +=(forces[k].vec[0]*_weight)
+				_vec2f[1] +=(forces[k].vec[1]*_weight)
 			}
-						
-
-				// convert to vectors
-				var _vec2 =[0,0];
-				_vec2[0] = lengthdir_x(_p.speed,_p.dir);
-				_vec2[1] = lengthdir_y(_p.speed,_p.dir);
-				// add force's vectors
-				_vec2[0] = _vec2[0]+_vec2f[0] 
-				_vec2[1] = _vec2[1]+_vec2f[1]
-				// convert back to direction and speed
-				_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
-				_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
-						
-		}
+		}// ⮤
+		
+		if _vec2f[0] != 0 || _vec2f[1] != 0
+		{				
+			// convert to vectors
+			var _vec2 =[0,0];
+			_vec2[0] = lengthdir_x(_p.speed,_p.dir);
+			_vec2[1] = lengthdir_y(_p.speed,_p.dir);
+			// add force's vectors
+			_vec2[0] = _vec2[0]+_vec2f[0] 
+			_vec2[1] = _vec2[1]+_vec2f[1]
+			// convert back to direction and speed
+			_p.dir = point_direction(0,0,_vec2[0],_vec2[1])
+			_p.speed = sqrt(sqr(_vec2[0]) + sqr(_vec2[1]))
+		}				
+		
 		return _p
 	}
 	
@@ -2432,12 +2435,10 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				_p.accel ??=  _p.particle.speed[2]*(_p.life*_p.life)*.5
 				_p[$ "disp"] ??= (_p.speed*_p.life)+_p.accel
 		// If the particle moves beyond the edge of the radius, change either its speed or life
-		
+	
 		if	_p.disp > _length_to_edge
 		{
-			
-			var _p2 = variable_clone(_p)
-			_p=_p2
+
 			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 				_p.speed	=	(_length_to_edge-_p.accel)/_p.life

@@ -1,0 +1,148 @@
+//////////////////////////
+//////////////////////////
+///////   SYSTEM  ////////
+//////////////////////////
+//////////////////////////
+
+
+dbg_view($"System :{system.name}",true,330,330,300,700)
+dbg_section("File",true)
+#region File
+
+dbg_text($"System :{system.name}")
+
+dbg_button("Select as Current",function(){
+	DBG_General.s_l = array_find_index(DBG_General.systems,function(value){ return value == id })		
+	})
+dbg_same_line()
+dbg_button("Export",function(){
+	pulse_export_system(system)})
+
+#endregion
+
+dbg_section("Status",true)
+#region Status
+s_status = "System is Awake"
+
+ref_s_status= ref_create(self,"s_status")
+sleepy = 0
+sleepy_spr = s_eye
+ref_sleepy_spr = ref_create(self,"sleepy_spr")
+ref_sleepy = ref_create(self,"sleepy")
+funcsleep = function(){ 
+	if sleepy == 1 
+		{system.make_asleep(s_wakeup)
+	}
+	else
+	{
+		system.make_awake()
+	}}
+ref_func_sleep =ref_create(self,"funcsleep")
+dbg_sprite_button(ref_func_sleep,ref_sleepy_spr,ref_sleepy)
+dbg_same_line()
+dbg_text(ref_s_status)	
+
+
+dbg_text("Particle Amount");	 dbg_same_line()
+ref_s_part_amount = ref_create(system,"particle_amount")
+dbg_text(ref_s_part_amount)	
+dbg_text("Limit Particle Amount");	 dbg_same_line()
+ref_s_thresh = ref_create(system,"limit")
+dbg_text(ref_s_thresh)	
+dbg_text("System index ");	 dbg_same_line()
+ref_s_i = ref_create(system,"index")
+dbg_text(ref_s_i)	
+#endregion
+
+dbg_section("Automatic Updates",false)
+#region Automatic updates
+s_draw = true
+s_update = true
+s_sampling = 1
+s_supersample = false
+s_resampling = 1
+dbg_checkbox(ref_create(self,"s_draw"),"Automatically Draw")
+dbg_checkbox(ref_create(self,"s_update"),"Automatically Update")
+dbg_button("Apply",function()
+{
+	system.set_update(s_update)
+	system.set_draw(s_draw)
+})
+	
+dbg_text_separator("Super-sampling")	
+dbg_text("Super-sampling allows to speed up or slow down particles by controlling their update cycles")
+	
+dbg_checkbox(ref_create(self,"s_supersample"),"Super-sample")
+dbg_slider(ref_create(self,"s_sampling"),1,10,"Baseline samples",1)
+dbg_slider(ref_create(self,"s_resampling"),0.1,2,"Live Re-sampling",.1)
+dbg_button("Apply",function()
+{
+	system.set_super_sampling(s_supersample,s_sampling)
+	/*p_time_factor = 1/s_sampling
+	particle.scale_time_abs(p_time_factor)*/
+	s_update  = !s_supersample
+	
+})
+	
+dbg_section("Sleep/Awake/Treshold ",false)
+
+s_wakeup		= true
+s_fallasleep	= true
+s_limit			= 0
+dbg_checkbox(ref_create(self,"s_wakeup"),"Wake up on Emit")
+
+dbg_text(ref_s_status)
+dbg_button("Make Asleep",function(){
+	system.make_asleep(s_wakeup)})
+	dbg_same_line()
+dbg_button("Make Awake",function(){
+	system.make_awake()})
+dbg_text_separator("")
+dbg_checkbox(ref_create(self,"s_fallasleep"),"Sleep When Empty")
+dbg_text_input(ref_create(self,"s_limit"),"Max Amount of particles in the System","i")
+dbg_button("Limit Particles",function(){
+	system.set_particle_limit(s_limit, s_fallasleep)})
+
+#endregion
+
+dbg_section("Properties",false)
+#region Properties
+
+s_layer = "Same_as_Obstacles"
+s_depth = 300
+s_position = [0,0]
+s_angle = 0
+s_color = [c_white,1]
+/// Depth
+dbg_drop_down(ref_create(self,"s_layer"),["Same_as_Obstacles","Above_Obstacles","Below_Obstacles"],["Same as Obstacles","Above Obstacles","Below Obstacles"],"Layer")
+dbg_slider_int(ref_create(self,"s_depth"),200,400,"Depth")
+
+dbg_button("Apply Depth",function(){
+	system.set_depth(s_depth)
+})
+dbg_same_line()
+dbg_button("Apply Layer",function(){
+	system.set_layer(s_layer)
+})
+//Position
+dbg_text_separator("Position")
+dbg_text_input(ref_create(self,"s_position",0),"Position X")
+dbg_text_input(ref_create(self,"s_position",1),"Position Y")
+dbg_button("Apply",function(){
+	system.set_position(s_position[0], s_position[1])
+})
+/// Angle
+dbg_text_separator("Angle")
+dbg_slider(ref_create(self,"s_angle"),0,365,"Angle",.5)
+dbg_button("Apply",function(){
+	system.set_angle(s_angle)
+})
+/// Color
+dbg_drop_down(ref_create(self,"s_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
+c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
+["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Gray","Dark Gray","Black"],"Color")	
+dbg_slider(ref_create(self,"s_color",1),0,1,"Alpha")
+dbg_button("Apply",function(){
+	system.set_color(s_color[0],s_color[1])
+})
+#endregion
