@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_Particles",
+  "%Name":"Pulse_Cache",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_Particles",
+  "name":"Pulse_Cache",
   "parent":{
-    "name":"Particles",
-    "path":"folders/Pulse/Particles.yy",
+    "name":"Pulse",
+    "path":"folders/Pulse.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -14,7 +14,20 @@ dbg_text($"System :{system.name}")
 dbg_button("Select as Current",function(){
 	DBG_General.s_l = array_find_index(DBG_General.systems,function(value){ return value == id })		
 	})
-dbg_same_line()
+
+dbg_text_separator("Clone")
+
+s_newname = system.name+"_clone"
+
+dbg_text_input(ref_create(self,"s_newname"),"New System's name")
+
+dbg_button("Clone",function(){
+	var _sys = pulse_clone_system(system,s_newname),
+	_inst = instance_create_layer(0,0,layer,DBG_System,{system: _sys})
+	array_push(DBG_General.systems,_inst)
+	DBG_General.s_l = array_length(DBG_General.systems)-1
+})
+
 dbg_button("Export",function(){
 	pulse_export_system(system)})
 

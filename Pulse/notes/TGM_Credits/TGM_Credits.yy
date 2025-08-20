@@ -4,7 +4,7 @@
   "name":"TGM_Credits",
   "parent":{
     "name":"Others",
-    "path":"folders/PathPlus/Dependencies/TurboGML/Others.yy",
+    "path":"folders/Pulse/Dependencies/PathPlus/Dependencies/TurboGML/Others.yy",
   },
   "resourceType":"GMNotes",
   "resourceVersion":"2.0",

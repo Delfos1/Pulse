@@ -16,110 +16,128 @@ dbg_text($"Particle: {particle.name}")
 dbg_button("Select as Current",function(){
 	DBG_General.p_l = array_find_index(DBG_General.particles,function(value){ return value == id })		
 	})
-dbg_same_line()
+
+p_newname = string(particle.name)+"_clone"
+
+dbg_text_separator("Clone")
+
+dbg_text_input(ref_create(self,"p_newname"),"New Particle's name")
+
+dbg_button("Clone",function(){
+	var _part = pulse_clone_particle(particle,p_newname),
+	_inst = instance_create_layer(0,0,layer,DBG_Particle,{particle: _part})
+	array_push(DBG_General.particles,_inst)
+	DBG_General.p_l = array_length(DBG_General.particles)-1
+})
+
 dbg_button("Export",function(){
 	pulse_export_particle(particle,"none")})
 dbg_button("Randomize",function(){
 
-//Life
-p_life = [irandom_range(10,100),irandom_range(10,100)]
-particle.set_life(p_life[0],p_life[1])
-//Speed
-p_speed[0] = random(10)
-p_speed[1] = random(10)
-particle.set_speed(p_speed[0],p_speed[1],0,0)
+		//Life
+		p_life = [irandom_range(10,100),irandom_range(10,100)]
+		particle.set_life(p_life[0],p_life[1])
+		//Speed
+		p_speed[0] = random(10)
+		p_speed[1] = random(10)
+		particle.set_speed(p_speed[0],p_speed[1],0,0)
 
-//Final Speed
-if choose(true,false)
-{
-	p_final_speed[0] = random(20)
-	p_final_speed[1] = choose(2,0,1)
-	p_final_speed[2] = irandom_range(0,5000)
-	var _step = p_final_speed[2] >= p_life[1] || p_final_speed[2] == 0 ? undefined : max(1,p_final_speed[2])
-	particle.set_final_speed(p_final_speed[0],p_final_speed[1])
-	p_speed[0] = particle.speed[0]
-	p_speed[1] = particle.speed[1]
-	p_speed[2] = particle.speed[2]
-	p_speed[3] = particle.speed[3]
-}
+		//Final Speed
+		if choose(true,false)
+		{
+			p_final_speed[0] = random(20)
+			p_final_speed[1] = choose(2,0,1)
+			p_final_speed[2] = irandom_range(0,5000)
+			var _step = p_final_speed[2] >= p_life[1] || p_final_speed[2] == 0 ? undefined : max(1,p_final_speed[2])
+			particle.set_final_speed(p_final_speed[0],p_final_speed[1])
+			p_speed[0] = particle.speed[0]
+			p_speed[1] = particle.speed[1]
+			p_speed[2] = particle.speed[2]
+			p_speed[3] = particle.speed[3]
+		}
 
-//Direction
-p_dir[0]= random(360)
-p_dir[1]= random(360)
-p_dir[2]= choose(0,0,0,random(.3))
-p_dir[3]= choose(0,0,0,random(20))
-particle.set_direction(p_dir[0],p_dir[1],p_dir[2],p_dir[3])	
+		//Direction
+		p_dir[0]= random(360)
+		p_dir[1]= random(360)
+		p_dir[2]= choose(0,0,0,random(.3))
+		p_dir[3]= choose(0,0,0,random(20))
+		particle.set_direction(p_dir[0],p_dir[1],p_dir[2],p_dir[3])	
 
-//Gravity
-p_grav[0]= random(.5)
-p_grav[1]= random(360)
-particle.set_gravity(p_grav[0],p_grav[1])
+		//Gravity
+		p_grav[0]= random(.5)
+		p_grav[1]= random(360)
+		particle.set_gravity(p_grav[0],p_grav[1])
 
-//Orient
-p_orient[0] = random(360)
-p_orient[1] = random(360)
-p_orient[2] = choose(0,0,0,random(.3))
-p_orient[3] = choose(0,0,0,random(20))
-p_orient[4] = choose(true,false)
-particle.set_orient(p_orient[0],p_orient[1],p_orient[2],p_orient[3],p_orient[4])
+		//Orient
+		p_orient[0] = random(360)
+		p_orient[1] = random(360)
+		p_orient[2] = choose(0,0,0,random(.3))
+		p_orient[3] = choose(0,0,0,random(20))
+		p_orient[4] = choose(true,false)
+		particle.set_orient(p_orient[0],p_orient[1],p_orient[2],p_orient[3],p_orient[4])
 
-//Shape or Sprite
-if  choose(true,false)
-{
-	//Shape
-	p_shape =choose(pt_shape_circle,pt_shape_cloud,
-	pt_shape_disk,pt_shape_explosion,pt_shape_flare,pt_shape_line,pt_shape_pixel,pt_shape_ring,
-	pt_shape_smoke,pt_shape_snow,pt_shape_spark,pt_shape_star,pt_shape_sphere,pt_shape_square)
-	particle.set_shape(p_shape)
-}else{
-	//Sprite
-	p_sprite =choose(flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal)
-	p_anim =  choose(true,false)
-	p_stretch =  choose(true,false)
-	p_sp_random =  choose(true,false)
-	p_sp_frame = 0
-	particle.set_sprite(p_sprite,p_anim,p_stretch,p_sp_random,p_sp_frame)
-}
+		//Shape or Sprite
+		if  choose(true,false)
+		{
+			//Shape
+			p_shape =choose(pt_shape_circle,pt_shape_cloud,
+			pt_shape_disk,pt_shape_explosion,pt_shape_flare,pt_shape_line,pt_shape_pixel,pt_shape_ring,
+			pt_shape_smoke,pt_shape_snow,pt_shape_spark,pt_shape_star,pt_shape_sphere,pt_shape_square)
+			particle.set_shape(p_shape)
+		}else{
+			//Sprite
+			p_sprite =choose(flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal)
+			p_anim =  choose(true,false)
+			p_stretch =  choose(true,false)
+			p_sp_random =  choose(true,false)
+			p_sp_frame = 0
+			particle.set_sprite(p_sprite,p_anim,p_stretch,p_sp_random,p_sp_frame)
+		}
 
-p_scale[0] = random_range(.1,1.5)
-p_scale[1] = random_range(.1,1.5)
-particle.set_scale(p_scale[0],p_scale[1])
+		p_scale[0] = random_range(.1,1.5)
+		p_scale[1] = random_range(.1,1.5)
+		particle.set_scale(p_scale[0],p_scale[1])
 
-//Size
+		//Size
 
-p_size_split = choose(true,false)
+		p_size_split = choose(true,false)
 
-p_size[0] = random(1.5)
-p_size_y[0] = random(1.5)
-p_size[1] = random(1.5)
-p_size_y[1] = random(1.5)
-p_size[2] = choose(0,0,0,random(.05))
-p_size_y[2] = choose(0,0,0,random(.05))
-p_size[3] = choose(0,0,0,random(.05))
-p_size_y[3] = choose(0,0,0,random(.05))
+		p_size[0] = random(1.5)
+		p_size_y[0] = random(1.5)
+		p_size[1] = random(1.5)
+		p_size_y[1] = random(1.5)
+		p_size[2] = choose(0,0,0,random(.05))
+		p_size_y[2] = choose(0,0,0,random(.05))
+		p_size[3] = choose(0,0,0,random(.05))
+		p_size_y[3] = choose(0,0,0,random(.05))
 
-	if p_size_split
-	{
-		particle.set_size([p_size[0],p_size_y[0]],[p_size[1],p_size_y[1]],[p_size[2],p_size_y[2]],[p_size[3],p_size_y[3]])
+			if p_size_split
+			{
+				particle.set_size([p_size[0],p_size_y[0]],[p_size[1],p_size_y[1]],[p_size[2],p_size_y[2]],[p_size[3],p_size_y[3]])
 			
-	}else
-	{
-		particle.set_size(p_size[0],p_size[1],p_size[2],p_size[3])
-	}
+			}else
+			{
+				particle.set_size(p_size[0],p_size[1],p_size[2],p_size[3])
+			}
 
-p_color[0]= choose(c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
-p_color[1]= choose(undefined,c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
-p_color[2]= choose(undefined,c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
-p_blend = 	choose(true,false)
-	particle.set_color(p_color[0],p_color[1],p_color[2])
-	particle.set_blend(p_blend)
+		p_color[0]= choose(c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
+		p_color[1]= choose(undefined,c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
+		p_color[2]= choose(undefined,c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
+		p_blend = 	choose(true,false)
+			particle.set_color(p_color[0],p_color[1],p_color[2])
+			particle.set_blend(p_blend)
 	
-p_alpha[0]=random(1)
-p_alpha[1]=random(1)
-p_alpha[2]=random(1)
-	p_alpha[1] = p_alpha[1]<0 ? -1 : p_alpha[1]
-	p_alpha[2] = p_alpha[2]<0 ? -1 : p_alpha[2]
-	particle.set_alpha(p_alpha[0],p_alpha[1],p_alpha[2])	
+		p_alpha[0]=random(1)
+		p_alpha[1]=random(1)
+		p_alpha[2]=random(1)
+			p_alpha[1] = p_alpha[1]<0 ? -1 : p_alpha[1]
+			p_alpha[2] = p_alpha[2]<0 ? -1 : p_alpha[2]
+			particle.set_alpha(p_alpha[0],p_alpha[1],p_alpha[2])	
+			
+		if particle.subparticle != undefined
+		{
+			particle.subparticle.update()
+		}
 })
 
 dbg_section("Properties",false)	
@@ -168,6 +186,22 @@ dbg_text_input(ref_create(self,"p_dir",2),"Acceleration","f")
 dbg_text_input(ref_create(self,"p_dir",3),"Wiggle","f")
 dbg_button("Apply",function(){
 	particle.set_direction(p_dir[0],p_dir[1],p_dir[2],p_dir[3])			})
+	
+dbg_text_separator("Arc Trajectory")
+dbg_text("Alters the direction change per step. 0 = Linear, 1 = full circle ")
+p_arc = [0,0,0]
+dbg_text_input(ref_create(self,"p_arc",0),"Total arc","f")
+dbg_drop_down(ref_create(self,"p_arc",1),[2,0,1],["Average","Slowest, Shortest Lived","Fastest, Longest Lived"],"Mode")
+dbg_text_input(ref_create(self,"p_arc",2),"Steps","f")
+
+dbg_button("Apply",function(){
+	
+	var _step = p_arc[2] == 0 ? undefined : max(1,p_arc[2])
+	particle.set_arc_trajectory(p_arc[0],p_arc[1],p_arc[2])
+
+	p_direction[2] = particle.direction[2]
+
+})
 
 
 dbg_text_separator("Gravity")
@@ -374,28 +408,28 @@ dbg_button("Apply",function()
 
 dbg_section("Sub Particles",false)
 
-p_step=[1,"collision_particle"]
-p_death=[1,"collision_particle"]
-p_collision=[1,"collision_particle"]
+p_step=1
+p_death=1
+p_collision=1
 dbg_text_separator("Step")
 
-dbg_text_input(ref_create(self,"p_step",0),"Step particles amount","i")
+dbg_text_input(ref_create(self,"p_step"),"Step particles amount","i")
 dbg_button("Apply",function(){
-particle.set_step_particle(p_step[0],p_step[1])				
+particle.set_step_particle(p_step,DBG_General.particles[DBG_General.p_l].particle)				
 	})
 
 dbg_text_separator("Death")
 
-dbg_text_input(ref_create(self,"p_death",0),"Death particles amount","i")
+dbg_text_input(ref_create(self,"p_death"),"Death particles amount","i")
 dbg_button("Apply",function(){
-	particle.set_death_particle(p_death[0],p_death[1])		
+	particle.set_death_particle(p_death,DBG_General.particles[DBG_General.p_l].particle)		
 	})
 
 dbg_text_separator("Death on Collision")
 
-dbg_text_input(ref_create(self,"p_collision",0),"Death particles amount","i")
+dbg_text_input(ref_create(self,"p_collision"),"Death particles amount","i")
 dbg_button("Apply",function(){
-	particle.set_death_on_collision(p_collision[0],p_collision[1])					
+	particle.set_death_on_collision(p_collision,collision_particle)					
 	})
 	
 	function refresh()

@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_Particles",
+  "%Name":"Pulse_Instance_Particles",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_Particles",
+  "name":"Pulse_Instance_Particles",
   "parent":{
     "name":"Particles",
     "path":"folders/Pulse/Particles.yy",

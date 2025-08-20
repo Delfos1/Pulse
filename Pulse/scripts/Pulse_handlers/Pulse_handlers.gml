@@ -1,6 +1,6 @@
 #region LOOK UP Helper functions
 
-function __pulse_lookup_system	(_name)
+function __pulse_lookup_system	(_name,_return_new=true)
 {
 	var system_found = pulse_exists_system(_name)
 	
@@ -13,18 +13,28 @@ function __pulse_lookup_system	(_name)
 				return global.pulse.systems[$_name];
 		break
 		case 0:
+				if !_return_new
+				{
+					__pulse_show_debug_message($"System {_name} not found",2)
+					return undefined
+				}
 				__pulse_show_debug_message($"System {_name} not found, creating system by that name",1)
 				return new pulse_system(_name);
 		break
 		case -1:
-				__pulse_show_debug_message($"System {_name} not found, creating system with default name",1)
+				if !_return_new
+				{
+					__pulse_show_debug_message($"System not found",2)
+					return undefined
+				}
+				__pulse_show_debug_message($"System not found, creating system with default name",1)
 				return new pulse_system(__PULSE_DEFAULT_SYS_NAME);
 		break
 	}
 	
 }
 
-function __pulse_lookup_particle(_name)
+function __pulse_lookup_particle(_name,_return_new=true)
 {
 	var particle_found = pulse_exists_particle(_name)
 	
@@ -37,10 +47,20 @@ function __pulse_lookup_particle(_name)
 				return global.pulse.part_types[$_name];
 		break
 		case 0:
+				if !_return_new
+				{
+					__pulse_show_debug_message($"Particle '{_name}' not found",2)
+					return undefined
+				}
 				__pulse_show_debug_message($"Particle \"{_name}\" not found, creating particle with that name",1)
 				return	pulse_store_particle(new pulse_particle(_name));
 		break
 		case -1:
+				if !_return_new
+				{
+					__pulse_show_debug_message($"System not found",2)
+					return undefined
+				}
 				__pulse_show_debug_message($"Particle argument is not a string or a Pulse Particle, creating particle with default name" ,1)
 				return new pulse_particle(__PULSE_DEFAULT_PART_NAME);
 		break
@@ -55,52 +75,66 @@ function __pulse_lookup_particle(_name)
 /// @param {string} __name The name of the system to clone
 /// @param {string} __new_name Optional: The name of the cloned system. By default it appends "_copy" to the original name 
 /// @returns {Struct}
-function pulse_clone_system		(__name,__new_name=__name)
+function pulse_clone_system		(_system,__new_name=undefined)
 {
-	if  !struct_exists(global.pulse.systems,__name)
+	_system = __pulse_lookup_system(_system,false)
+	
+	// Argument wasn't a system 
+	if _system == undefined { return undefined }
+	
+	if _system.name == __new_name || __new_name ==  undefined
 	{
-		__pulse_show_debug_message($"Couldn't find a particle by the name {__name}",2);
-		exit;
+		__new_name= _system.name+"_copy";
+	}
+	
+	if  pulse_exists_system(__new_name) > 0
+	{
+		/// Change name if the name already exists
+		var l		=	struct_names_count(global.pulse.systems)		
+		__new_name		=	$"{__new_name}_{l}";	
 	}
 		
-	if __name == __new_name
-	{
-	__new_name= __name+"_copy";
-	}
-		
-	global.pulse.systems[$__new_name]		=	variable_clone(global.pulse.systems[$__name])
+	global.pulse.systems[$__new_name]		=	variable_clone(_system)
 	global.pulse.systems[$__new_name].index	=	part_system_create()
 	global.pulse.systems[$__new_name].reset()
+	global.pulse.systems[$__new_name].name = __new_name
 
-	__pulse_show_debug_message($"System {__name} cloned and named {__new_name}",1);
+	__pulse_show_debug_message($"System '{_system.name}' cloned and named '{__new_name}'",1);
 	
 	return global.pulse.systems[$__new_name]
 }
 
 /// @desc Duplicates the given particle. Returns a reference to the particle.
-/// @param {string} __name The name of the particle to clone
+/// @param {string or } _start_particle The name of the particle to clone, or a particle struct
 /// @param {string} __new_name Optional: The name of the cloned particle. By default it appends "_copy" to the original name 
 /// @returns {Struct}
-function pulse_clone_particle	(__name,__new_name=__name)
+function pulse_clone_particle	(_particle,__new_name=undefined)
 {
 
-	if  !struct_exists(global.pulse.part_types,__name)
+	_particle = __pulse_lookup_particle(_particle,false)
+	
+	// Argument wasn't a particle 
+	if _particle == undefined { return undefined }
+	
+	if _particle.name == __new_name || __new_name ==  undefined
 	{
-		__pulse_show_debug_message($"Couldn't find a particle by the name {__name}",2);
-		exit;
+		__new_name= _particle.name+"_copy";
+	}
+	
+	if  pulse_exists_particle(__new_name) > 0
+	{
+		/// Change name if the name already exists
+		var l		=	struct_names_count(global.pulse.part_types)		
+		__new_name		=	$"{__new_name}_{l}";	
 	}
 		
-	if __name == __new_name
-	{
-	__new_name= __name+"_copy";
-	}
-		
-	global.pulse.part_types[$__new_name]		=	variable_clone(global.pulse.part_types[$__name])
+	global.pulse.part_types[$__new_name]		=	variable_clone(_particle)
 	global.pulse.part_types[$__new_name].index	=	part_type_create();
 	global.pulse.part_types[$__new_name].reset()
+	global.pulse.part_types[$__new_name].name	= __new_name
 	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle")
 	global.pulse.part_types[$__new_name].subparticle= undefined
-	__pulse_show_debug_message($"Particle {__name} cloned and named {__new_name}",3);
+	__pulse_show_debug_message($"Particle '{_particle.name}' cloned and named '{__new_name}'",3);
 	
 	return global.pulse.part_types[$__new_name]
 }
@@ -177,8 +211,7 @@ function pulse_destroy_particle	(_name)
 
 }
 
-/// @desc Destroys all particle types, particle systems, and emitters
-
+/// @desc Destroys all stored particle types, particle systems, and emitters
 function pulse_destroy_all()
 {	var sys, part, i
 	
@@ -300,7 +333,6 @@ function pulse_exists_emitter	(_name)
 	{
 		if struct_exists(global.pulse.emitters,_name.name)
 		{
-			_name = _name.name
 			emitter_found =  2 //found in storage
 		}
 		else
@@ -639,14 +671,14 @@ function pulse_import_emitter	(file, _overwrite = false)
 {
 	// Import Particle and System
 
-	var _fname = filename_change_ext(file,""),
-	_fpartname = string_concat(_fname,"_particle",".pulsep"),
-	_fsysname = string_concat(_fname,"_system",".pulses")
+	var _fname	= filename_change_ext(file,""),
+	_fpartname	= string_concat(_fname,"_particle",".pulsep"),
+	_fsysname	= string_concat(_fname,"_system",".pulses")
 
-	var _parta =  pulse_import_particle	(_fpartname,false),
-	_part = pulse_store_particle(_parta) ,
-	_sysa =  pulse_import_system(_fsysname,false),
-	_sys = pulse_store_system(_sysa)
+	var _parta	= pulse_import_particle	(_fpartname,false),
+	_part		= pulse_store_particle(_parta) ,
+	_sysa		= pulse_import_system(_fsysname,false),
+	_sys		= pulse_store_system(_sysa)
 
 	
 	var _buffer = buffer_load(file)
@@ -717,7 +749,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	_parsed.__size_y_channel	!=	undefined  || 	_parsed.__color_mix_channel	!=	undefined ||
 	_parsed.__frame_channel		!=	undefined
 	{
-		interpolations = animcurve_really_create( {curve_name : "interpolations" , channels : []})
+		distributions = animcurve_really_create( {curve_name : "distributions" , channels : []})
 		var _channels = []
 		var _last = -1
 		if _parsed.__v_coord_channel	!=	undefined
@@ -902,52 +934,52 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				array_push(_channels,channel)
 		}
 	
-		interpolations.channels = _channels
+		distributions.channels = _channels
 		
-		if animcurve_channel_exists(interpolations,"v_coord")
+		if animcurve_channel_exists(distributions,"v_coord")
 		{
 			distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__v_coord_channel = animcurve_get_channel(interpolations,"v_coord")
+			__v_coord_channel = animcurve_get_channel(distributions,"v_coord")
 		}
-		if animcurve_channel_exists(interpolations,"u_coord")
+		if animcurve_channel_exists(distributions,"u_coord")
 		{
 			distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__u_coord_channel = animcurve_get_channel(interpolations,"u_coord")
+			__u_coord_channel = animcurve_get_channel(distributions,"u_coord")
 		}
-		if animcurve_channel_exists(interpolations,"speed")
+		if animcurve_channel_exists(distributions,"speed")
 		{
 			distr_speed	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__speed_channel = animcurve_get_channel(interpolations,"speed")
+			__speed_channel = animcurve_get_channel(distributions,"speed")
 		}
-		if animcurve_channel_exists(interpolations,"life")
+		if animcurve_channel_exists(distributions,"life")
 		{
 			distr_life	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__life_channel = animcurve_get_channel(interpolations,"life")
+			__life_channel = animcurve_get_channel(distributions,"life")
 		}
-		if animcurve_channel_exists(interpolations,"orient")
+		if animcurve_channel_exists(distributions,"orient")
 		{
 			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__orient_channel = animcurve_get_channel(interpolations,"orient")
+			__orient_channel = animcurve_get_channel(distributions,"orient")
 		}
-		if animcurve_channel_exists(interpolations,"size_x")
+		if animcurve_channel_exists(distributions,"size_x")
 		{
 			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__size_x_channel = animcurve_get_channel(interpolations,"size_x")
+			__size_x_channel = animcurve_get_channel(distributions,"size_x")
 		}
-		if animcurve_channel_exists(interpolations,"size_y")
+		if animcurve_channel_exists(distributions,"size_y")
 		{
 			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__size_y_channel = animcurve_get_channel(interpolations,"size_y")
+			__size_y_channel = animcurve_get_channel(distributions,"size_y")
 		}
-		if animcurve_channel_exists(interpolations,"color_mix")
+		if animcurve_channel_exists(distributions,"color_mix")
 		{
 			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__color_mix_channel = animcurve_get_channel(interpolations,"color_mix")
+			__color_mix_channel = animcurve_get_channel(distributions,"color_mix")
 		}
-		if animcurve_channel_exists(interpolations,"frame")
+		if animcurve_channel_exists(distributions,"frame")
 		{
 			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__frame_channel = animcurve_get_channel(interpolations,"frame")
+			__frame_channel = animcurve_get_channel(distributions,"frame")
 		}
 	}
 	
@@ -1151,7 +1183,7 @@ function pulse_fetch_particle		(_name)
 		return global.pulse.part_types[$_name]
 	}
 	
-	__pulse_show_debug_message($"System named '{_name}' not found",3);
+	__pulse_show_debug_message($"Particle named '{_name}' not found",3);
 	
 	return undefined
 }
@@ -1181,7 +1213,150 @@ function pulse_store_emitter			(_emitter,_name , _override = false)
 	}
 	
 	__pulse_show_debug_message($"Created emitter by the name {_name}",3);
-	global.pulse.emitters[$_name] = variable_clone(_emitter)
+	global.pulse.emitters[$_name] = new pulse_emitter(_emitter.part_system,_emitter.part_type)
+	with global.pulse.emitters[$_name]
+	{
+		#region Emitter Form
+		stencil_mode		=	_emitter.stencil_mode
+		form_mode			=	_emitter.form_mode
+		path				=	_emitter.path
+		path_res			=	_emitter.path_res
+		stencil_tween		=	_emitter.stencil_tween
+		radius_external		=	_emitter.radius_external
+		radius_internal		=	_emitter.radius_internal
+		edge_external		=	_emitter.edge_external
+		edge_internal		=	_emitter.edge_internal
+		mask_start			=	_emitter.mask_start
+		mask_end			=	_emitter.mask_end
+		mask_v_start		=	_emitter.mask_v_start
+		mask_v_end			=	_emitter.mask_v_end
+		line				=	_emitter.line
+
+	#endregion
+	
+	#region Emitter properties
+		x_focal_point		=	_emitter.x_focal_point
+		y_focal_point		=	_emitter.y_focal_point
+		x_scale				=	_emitter.x_scale
+		y_scale				=	_emitter.y_scale
+		stencil_offset		=	_emitter.stencil_offset
+		direction_range		=	_emitter.direction_range
+	#endregion
+	
+	#region Distributions
+		distr_along_v_coord	=	_emitter.distr_along_v_coord
+		distr_along_u_coord	=	_emitter.distr_along_u_coord
+		distr_speed			=	_emitter.distr_speed
+		distr_life			=	_emitter.distr_life
+		distr_orient		=	_emitter.distr_orient
+		distr_size			=	_emitter.distr_size
+		distr_color_mix		=	_emitter.distr_color_mix
+		distr_frame			=	_emitter.distr_frame
+		divisions_v			=	_emitter.divisions_v
+		divisions_u			=	_emitter.divisions_u
+		divisions_v_offset	=	_emitter.divisions_v_offset
+		divisions_u_offset	=	_emitter.divisions_u_offset
+	#endregion
+	
+		#region Channels
+
+	__color_mix_A		=	_emitter.__color_mix_A
+	__color_mix_B		=	_emitter.__color_mix_B
+	
+		
+
+			distr_along_v_coord	= _emitter.distr_along_v_coord	
+			__v_coord_channel =_emitter.__v_coord_channel
+
+			distr_along_u_coord	= _emitter.distr_along_u_coord
+			__u_coord_channel = _emitter.__u_coord_channel
+
+			distr_speed	= _emitter.distr_speed
+			__speed_channel = _emitter.__speed_channel
+
+			distr_life	= _emitter.distr_life
+			__life_channel = _emitter.__life_channel 
+
+			distr_orient	=_emitter.distr_orient
+			__orient_channel = _emitter.__orient_channel
+
+			distr_size	=_emitter.distr_size
+			__size_x_channel = _emitter.__size_x_channel
+
+			distr_size	= _emitter.distr_size
+			__size_y_channel = _emitter.__size_y_channel
+
+			distr_color_mix	= _emitter.distr_color_mix
+			__color_mix_channel = _emitter.__color_mix_channel
+
+			distr_color_mix	= _emitter.distr_color_mix
+			__frame_channel =_emitter.__frame_channel
+	
+	
+	__speed_link			=	_emitter.__speed_link
+	__life_link				=	_emitter.__life_link	
+	__orient_link			=	_emitter.__orient_link
+	__size_link				=	_emitter.__size_link	
+	__color_mix_link		=	_emitter.__color_mix_link
+	__frame_link			=	_emitter.__frame_link	
+
+	__speed_weight			=	_emitter.__speed_weight
+	__life_weight			=	_emitter.__life_weight
+	__orient_weight			=	_emitter.__orient_weight
+	__size_weight			=	_emitter.__size_weight
+	__color_mix_weight		=	_emitter.__color_mix_weight
+	__frame_weight			=	_emitter.__frame_weight
+	
+	#endregion
+		boundary			=	_emitter.boundary
+		alter_direction		=	_emitter.alter_direction	
+	
+		//Image maps
+		displacement_map	=	_emitter.displacement_map
+		color_map			=	_emitter.color_map			
+
+		//Forces, Groups, Colliders
+		forces				=	_emitter.forces
+			// collisions
+		collisions			=	_emitter.collisions
+		is_colliding		=	_emitter.is_colliding
+		colliding_entities	=	_emitter.colliding_entities
+	
+	/// Anim curve conversion
+		var points = _emitter.stencil_profile.channels[0].points ,
+		_l = array_length(points)
+		var _stencil_profile_a = []
+		for(var _i = 0 ;_i<_l ;_i++)
+		{
+			animcurve_point_add(_stencil_profile_a,points[_i].posx,points[_i].value)
+		}
+		animcurve_points_set(stencil_profile,"a",_stencil_profile_a)
+	
+		//------
+		var points = _emitter.stencil_profile.channels[1].points ,
+		_l = array_length(points)
+		var _stencil_profile_b = []
+		for(_i = 0 ;_i<_l ;_i++)
+		{
+			animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
+		}
+		animcurve_points_set(stencil_profile,"b",_stencil_profile_b)
+
+		//------
+		points = _emitter.stencil_profile.channels[2].points 
+		_l = array_length(points)
+		var _stencil_profile_c = []
+		for(_i = 0 ;_i<_l ;_i++)
+		{
+			animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
+		}
+		animcurve_points_set(stencil_profile,"c",_stencil_profile_c)
+
+		_channel_01			=	animcurve_get_channel(stencil_profile,0)
+		_channel_02			=	animcurve_get_channel(stencil_profile,1)
+		_channel_03			=	animcurve_get_channel(stencil_profile,2)
+	}
+
 	return  global.pulse.emitters[$_name]
 }
 

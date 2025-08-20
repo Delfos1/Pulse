@@ -6,7 +6,7 @@
   "name":"scr_PathPlus_Follower",
   "parent":{
     "name":"PathPlus",
-    "path":"folders/PathPlus.yy",
+    "path":"folders/Pulse/Dependencies/PathPlus.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

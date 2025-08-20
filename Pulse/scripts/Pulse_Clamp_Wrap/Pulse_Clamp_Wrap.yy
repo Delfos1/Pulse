@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_Particles",
+  "%Name":"Pulse_Clamp_Wrap",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_Particles",
+  "name":"Pulse_Clamp_Wrap",
   "parent":{
-    "name":"Particles",
-    "path":"folders/Pulse/Particles.yy",
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

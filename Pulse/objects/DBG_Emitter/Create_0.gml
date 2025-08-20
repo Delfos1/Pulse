@@ -18,7 +18,7 @@ dbg_cache = undefined
 emitter.add_collisions(o_Collider)
 emitter.set_radius(0,150)
 emitter.set_boundaries(PULSE_BOUNDARY.NONE)
-dbg_view("Emitter",true,630,330,300,700)
+dbg_view($"Emitter: {emitter.name}",true,630,330,300,700)
 
 dbg_section("File",true)
 #region

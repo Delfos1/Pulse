@@ -6,7 +6,7 @@
   "name":"TGM_Paths",
   "parent":{
     "name":"Code",
-    "path":"folders/PathPlus/Dependencies/TurboGML/Code.yy",
+    "path":"folders/Pulse/Dependencies/PathPlus/Dependencies/TurboGML/Code.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

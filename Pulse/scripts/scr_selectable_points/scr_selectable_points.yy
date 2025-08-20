@@ -6,7 +6,7 @@
   "name":"scr_selectable_points",
   "parent":{
     "name":"Implementations",
-    "path":"folders/PathPlus/Implementations.yy",
+    "path":"folders/Pulse/Dependencies/PathPlus/Implementations.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

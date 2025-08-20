@@ -72,6 +72,7 @@ dbg_button("Import Particle",function(){
 			p_l = array_length(particles)-1
 	}
 })
+dbg_same_line()
 dbg_button("Import System",function(){
 	
 	var _p = get_open_filename("system.pulses","system.pulses")
@@ -85,8 +86,42 @@ dbg_button("Import System",function(){
 	}
 })
 
-
-
+dbg_button("Import Emitter",function(){
+	
+	var _p = get_open_filename("particle.pulsep","particle.pulsep")
+	
+	if _p != ""
+	{
+		var _emitter = pulse_import_emitter(_p,true)	
+		var _inst_s		= instance_create_layer(0,0,layer,DBG_System,{system: _emitter.part_system})
+							array_push(systems,_inst_s)
+							s_l = array_length(_inst_s)-1
+		var	_inst_p = instance_create_layer(0,0,layer,DBG_Particle,{particle: _emitter.part_type})
+							array_push(particles,_inst_p)
+							p_l = array_length(particles)-1
+		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
+		array_push(emitters,_emitter)
+	}
+	})
+dbg_same_line()
+dbg_button("Import Cache",function(){
+	
+	var _p = get_open_filename("particle.pulsec","particle.pulsec")
+	
+	if _p != ""
+	{
+		var _cache = pulse_import_cache(_p,true)	
+		_cache.part_system =  systems[s_l].system
+		/*
+		var _inst_s		= instance_create_layer(0,0,layer,DBG_System,{system: _cache.part_system})
+							array_push(systems,_inst_s)
+							s_l = array_length(_inst_s)-1
+		var	_inst_p = instance_create_layer(0,0,layer,DBG_Particle,{particle: _cache.part_type})
+							array_push(particles,_inst_p)
+							p_l = array_length(particles)-1*/
+		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Cache,{cache: _cache, system_instance: systems[s_l] , particle_instance : particles[p_l]})
+	}
+})
 e_dbg_check = true
 dbg_checkbox(ref_create(self,"e_dbg_check"),"Draw debug helpers")
 

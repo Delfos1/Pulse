@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Pulse_Particles",
+  "%Name":"Pulse_Show_Debug",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Pulse_Particles",
+  "name":"Pulse_Show_Debug",
   "parent":{
-    "name":"Particles",
-    "path":"folders/Pulse/Particles.yy",
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -496,6 +496,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 
 		static set_final_speed	=	function(_final_speed,_mode=0,_steps=undefined)
 		{
+			_steps = _steps<=0 ? undefined : _steps 
 			var _accel;
 			var _min_life			=	_steps ?? life[0]
 			var _max_life			=	_steps ?? life[1] 
@@ -528,6 +529,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 /// @param {Real}			_steps : achieve the size in X amount of steps from birth instead.
 		static set_final_size	=	function(_final_size,_mode=0,_steps=undefined)
 		{
+			_steps = _steps<=0 ? undefined : _steps 
 			var _incr_x , _incr_y ,
 				_min_life			=	_steps ?? life[0],
 				_max_life			=	_steps ?? life[1] ,
@@ -577,7 +579,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			var _incr;
 			var _min_life			=	_steps ?? life[0]
 			var _max_life			=	_steps ?? life[1] 
-			
+			_steps = _steps<=0 ? undefined : _steps 
 			switch(_mode)
 			{
 				case 0: // min
@@ -601,7 +603,40 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			set_orient(orient[0],orient[1],_incr,orient[3],orient[4])
 			return self
 		}
-		
+
+
+/// @description			Choose a particle's final speed by changing its acceleration
+/// @param {Real}			_arc : The arc described by the particle's trajectory before accounting for acceleration or gravity. 0 =  linear, 1 = full circle
+/// @param {Real}			_mode : 0 = apply in relation to slowest,shortest lived particle 1 = fastest, long-lived. 2 =  average of both
+/// @param {Real}			_steps : achieve the speed in X amount of steps from birth instead.
+
+	static set_arc_trajectory	=	function(_arc,_mode=0,_steps=undefined)
+	{
+		_steps = _steps<=0 ? undefined : _steps 
+		var _min_life			=	_steps ?? life[0]
+		var _max_life			=	_steps ?? life[1] ,
+		_rot;
+			
+		switch(_mode)
+		{
+			case 0: // min
+			{
+				_rot = (_arc*360)/_min_life
+				break
+			}
+			case 1: //max
+			{
+				_rot = (_arc*360)/_max_life
+					
+				break
+			}
+			default ://avg
+				_rot = mean(((_arc*360)/_min_life),((_arc*360)/_max_life))
+		}
+			
+		set_direction(direction[0],direction[1],_rot,direction[3])
+		return self
+	}	
 	#endregion 
 
 	static	launch		=	function(_struct,x=0,y=0,_sys_index= undefined)
@@ -686,125 +721,6 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 	
 	update()
 }
-/// @description			Use this to create a new instance particle 
-/// @param {Asset.GMObject}		_object : Object that will be instantiated
-/// @param {String}			_name : Name your particle or leave empty to use the default name
-/// @return {Struct}
-function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
-{
-	name			=	string(_name)
-	if particle_exists(index) part_type_destroy(index)
-	index			=	_object
-	sprite			=	object_get_sprite(_object)
-	
-	#region //SET BASIC PROPERTIES
-	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
-	{
-		size	=[_min,_max,_incr,_wiggle]
-		
-		return self
-	}
-	static set_scale		=	function(scalex,_scaley)
-	{
-		scale			= [scalex,_scaley]
-		return self
-	}
-	static set_life			=	function(_min,_max)
-	{
-		life	=[_min,_max]
-		return self
-	}
-	static set_color		=	function(color1,color2=-1,color3=-1)
-	{
-		if color3 != -1
-		{
-			color=[color1,color2,color3]	
-		}
-		else if color2 != -1
-		{
-			color=[color1,color2]
-		}
-		else
-		{
-			color=[color1]
-		}
-		color_mode		= __PULSE_COLOR_MODE.COLOR
-		return self
-	}
-	static set_alpha		=	function(alpha1,alpha2=-1,ac_curve=-1)
-	{
-		if alpha2 != -1
-		{
-			alpha=[alpha1,alpha2]
-
-		}
-		else
-		{
-			alpha=[alpha1]
-
-		}
-		return self
-	}
-	static set_blend		=	function(_blend)
-	{
-		blend	=	_blend
-		return self
-
-	}
-	static set_speed		=	function(_min,_max,_incr=0,_wiggle=0)
-	{
-		speed	=[_min,_max,_incr,_wiggle]
-		return self
-	}
-	static set_sprite		=	function(_sprite,_animate=false,_stretch=false,_random=true)
-	{
-		sprite			=	[_sprite,_animate,_stretch,_random]
-
-	}
-	static set_orient		=	function(_min,_max,_incr=0,_wiggle=0,_relative=true)
-	{
-		orient	=[_min,_max,_incr,_wiggle,_relative]
-		return self
-	}
-	static set_gravity		=	function(_amount,_direction)
-	{
-		gravity	=[_amount,_direction]
-		return self
-	}
-	static set_direction	=	function(_min,_max,_incr=0,_wiggle=0)
-	{
-		direction	=[_min,_max,_incr,_wiggle]
-		return self
-	}
-	#endregion
-	
-	static launch		=	function(_struct)
-	{	
-
-		if _struct.part_system.layer == -1
-		{
-			var _i = instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,index,_struct)
-		}
-		else
-		{
-			var _i = instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,index,_struct)	
-		}
-		
-		with (_i)
-		{
-			if size != undefined
-			{
-				image_xscale = scale[0] * particle.scale[0]
-				image_yscale = scale[1] * particle.scale[1]
-			}
-				//color_mode : distr_color_mix 
-			image_angle =  orient ?? image_angle
-			image_index = frame ?? image_index 
-			direction = dir
-		}
-	}
-}
-
 
 /// @description			Private Particle Class used as a base for all other particles.
 /// @param {String}			_name : Name of the particle.
