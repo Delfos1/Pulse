@@ -74,6 +74,122 @@ dbg_button("Swap to live",function(){
 	}
 })
 
+dbg_button("Randomize",function(){
+
+		var _focal = choose(true,false)
+
+		e_bound = _focal==true ? choose("None","Life","Speed","Focal Life","Focal Speed") : choose("None","Life","Speed")
+		e_radius		= [irandom(300),irandom(300),irandom(300),irandom(300)]
+		e_scale = [random(1),random(1)]
+		/*e_mask_u = [random(1),random(1)]
+		e_mask_v = [random(1),random(1)]*/
+
+		e_stencils = [choose("Triangle","Square","Pentagon","Hexagon"),choose("Triangle","Square","Pentagon","Hexagon")]
+		e_stencils_mode = choose(PULSE_STENCIL.NONE,PULSE_STENCIL.A_TO_B,PULSE_STENCIL.EXTERNAL,PULSE_STENCIL.INTERNAL)
+		e_stencils_off		= random(1)
+		e_stencils_tween = random(1)
+
+		e_dir = [random(360),random(360)]
+
+		e_collide =choose(true,false)
+
+		if _focal
+		{
+		e_focal =[irandom_range(-300,300),irandom_range(-300,300)]	
+		}
+		else
+		{
+		e_focal =[0,0]	
+		}
+		
+		//DISTRIBUTION 
+		
+		//U
+		e_dist_u_mode = choose(PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.EVEN)
+		e_dist_u_input = choose("Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_u_input_number = irandom_range(1,10)
+
+		if e_dist_u_mode == PULSE_DISTRIBUTION.EVEN
+		{
+			emitter.set_distribution_u(e_dist_u_mode,e_dist_u_input_number)
+		}
+		else
+		{
+			emitter.set_distribution_u(e_dist_u_mode,[Distribution_Sample,e_dist_u_input])
+		}
+		
+		//V
+		e_dist_v_mode = choose(PULSE_DISTRIBUTION.RANDOM,PULSE_DISTRIBUTION.ANIM_CURVE,PULSE_DISTRIBUTION.EVEN)
+		e_dist_v_input = choose("Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_v_input_number = irandom_range(1,10)
+
+		if e_dist_v_mode == PULSE_DISTRIBUTION.EVEN
+		{
+			emitter.set_distribution_v(e_dist_v_mode,e_dist_v_input_number)
+		}
+		else
+		{
+			emitter.set_distribution_v(e_dist_v_mode,[Distribution_Sample,e_dist_v_input])
+		}
+
+		//SPEED
+		e_dist_speed_input =  choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_speed_link = choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_speed_weight = random(1)
+
+		var _curve = e_dist_speed_input== undefined ? undefined : [Distribution_Sample,e_dist_speed_input]
+		emitter.set_distribution_speed(_curve,e_dist_speed_link,e_dist_speed_weight)
+
+		e_dist_life_input = choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_life_link = choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_life_weight = random(1)
+
+			 _curve = e_dist_life_input== undefined ? undefined : [Distribution_Sample,e_dist_life_input]
+			emitter.set_distribution_life(_curve,e_dist_life_link,e_dist_life_weight)
+
+
+		e_dist_orient_input = choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_orient_link =choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_orient_weight = random(1)
+
+			 _curve = e_dist_orient_input== undefined ? undefined : [Distribution_Sample,e_dist_orient_input]
+			emitter.set_distribution_orient(_curve,e_dist_orient_link,e_dist_orient_weight)
+
+
+		e_dist_size_input = [choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut"),choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")]
+		e_dist_size_link = choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_size_weight = random(1)
+
+
+			_curve = e_dist_size_input[0] == undefined ? undefined : [Distribution_Sample,e_dist_size_input[0]]
+			var _curve2 = e_dist_size_input[1]== undefined ? undefined : [Distribution_Sample,e_dist_size_input[1]]
+			if _curve2 != undefined
+			{
+			  _curve = e_dist_size_input[0] == undefined ? undefined : array_concat(_curve,_curve2)
+			}
+			emitter.set_distribution_size(_curve,e_dist_size_link,e_dist_size_weight)
+
+		e_dist_frame_input = choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_frame_link = choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_frame_weight = random(1)
+
+			_curve = e_dist_frame_input== undefined ? undefined : [Distribution_Sample,e_dist_frame_input]
+			emitter.set_distribution_frame(_curve,e_dist_frame_link,e_dist_frame_weight)
+
+		p_color = choose(c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)
+
+
+
+		e_dist_color = [choose(c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black),choose(c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black)]
+		e_dist_color_input = choose(undefined,"Linear","EaseInOut","EaseIn","EaseOut")
+		e_dist_color_link = choose(PULSE_LINK_TO.NONE,PULSE_LINK_TO.DIRECTION,PULSE_LINK_TO.PATH_SPEED,PULSE_LINK_TO.SPEED,PULSE_LINK_TO.U_COORD,PULSE_LINK_TO.V_COORD, PULSE_LINK_TO.DISPL_MAP , PULSE_LINK_TO.COLOR_MAP)
+		e_dist_color_type = choose(PULSE_COLOR.A_TO_B_RGB,PULSE_COLOR.A_TO_B_HSV,PULSE_COLOR.COLOR_MAP,PULSE_COLOR.NONE)
+
+			_curve = e_dist_color_input== undefined ? undefined : [Distribution_Sample,e_dist_color_input]
+			emitter.set_distribution_color_mix(e_dist_color[0],e_dist_color[1],_curve,e_dist_color_link,,e_dist_color_type)
+
+}
+)
 dbg_text_separator("Elements:")
 dbg_text($"Particle : {emitter.part_type.name}")
 dbg_text($"System   : {emitter.part_system.name}")
@@ -214,7 +330,7 @@ dbg_text_input(ref_create(self,"e_focal",1),"Focal Point Y","f")
 
 #endregion
 
-
+#region Forces
 dbg_text_separator("Forces")
 
 dbg_text("Create New:")
@@ -230,6 +346,9 @@ dbg_button("Radial Force", function()
 	emitter.add_force(_f.force)
 })
 dbg_text("Forces can affect the direction of one or multiple emitters")
+
+#endregion
+
 
 dbg_section("Distributions",false)
 

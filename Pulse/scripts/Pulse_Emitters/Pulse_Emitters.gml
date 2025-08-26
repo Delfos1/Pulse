@@ -16,6 +16,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	form_mode			=	__PULSE_DEFAULT_EMITTER_FORM_MODE
 	path				=	undefined
 	path_res			=	-1
+	path_local			=	false
 	stencil_profile		= animcurve_really_create({curve_name: "stencil_profile",channels:[
 							{name:"a",type: animcurvetype_catmullrom , iterations : 8}, 
 							{name:"b",type: animcurvetype_catmullrom , iterations : 8} , 
@@ -314,25 +315,27 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the form of the emitter as a Path. It can be a path asset or a PathPlus. It will be converted to a PathPlus
 	/// @param {Asset.GMPath ,  Struct.PathPlus}	_path : Path asset or a PathPlus. It will be converted to a PathPlus
 	/// @context pulse_emitter
-	static	form_path			=	function(_path)
+	static	form_path			=	function(_path,_local = true)
 	{
 		if is_instanceof(_path,PathPlus)
 		{
 			path = _path
 			path_res = -100
 			form_mode = PULSE_FORM.PATH
-			__pulse_show_debug_message("PathPlus applied as form",4)
+			path_local = _local
+			__pulse_show_debug_message("PathPlus applied as form",3)
 		}
 		if path_exists(_path)
 		{
 			path = _path
 			path_res = power(path_get_number(path)-1,path_get_precision(path))
 			form_mode = PULSE_FORM.PATH
-			__pulse_show_debug_message("Path applied as form",4)
+			path_local =_local
+			__pulse_show_debug_message("Path applied as form",3)
 		}
 		else
 		{
-			__pulse_show_debug_message("No Path was provided",3)
+			__pulse_show_debug_message("No Path was provided",2)
 		}
 		
 		return self
@@ -369,7 +372,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	static set_distribution_orient	=  function (_curve = undefined, _link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
 		var _mode = PULSE_DISTRIBUTION.RANDOM
-		
+		if (_link_to == PULSE_LINK_TO.COLOR_MAP)
+		{
+			__pulse_show_debug_message("Invalid link property. Color Map is only usable in Color",2)	
+			_link_to = PULSE_LINK_TO.NONE
+		};
 		if _link_to != PULSE_LINK_TO.NONE
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
@@ -419,13 +426,18 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}	
 	/// @description	Sets the type of distribution for the life of the particles. 
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
 	static set_distribution_life	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
 		var _mode = PULSE_DISTRIBUTION.RANDOM
+		
+		if (_link_to == PULSE_LINK_TO.COLOR_MAP)
+		{
+			__pulse_show_debug_message("Invalid link property. Color Map is only usable in Color",2)	
+			_link_to = PULSE_LINK_TO.NONE
+		};
 		
 		if _link_to != PULSE_LINK_TO.NONE
 		{
@@ -478,7 +490,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	/// @description	Sets the type of distribution for the speed of the particles. 
 	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
 	static set_distribution_speed	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
@@ -486,6 +497,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		if (_link_to == PULSE_LINK_TO.SPEED)
 		{
 			__pulse_show_debug_message("Invalid link property. Speed can't link to Speed",2)	
+			_link_to = PULSE_LINK_TO.NONE
+		};
+		if (_link_to == PULSE_LINK_TO.COLOR_MAP)
+		{
+			__pulse_show_debug_message("Invalid link property. Color Map is only usable in Color",2)	
 			_link_to = PULSE_LINK_TO.NONE
 		};
 
@@ -540,13 +556,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the type of distribution for the size of the particles. 
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
 	static set_distribution_size	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
 		var _mode = PULSE_DISTRIBUTION.RANDOM
+		if (_link_to == PULSE_LINK_TO.COLOR_MAP)
+		{
+			__pulse_show_debug_message("Invalid link property. Color Map is only usable in Color",2)	
+			_link_to = PULSE_LINK_TO.NONE
+		};
 		
 		if _link_to != PULSE_LINK_TO.NONE
 		{
@@ -614,9 +634,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the color of the particles. Uses the mode Color Mix, in which the particles can have a color interpolated between A and B. This overrides the color mode of the particle itself.
 	/// @param {Constant.Colour, Real}	_color_A : Color A
 	/// @param {Constant.Colour, Real}	_color_B : Color B
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @param {Real.Enum.PULSE_COLOR}	_color_mode : Color mode. It can be PULSE_COLOR.A_TO_B_HSV , PULSE_COLOR.A_TO_B_RGB or PULSE_COLOR.COLOR_MAP. PULSE_COLOR.NONE by default
 	/// @context pulse_emitter
 	static set_distribution_color_mix=  function ( _color_A, _color_B,_curve,_link_to = PULSE_LINK_TO.NONE,_weight = 1,_color_mode = PULSE_COLOR.NONE )
 	{
@@ -685,17 +705,23 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the type of distribution for the frames of the particle's sprite.
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Array}		_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string.
+	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
 	/// @context pulse_emitter
 	static set_distribution_frame	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
+		
 		if !part_type.set_to_sprite
 		{
 			__pulse_show_debug_message($"Particle {part_type.name} not set to sprite" ,2)	
 			return self	
 		}
+		
+		if (_link_to == PULSE_LINK_TO.COLOR_MAP)
+		{
+			__pulse_show_debug_message("Invalid link property. Color Map is only usable in Color",2)	
+			_link_to = PULSE_LINK_TO.NONE
+		};
 		var _mode = PULSE_DISTRIBUTION.RANDOM
 		
 		if _link_to != PULSE_LINK_TO.NONE
@@ -731,7 +757,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			if is_array(_curve)
 			{
-					if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
+				if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
 				{
 						distr_frame		=	_mode;
 						__frame_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
@@ -743,11 +769,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		}
 
-		with(part_type)
-		{
-			set_sprite(sprite[0],sprite[1],sprite[2],false,0)
+	
+			part_type.set_sprite(part_type.sprite[0],part_type.sprite[1],part_type.sprite[2],false,0)
 			__pulse_show_debug_message($"Sprite of particle {part_type.name} : Random set to False",1)	
-		}
+
 		distr_frame = _mode
 
 		return self
@@ -982,7 +1007,14 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		else if form_mode == PULSE_FORM.PATH
 		{
-			draw_path(path,x,y,true)
+			if path_res	== -100
+			{
+				path.DebugDraw(x,y,!path_local)
+			}
+			else
+			{
+				draw_path(path,x,y,!path_local)
+			}
 		}
 		draw_set_color(c_white)
 		//draw origin
@@ -1514,7 +1546,14 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					var x1			= path_get_x(path,_p.u_coord+j)
 					var y1			= path_get_y(path,_p.u_coord+j)
 					_p.transv		= point_direction(_p.x_origin,_p.y_origin,x1,y1)
-							
+					
+					var _pathx=0,_pathy=0
+					if path_local 
+					{
+						_p.x_origin	=_p.x_origin-path_get_point_x(path,0)+x
+						_p.y_origin= _p.y_origin-path_get_point_y(path,0)+y
+					}
+					
 					/*// Direction Increments only work with non-GM Particles
 					var x2	= path_get_x(path,u_coord+(j*2))
 					var y2	= path_get_y(path,u_coord+(j*2))
@@ -1813,8 +1852,16 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			case PULSE_FORM.PATH:
 			{
+				var _bbox 
 				/// if path, find bounding box of path, then check with collision
-				var _bbox = path_get_bbox(path,edge_external,mask_start,mask_end)
+				if path_res ==-100
+				{
+					_bbox = path.GetBbox(edge_external,mask_start,mask_end)
+				}
+				else
+				{
+					_bbox = path_get_bbox(path,edge_external,mask_start,mask_end)
+				}
 				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
 
 				break;
@@ -1933,8 +1980,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	/// @description	Emits the particles from the emitter. Result can be cached instead
 	/// @param {Real}	_amount_request : Amount of particles requested for creation. Actual amount might vary if the system has a limit.
-	/// @param {Real}	x : X coordinate in room space.
-	/// @param {Real}	y : Y coordinate in room space.
+	/// @param {Real}	x : X coordinate in System space.
+	/// @param {Real}	y : Y coordinate in System space.
 	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not. If true, returns an array instead of emitting particles.
 	/// @context pulse_emitter
 	static	pulse				=	function(_amount_request,x,y,_cache=false)
@@ -2015,9 +2062,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_speed		=	part_type.speed[0]
 		}
+
 		repeat(_amount)
 		{
-			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined, speed: _speed , life: _life , accel: _accel, part_system:	part_system.index	, particle:	part_type }
+			var particle_struct = { u_coord	: undefined , v_coord	: undefined	, size : undefined	, color_mode : distr_color_mix , orient : undefined, frame : undefined, speed: _speed , life: _life , accel: _accel, part_system:	part_system	, particle:	part_type }
 			var emitter_struct	= { }
 			// ----- Assigns where the particle will spawn in normalized space (u_coord)
 			//ASSIGN U COORDINATE

@@ -39,3 +39,4 @@ function debug_resources() {
 		dbg_watch(ref_create(self, "instanceCount"), "Instances");
 	})();
 }
+	

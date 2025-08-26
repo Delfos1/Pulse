@@ -11,6 +11,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	_cache_gen  =	false
 	_length_gen	=	false
 	_properties = {}
+	bbox_bottom = 0
+	bbox_top	= 0
+	bbox_left	= 0
+	bbox_right	= 0
 	
 	if is_handle(_path)
 	{
@@ -721,6 +725,58 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_point.l = pixel_length * _n
 		return _point
 	}
+	
+	static GetBbox = function(_padding=0,_from=0,_to=1)
+	{
+		var _path= type == PATHPLUS.LINEAR ? polyline : cache ,
+		_iprev , _i , _l_diff = 0  , _l = array_length(_path)
+	
+		_from	= floor(lerp(1,_l,_from))
+		_to		= floor(lerp(1,_l,_to))
+	
+		var _x_array , _x, _y_array , _y
+	
+		_x_array	= [0,0]
+		_x_array[0]	= _path[0].x
+		_x_array[1]	= _x_array[0]
+		for(var _i = 1 + _from ; _i<_to ; _i ++ )
+		{
+			_x = _path[_i].x
+		
+			if _x > _x_array[1]
+			{
+				_x_array[1] = _x
+			}
+			else if _x < _x_array[0]
+			{
+				_x_array[0] = _x
+			}
+		}
+	
+		_y_array	= [0,0]
+		_y_array[0]	= _path[0].y
+		_y_array[1]	= _y_array[0]
+		for(var _i = 1 + _from ; _i<_to ; _i ++ )
+		{
+			_y = _path[_i].y
+		
+			if _y > _y_array[1]
+			{
+				_y_array[1] = _y
+			}
+			else if _y < _y_array[0]
+			{
+				_y_array[0] = _y
+			}
+		}
+		bbox_bottom = _y_array[1]+_padding
+		bbox_top	= _y_array[0]-_padding
+		bbox_left	= _x_array[0]-_padding
+		bbox_right	= _x_array[1]+_padding
+		
+
+		return [bbox_left,bbox_top,bbox_right,bbox_bottom]
+	}
 	#endregion
 	
 	#region Path Wrappers
@@ -1247,18 +1303,25 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	/// Draws either a path, a polyline or its cached version.
 	/// @param {Real}   _x		Drawing offset
 	/// @param {Real}   _y		Drawing offset
+	/// @param {Bool}   _abs	Whether to draw from the absolute or relative position
 	/// @param {Bool}   _points Whether to draw control points or not
 	/// @param {Bool}  _path	Whether to draw the path element or the polyline/cache element
 	/// @param {Bool}  _force_poly	Whether to display the interpolated line(false) or base polyline (true)
-	static DebugDraw		= function(_x=0,_y=0,_points=false,_path=false,_force_poly=false)
+	static DebugDraw		= function(_x=0,_y=0,_abs=true,_points=false,_path=false,_force_poly=false)
 	{
 		if _path
 		{
-			draw_path(path,_x,_y,true)
+			draw_path(path,_x,_y,_abs)
 			return
 		}
 		// If type is linear or we are forcing polyline, assign the polyline array, otherwise draw from cache
 		var _lines =  _force_poly || !_cache_gen ? polyline : cache  
+		
+		if !_abs
+		{
+			_x = _x -_lines[0].x
+			_y = _y -_lines[0].y
+		}
 		
 		var _c1 = draw_get_color()
 		var _len = array_length(_lines)

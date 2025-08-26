@@ -356,7 +356,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			var _displ = gravity[0]*(life[0]*life[0])*.5
 
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
-			
+			set_direction(direction[0],direction[1],direction[2]*_factor,direction[3]*_factor)
+			set_orient(orient[0],orient[1],orient[2]*_factor,orient[3]*_factor)
 			var _grav =( 2*_displ) / ( (life[0]*(1/_factor))*(life[0]*(1/_factor)))
 			set_gravity(_grav,gravity[1])	
 
@@ -390,6 +391,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		static scale_space		= function (_factor,_shrink_particle, _gravity = true)
 		{
 			set_speed(speed[0]*_factor,speed[1]*_factor,speed[2]*_factor,speed[3]*_factor)
+			set_direction(direction[0],direction[1],direction[2]*_factor,direction[3]*_factor)
 			if _gravity 
 			{
 				set_gravity(gravity[0]*_factor,gravity[1])
@@ -643,7 +645,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 	{
 		with(_struct)
 		{
-			_sys_index ??= part_system
+			_sys_index ??= part_system.index
 			
 			part_type_life(particle.index,life,life);
 			part_type_speed(particle.index,speed,speed,particle.speed[2],particle.speed[3])

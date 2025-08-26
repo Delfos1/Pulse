@@ -7,7 +7,7 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __p
 	name			=	string(_name)
 	if particle_exists(index) part_type_destroy(index)
 	index			=	_object
-	sprite			=	object_get_sprite(_object)
+	sprite			=	[object_get_sprite(_object),false,false,true]
 	
 	#region //SET BASIC PROPERTIES
 	static set_size			=	function(_min,_max,_incr=0,_wiggle=0)
@@ -92,27 +92,15 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __p
 	
 	static launch		=	function(_struct)
 	{	
-
+		var _i
 		if _struct.part_system.layer == -1
 		{
-			var _i = instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,index,_struct)
+			_i = instance_create_depth(_struct.x_origin,_struct.y_origin,_struct.part_system.depth,index,_struct)
 		}
 		else
 		{
-			var _i = instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,index,_struct)	
+			_i = instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,index,_struct)	
 		}
-		
-		with (_i)
-		{
-			if size != undefined
-			{
-				image_xscale = scale[0] * particle.scale[0]
-				image_yscale = scale[1] * particle.scale[1]
-			}
-				//color_mode : distr_color_mix 
-			image_angle =  orient ?? image_angle
-			image_index = frame ?? image_index 
-			direction = dir
-		}
+
 	}
 }

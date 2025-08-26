@@ -34,6 +34,15 @@ dbg_button("Create Particle",function()
 	array_push(particles,_inst)
 	p_l = array_length(particles)-1
 })
+dbg_same_line()
+dbg_button("Create Instance Particle",function()
+{
+	var _part = pulse_store_particle(new pulse_instance_particle(o_particle_example,part_name)),
+		_inst = instance_create_layer(0,0,layer,DBG_Particle,{particle: _part})
+	array_push(particles,_inst)
+	p_l = array_length(particles)-1
+})
+dbg_text_separator(" ")
 
 dbg_text_input(ref_create(self,"sys_name"),"New System Name")
 
@@ -44,6 +53,7 @@ dbg_button("Create System",function()
 	array_push(systems,_inst)
 	s_l = array_length(systems)-1
 })
+dbg_text_separator(" ")
 
 dbg_text_input(ref_create(self,"emitter_name"),"New Emitter Name")
 
