@@ -9,7 +9,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	name = undefined
 	part_system = 	 __pulse_lookup_system(__part_system)
 	part_type =  __pulse_lookup_particle(__part_type)
-
+	imported = false
 
 	#region Emitter Form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
@@ -94,6 +94,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	if animcurve_really_exists(anim_curve)
 	{
+
 		distributions = anim_curve
 		
 		if animcurve_channel_exists(distributions,"v_coord")
@@ -151,7 +152,6 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	is_colliding		=	false
 	colliding_entities	=	[]
 	
-	debug_col_rays =[]
 
 	#region COMPONENTS
 	
@@ -231,6 +231,19 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		return self
 	}
+	
+		/// @description	Sets the mask on the U axis as an even spread from a central axis in an elliptic emitter. 
+	/// @param {Real.Degree}	_direction : Central axis from which to measure the spread. In degrees.
+	/// @param {Real.Degree}	_spread_angle : Spread from the central direction, to either sides of it. In degrees.
+	static	set_mask_spread			=	function(_direction, _spread_angle)
+	{
+		_direction			= (_direction%360)/360
+		_spread_angle		= ((_spread_angle%360)/360)/2
+		mask_end			= _direction - _spread_angle
+		mask_start			= _direction + _spread_angle
+		return self
+	}
+	
 	/// @description			Sets the radius of the emitter. 0 equals the center of the emitter.
 	/// @param {Real}	_radius_internal : The internal radius in absolute terms, in pixels. All particles are created within internal and external radius
 	/// @param {Real}	_radius_external : The external radius in absolute terms, in pixels. All particles are created within internal and external radius
@@ -257,17 +270,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	
-	/// @description	Sets the mask on the U axis as an even spread from a central axis in an elliptic emitter. 
-	/// @param {Real.Degree}	_direction : Central axis from which to measure the spread. In degrees.
-	/// @param {Real.Degree}	_spread_angle : Spread from the central direction, to either sides of it. In degrees.
-	static	set_mask_spread			=	function(_direction, _spread_angle)
-	{
-		_direction			= (_direction%360)/360
-		_spread_angle		= ((_spread_angle%360)/360)/2
-		mask_end			= _direction - _spread_angle
-		mask_start			= _direction + _spread_angle
-		return self
-	}
+
 	
 	/// @description	Sets the scale of the emitter. 1 == Normal scale
 	/// @param {Real}	[_x_scale] : Scale for the X axis. If left empty, the scale in this axis remains unchanged
@@ -312,8 +315,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	#region FORMS
 	
-	/// @description	Sets the form of the emitter as a Path. It can be a path asset or a PathPlus. It will be converted to a PathPlus
-	/// @param {Asset.GMPath ,  Struct.PathPlus}	_path : Path asset or a PathPlus. It will be converted to a PathPlus
+	/// @description	Sets the form of the emitter as a Path. It can be a path asset or a PathPlus.
+	/// @param {Asset.GMPath ,  Struct.PathPlus}	_path : Path asset or a PathPlus. 
 	/// @context pulse_emitter
 	static	form_path			=	function(_path,_local = true)
 	{
@@ -381,7 +384,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			_mode = PULSE_DISTRIBUTION.LINKED
 			__orient_link		=	_link_to
-				if _link_to == PULSE_LINK_TO.DISPL_MAP || _link_to == PULSE_LINK_TO.COLOR_MAP
+				if _link_to == PULSE_LINK_TO.DISPL_MAP 
 				{
 					if is_array(_weight)
 					{
@@ -413,6 +416,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				if animcurve_really_exists(_curve[0]) && animcurve_channel_exists(_curve[0],_curve[1])
 				{
 						distr_orient		=	_mode;
+						//animcurve_channel_copy(_curve[0],_curve[1],distributions)
 						__orient_channel	=	animcurve_get_channel(_curve[0],_curve[1]);
 						_mode = _mode== PULSE_DISTRIBUTION.LINKED ? PULSE_DISTRIBUTION.LINKED_CURVE : PULSE_DISTRIBUTION.ANIM_CURVE
 				}
@@ -577,7 +581,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					if is_array(_weight)
 					{
 						__size_weight		=	_weight
-						while (array_length(__size_weight) < 3)
+						while (array_length(__size_weight) < 4)
 						{
 							array_push(__size_weight,1)
 						};
@@ -589,7 +593,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 					else
 				{
-										if is_array(_weight)
+					if is_array(_weight)
 					{
 						_weight = _weight[0]
 					}
@@ -779,8 +783,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the type of distribution for the spawn point of the particle in the U axis in the emitter.
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Real, Array}					_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.EVEN .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Real, Array}					_input : If mode is Anim_curve, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
 	/// @context pulse_emitter
 	static set_distribution_u		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
@@ -834,9 +838,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Sets the type of distribution for the spawn point of the particle in the V axis in the emitter.
-	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
-	/// @param {Real, Array}					_input : If mode is Anim_curve or Linked, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
-	/// @param {Real.Enum.PULSE_LINK_TO}		_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD
+	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.EVEN .PULSE_DISTRIBUTION.RANDOM by default
+	/// @param {Real, Array}					_input : If mode is Anim_curve, supply an array containing [curve,channel], with the channel as a real or a string. If mode is Even, supply an integer.
 	/// @context pulse_emitter
 	static set_distribution_v		=  function (_mode=PULSE_DISTRIBUTION.RANDOM,_input=undefined)
 	{
@@ -1304,6 +1307,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					_amount[0]= _weight[0] <0 ?  1+ (_amount[0]*_weight[0]) : _amount[0] *_weight[0]
 					_amount[1]= _weight[1] <0 ?  1+ (_amount[1]*_weight[1]) : _amount[1] *_weight[1]
 					_amount[2]= _weight[2] <0 ?  1+ (_amount[2]*_weight[2]) : _amount[2] *_weight[2]
+					_amount[3]= _weight[3] <0 ?  1+ (_amount[3]*_weight[3]) : _amount[3] *_weight[3]
 
 				}
 					else
@@ -1311,10 +1315,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					_amount[0]= _weight <0 ?  1+ (_amount[0]*_weight) : _amount[0] *_weight
 					_amount[1]= _weight <0 ?  1+ (_amount[1]*_weight) : _amount[1] *_weight
 					_amount[2]= _weight <0 ?  1+ (_amount[2]*_weight) : _amount[2] *_weight
+					_amount[3]= _weight <0 ?  1+ (_amount[3]*_weight) : _amount[3] *_weight
 				}
 					if _link != PULSE_LINK_TO.COLOR_MAP 
 					{
-						_amount=  median(_amount[0],_amount[1],_amount[2])
+						_amount=  median(_amount[0],_amount[1],_amount[2],_amount[3])
 					}
 
 			}
@@ -1410,7 +1415,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount		=	animcurve_channel_evaluate(__orient_channel,_amount);
 				}
-				_p.orient		= round(lerp(part_type.orient[0],part_type.orient[1],_amount));
+				_p.orient		= lerp(part_type.orient[0],part_type.orient[1],_amount);
 			
 		}
 		#endregion
@@ -1449,7 +1454,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		#region frame
 		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if distr_frame != PULSE_DISTRIBUTION.RANDOM
+		if (distr_frame != PULSE_DISTRIBUTION.RANDOM || distr_frame != PULSE_DISTRIBUTION.NONE) &&  _p.particle.set_to_sprite
 		{
 				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
 				{
@@ -1464,7 +1469,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				{
 					_amount		=	animcurve_channel_evaluate(__frame_channel,_amount);
 				}
-				_p.frame		= round(_amount)
+				
+				var _f = sprite_get_number(_p.particle.sprite[0])
+				_p.frame		= round(_amount*_f)
 		}
 		#endregion
 			
@@ -1502,16 +1509,16 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					_p.r_h =  lerp(__color_mix_A[2],_amount[0],__color_mix_weight[0])
 					_p.g_s =  lerp(__color_mix_A[1],_amount[1],__color_mix_weight[1])
 					_p.b_v =  lerp(__color_mix_A[0],_amount[2],__color_mix_weight[2])
-					var _alpha = _amount[3]/255
+					var _alpha = lerp(1,_amount[3]/255,__color_mix_weight[3])
 					//Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
-				if _p[$ "size"] != undefined
+				if _p[$ "size"] != undefined && _alpha != 1
 				{
 					_p.size[0] =  lerp(0,_p.size[0],_alpha)
 					_p.size[2] =  _p.size[0]
 					_p.size[1] =  lerp(0,_p.size[1],_alpha)
 					_p.size[3] =  _p.size[1]
 				}
-				else
+				else if _alpha != 1
 				{
 					_p.size = array_create(4,lerp(0,part_type.size[1],_alpha))
 				}
@@ -1848,6 +1855,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			return undefined
 		}
 		/// Check for collision of emitter by bbox
+		var _collision
 		switch (form_mode)
 		{
 			case PULSE_FORM.PATH:

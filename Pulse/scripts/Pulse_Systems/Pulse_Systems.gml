@@ -222,6 +222,9 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			part_system_global_space(index,_enable)
 		return self
 	}
+	#region jsDoc
+		/// @desc    Re-applies the saved properties to the system. Not usually required to call manually
+	#endregion
 	static reset					= function()
 	{
 		if index == -1 
@@ -247,7 +250,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	#region jsDoc
 	/// @desc    Updates the particle system manually
-	/// @param   {Real} _resample :
+	/// @param   {Real} _resample : the amount of times to update the system.
 	#endregion
 	static update_system			= function(_resample=1)
 	{
@@ -276,7 +279,9 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			}
 		}
 	}
-
+	#region jsDoc
+	/// @desc   Gets the amount of particles alive in the system.
+	#endregion
 	static get_particle_count		= function()
 	{
 		if index == -1 
@@ -305,6 +310,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	//RESOURCE MANAGEMENT
 	#region jsDoc
 	/// @desc    Makes the system asleep. This frees the system from memory but doesn't detroy its configuration.
+	/// @param   {Bool} _wake_on_emit : Whether to automatically wake the system when an emition is requested (true) or not (false). Default: TRUE
 	#endregion
 	static make_asleep				= function(_wake_on_emit=true)
 	{
@@ -349,6 +355,8 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	#region jsDoc
 	/// @desc   Limits the amount of particles sustainable by the system
+	/// @param   {Real} max_amount : The max amount of particles
+	/// @param   {Bool} _sleep_when_empty : Whether to automatically sleep the system when the system is empty of particles (true) or not (false). Default: TRUE
 	#endregion
 	static set_particle_limit		= function(max_amount,_sleep_when_empty=true)
 	{

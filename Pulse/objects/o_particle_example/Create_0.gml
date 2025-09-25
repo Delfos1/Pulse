@@ -11,3 +11,5 @@ if particle.orient !=undefined
 	image_angle = particle.orient[0]
 }
 sprite_index = particle.sprite ==  undefined ? sprite_index : particle.sprite[0]
+
+image_alpha = particle.alpha[0]

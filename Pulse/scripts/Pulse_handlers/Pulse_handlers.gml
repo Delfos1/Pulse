@@ -143,9 +143,9 @@ function pulse_clone_particle	(_particle,__new_name=undefined)
 
 #region DESTROY
 
-/// @desc Destroys a system both from the GameMaker index as from Pulse's data
+/// @desc Destroys a system both from the GameMaker index as from Pulse's storage
 /// @param {string} _name The name of the system to destroy
-/// @returns {Struct}
+/// @returns {Bool}
 function pulse_destroy_system	(_name)
 {
 	if is_string(_name)
@@ -163,6 +163,12 @@ function pulse_destroy_system	(_name)
 			//Remove from struct
 			variable_struct_remove(global.pulse.systems,_name)
 		}
+				else
+		{
+			__pulse_show_debug_message($"System by name `{_name}` not found.",1);
+			return false
+		}
+		
 	} 
 		else if is_instanceof(_name,pulse_system)
 	{
@@ -175,13 +181,16 @@ function pulse_destroy_system	(_name)
 		{
 			variable_struct_remove(global.pulse.systems,_name.name)
 		}
+	} else	{
+		__pulse_show_debug_message("Argument provided was the wrong type",1);
+		return false
 	}
-
+ return true
 }
 
-/// @desc Destroys a particle type both from the GameMaker index as from Pulse's data
+/// @desc Destroys a particle type both from the GameMaker index as from Pulse's storage
 /// @param {string} _name The name of the particle to destroy
-/// @returns {Struct}
+/// @returns {Bool}
 function pulse_destroy_particle	(_name)
 {
 	if is_string(_name)
@@ -194,6 +203,11 @@ function pulse_destroy_particle	(_name)
 				part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
 			}
 			variable_struct_remove(global.pulse.part_types,_name)
+		}		
+		else
+		{
+			__pulse_show_debug_message($"Particle by name `{_name}` not found.",1);
+			return false
 		}
 	}
 	else if is_instanceof(_name,__pulse_particle_class)
@@ -208,16 +222,66 @@ function pulse_destroy_particle	(_name)
 			variable_struct_remove(global.pulse.part_types,_name.name)
 		}
 	}
+	else
+	{
+		__pulse_show_debug_message("Argument provided was the wrong type",1);
+		return false
+	}
+	return true
+}
 
+/// @desc Destroys an emitter from Pulse's storage
+/// @param {string} _name The name of the emitter to destroy
+/// @returns {Bool}
+function pulse_destroy_emitter	(_name)
+{
+	if is_string(_name)
+	{
+		if struct_exists(global.pulse.emitters,_name)
+		{
+			animcurve_destroy(global.pulse.emitters[$_name].stencil_profile)
+			if global.pulse.emitters[$_name].imported
+			{
+				animcurve_destroy(global.pulse.emitters[$_name].distributions)
+			}
+			variable_struct_remove(global.pulse.part_types,_name)
+		}
+		else
+		{
+			__pulse_show_debug_message($"Emitter by name `{_name}` not found.",1);
+			return false
+		}
+	}
+	else if is_instanceof(_name,pulse_emitter)
+	{
+		animcurve_destroy(_name.stencil_profile)
+		if _name.imported
+		{
+			animcurve_destroy(_name.distributions)
+		}
+		if struct_exists(global.pulse.emitters,_name.name)
+		{
+			variable_struct_remove(global.pulse.emitters,_name.name)
+		}
+		
+		delete _name
+	}
+	  else
+	{
+		__pulse_show_debug_message("Argument provided was not an emitter.",1);
+		return false
+	}
+	return true
 }
 
 /// @desc Destroys all stored particle types, particle systems, and emitters
 function pulse_destroy_all()
-{	var sys, part, i
+{	var sys, part, emit, i
 	
 	sys		= struct_get_names(global.pulse.systems)
 	part	= struct_get_names(global.pulse.part_types)
-
+	emit	= struct_get_names(global.pulse.emitters)
+	
 	if array_length(sys)>0
 	{
 		for(i=0;i==array_length(sys);i++)
@@ -248,6 +312,21 @@ function pulse_destroy_all()
 		__pulse_show_debug_message("Particles destroyed",3);
 	}
 	
+	if array_length(emit)>0
+	{
+		for(i=0;i==array_length(emit);i++)
+		{
+			animcurve_destroy(global.pulse.emitters[$emit[i]].stencil_profile)
+			if global.pulse.emitters[$emit[i]].imported
+			{
+				animcurve_destroy(global.pulse.emitters[$emit[i]].distributions)
+			}
+		}
+		global.pulse.emitters={}
+		
+		__pulse_show_debug_message("Emitters destroyed",3);
+	}
+	
 }	
 
 #endregion
@@ -256,6 +335,7 @@ function pulse_destroy_all()
 
 /// Checks if a system exists with the name provided as string or if its a struct.
 /// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
+/// @param { String || Struct }	_name : The name or the struct of Pulse System you wish to check
 function pulse_exists_system	(_name)
 {
 	var system_found =  1 /// 2 found, ref on a variable, 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name , 
@@ -349,57 +429,6 @@ function pulse_exists_emitter	(_name)
 }
 
 #endregion
-
-/// @description			   
-///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
-///							Particles are named after the emitter they are on.
-/// @param {Asset.GMParticleSystem}	part_system : The particle system asset you wish to convert.
-function pulse_convert_particles(part_system)
-{
-	var struct = particle_get_info(part_system)
-	var length = array_length(struct.emitters)
-	
-	if length == 0
-	{
-		exit
-	}
-	
-	var l=0
-	
-	repeat (length)
-	{
-		var target	=	pulse_make_particle(struct.emitters[l].name,false)
-		var src	=	struct.emitters[l].parttype
-		target.set_size([src.size_xmin,src.size_ymin],[src.size_xmax,src.size_ymax],[src.size_xincr,src.size_yincr],[src.size_xwiggle,src.size_ywiggle])
-		target.set_scale(src.xscale,src.yscale)
-		target.set_life(src.life_min,src.life_max)
-		if src.death_type != -1
-		{
-			target.set_death_particle(src.death_number,src.death_type)
-		}
-		if src.step_type != -1
-		{
-			target.set_step_particle(src.step_number,src.step_type)
-		}
-		target.set_speed(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
-		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
-		target.set_gravity(src.grav_amount,src.grav_dir)
-		target.set_orient(src.ang_min,src.ang_max,src.ang_incr,src.ang_wiggle,src.ang_relative)
-		target.set_color(src.color1,src.color2,src.color3)
-		target.set_alpha(src.alpha1,src.alpha2,src.alpha3)
-		target.set_blend(src.additive)
-		
-		if src.sprite == -1
-		{
-			target.set_shape(src.shape)
-		}
-		else
-		{
-			target.set_sprite(src.sprite,src.animate,src.stretch,src.random,src.frame)
-		}
-	l++
-	}
-}
 
 #region IMPORTING / EXPORTING
 
@@ -506,7 +535,7 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 	if filename_ext(_particle_file) != ".pulsep"
 	{
 		__pulse_show_debug_message("Particle wasn't imported (Wrong type provided)",2)
-		return
+		return undefined
 	}
 	
 	var _buffer = buffer_load(_particle_file)
@@ -670,16 +699,13 @@ function pulse_export_emitter	(_emitter)
 function pulse_import_emitter	(file, _overwrite = false)
 {
 	// Import Particle and System
-
+	
 	var _fname	= filename_change_ext(file,""),
 	_fpartname	= string_concat(_fname,"_particle",".pulsep"),
 	_fsysname	= string_concat(_fname,"_system",".pulses")
 
-	var _parta	= pulse_import_particle	(_fpartname,false),
-	_part		= pulse_store_particle(_parta) ,
-	_sysa		= pulse_import_system(_fsysname,false),
-	_sys		= pulse_store_system(_sysa)
-
+	var _part	= pulse_import_particle	(_fpartname,false),
+	_sys		= pulse_import_system(_fsysname,false)
 	
 	var _buffer = buffer_load(file)
 		buffer_seek(_buffer, buffer_seek_start, 0);
@@ -691,6 +717,8 @@ function pulse_import_emitter	(file, _overwrite = false)
 	var _new_emitter  = new pulse_emitter(_sys,_part)
 	with _new_emitter
 	{
+		name = _parsed.name
+		imported = true
 		#region Emitter Form
 		stencil_mode		=	_parsed.stencil_mode
 		form_mode			=	_parsed.form_mode
@@ -698,7 +726,7 @@ function pulse_import_emitter	(file, _overwrite = false)
 	if path == -1 && form_mode == PULSE_FORM.PATH 
 	{
 		form_mode = PULSE_FORM.ELLIPSE
-		__pulse_show_debug_message("Path not found on import, replacing with ellipse")
+		__pulse_show_debug_message("Path not found on import, replacing with ellipse",1)
 	}
 	path_res			=	_parsed.path_res
 	stencil_tween		=	_parsed.stencil_tween
@@ -763,7 +791,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 			var points = current.points 
 			var _l = array_length(points)
 			var _new_channel = []
-			for(_i = 0 ;_i<_l ;_i++)
+			for(var _i = 0 ;_i<_l ;_i++)
 			{
 				animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 			}
@@ -784,7 +812,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -804,7 +832,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -824,7 +852,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -844,7 +872,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -864,7 +892,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -884,7 +912,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -904,7 +932,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -924,7 +952,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 				var points = current.points 
 				var _l = array_length(points)
 				var _new_channel = []
-				for(_i = 0 ;_i<_l ;_i++)
+				for(var _i = 0 ;_i<_l ;_i++)
 				{
 					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
 				}
@@ -1013,8 +1041,6 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	is_colliding		=	_parsed.is_colliding
 	colliding_entities	=	_parsed.colliding_entities
 	
-	debug_col_rays		=	_parsed.debug_col_rays
-	
 	
 	/// Anim curve conversion
 	var points = _parsed.stencil_profile.channels[0].points ,
@@ -1030,7 +1056,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	var points = _parsed.stencil_profile.channels[1].points ,
 	_l = array_length(points)
 	var _stencil_profile_b = []
-	for(_i = 0 ;_i<_l ;_i++)
+	for(var _i = 0 ;_i<_l ;_i++)
 	{
 		animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
 	}
@@ -1040,7 +1066,7 @@ if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	und
 	points = _parsed.stencil_profile.channels[2].points 
 	_l = array_length(points)
 	var _stencil_profile_c = []
-	for(_i = 0 ;_i<_l ;_i++)
+	for(var _i = 0 ;_i<_l ;_i++)
 	{
 		animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
 	}
@@ -1061,7 +1087,7 @@ function pulse_export_cache	(_cache,_cache_name,file = undefined)
 {
 	if !is_instanceof(_cache,pulse_cache) 
 	{
-		__pulse_show_debug_message($"System wasn't exported (Wrong type provided)",2)
+		__pulse_show_debug_message($"Cache wasn't exported (Wrong type provided)",2)
 		return
 	}
 	_cache_name = string(_cache_name)
@@ -1126,13 +1152,69 @@ function pulse_import_cache	(_cache_file, _overwrite = false)
 	return _new_cache
 }
 
+
+/// Converting GM Particles
+
+/// @description			   
+///							Convert particle assets made with the Particle Editor into Pulse Particles. The emitter configuration is not copied.
+///							Particles are named after the emitter they are on.
+/// @param {Asset.GMParticleSystem}	part_system : The particle system asset you wish to convert.
+function pulse_convert_particles(part_system)
+{
+	var struct = particle_get_info(part_system)
+	var length = array_length(struct.emitters)
+	
+	if length == 0
+	{
+		exit
+	}
+	
+	var l=0
+	
+	repeat (length)
+	{
+		var target	=	new pulse_particle(struct.emitters[l].name)
+		var src	=	struct.emitters[l].parttype
+		target.set_size([src.size_xmin,src.size_ymin],[src.size_xmax,src.size_ymax],[src.size_xincr,src.size_yincr],[src.size_xwiggle,src.size_ywiggle])
+		target.set_scale(src.xscale,src.yscale)
+		target.set_life(src.life_min,src.life_max)
+		if src.death_type != -1
+		{
+			target.set_death_particle(src.death_number,src.death_type)
+		}
+		if src.step_type != -1
+		{
+			target.set_step_particle(src.step_number,src.step_type)
+		}
+		target.set_speed(src.speed_min,src.speed_max,src.speed_incr,src.speed_wiggle)
+		target.set_direction(src.dir_min,src.dir_max,src.dir_incr,src.dir_wiggle)
+		target.set_gravity(src.grav_amount,src.grav_dir)
+		target.set_orient(src.ang_min,src.ang_max,src.ang_incr,src.ang_wiggle,src.ang_relative)
+		target.set_color(src.color1,src.color2,src.color3)
+		target.set_alpha(src.alpha1,src.alpha2,src.alpha3)
+		target.set_blend(src.additive)
+		
+		if src.sprite == -1
+		{
+			target.set_shape(src.shape)
+		}
+		else
+		{
+			target.set_sprite(src.sprite,src.animate,src.stretch,src.random,src.frame)
+		}
+		
+		pulse_store_particle(target)
+	l++
+	}
+}
+
 #endregion
 
 #region STORE / FETCH
 
 /// @description			Stores a Pulse Particle into the global struct. Allows the use of the particle by calling its name as a string. Returns a reference to the global struct.
 /// @param {Struct.__pulse_particle_class}	_particle : Pulse Particle to store.
-/// @param {Bool}							[_override] : If there is a particle by the same name, override it (true) or change the new particle's name (false).
+/// @param {Bool}							[_override] : If there is a particle by the same name, override it (true) or change the new particle's name (false). Default: False.
 /// @return {Struct}
 function pulse_store_particle		(_particle,_override = false)
 {
@@ -1191,7 +1273,7 @@ function pulse_fetch_particle		(_name)
 /// @description			Store a emitter in Pulse's Global storage. If there is a emitter of the same name it will override it or change the name.
 /// @param {Struct.pulse_emitter}			_emitter : Pulse emitter to store
 /// @param {String}			_name : Name for the emitter
-/// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter.
+/// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter. Default: False.
 /// @return {Struct}
 function pulse_store_emitter			(_emitter,_name , _override = false)
 {
@@ -1336,7 +1418,7 @@ function pulse_store_emitter			(_emitter,_name , _override = false)
 		var points = _emitter.stencil_profile.channels[1].points ,
 		_l = array_length(points)
 		var _stencil_profile_b = []
-		for(_i = 0 ;_i<_l ;_i++)
+		for(var _i = 0 ;_i<_l ;_i++)
 		{
 			animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
 		}
@@ -1346,7 +1428,7 @@ function pulse_store_emitter			(_emitter,_name , _override = false)
 		points = _emitter.stencil_profile.channels[2].points 
 		_l = array_length(points)
 		var _stencil_profile_c = []
-		for(_i = 0 ;_i<_l ;_i++)
+		for(var _i = 0 ;_i<_l ;_i++)
 		{
 			animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
 		}
@@ -1384,7 +1466,7 @@ function pulse_fetch_emitter			(_name)
 
 /// @description			Store a system in Pulse's Global storage. If there is a system of the same name it will override it or change the name.
 /// @param {Struct.pulse_system}			_system : Pulse System to store
-/// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system.
+/// @param {Bool}			_override	: Whether to override a system by the same name or to change the name of the system. Default: False.
 /// @return {Struct}
 function pulse_store_system			(_system,_override = false)
 {

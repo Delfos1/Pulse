@@ -89,6 +89,39 @@ function animcurve_really_create(_struct={})
 }
 
 /**
+ * Clone an Animation Curve.
+ * @param {GM.AnimCurve} _src_curve Animation Curve to be cloned.
+  * @param {String} _new_name Name for the new curve
+* @return { GM.AnimCurve }
+ */
+function animcurve_clone(_src_curve,_new_name)
+{
+	var new_curve = animcurve_create() ,
+	old_curve =  animcurve_get(_src_curve)
+	new_curve.name = _new_name;
+	
+	if old_curve == -1 return new_curve
+	var l = array_length(old_curve.channels)
+	if l == 0 return new_curve
+
+	var _channels = array_create(l)
+
+	for(var i =0; i<l ; i++ )	
+	{
+		_channels[i] = animcurve_channel_new();
+		_channels[i].name = old_curve.channels[i].name
+		_channels[i].type = old_curve.channels[i].type
+		_channels[i].iterations =  old_curve.channels[i].type
+		_channels[i].points =   old_curve.channels[i].points
+	}
+
+	new_curve.channels = _channels;	
+	
+	return new_curve
+}
+
+
+/**
  * copy a channel from one curve asset to another
  * @param {asset.GMAnimCurve} curve_src the animation curve to copy from
  * @param {String , Real} channel_src the channel index or name to copy from

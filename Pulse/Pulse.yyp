@@ -88,7 +88,6 @@
     {"id":{"name":"ParticlesParent","path":"objects/ParticlesParent/ParticlesParent.yy",},},
     {"id":{"name":"smoke","path":"objects/smoke/smoke.yy",},},
     {"id":{"name":"snow","path":"objects/snow/snow.yy",},},
-    {"id":{"name":"Test_Me_DBG","path":"objects/Test_Me_DBG/Test_Me_DBG.yy",},},
     {"id":{"name":"Test_Me_paths3","path":"objects/Test_Me_paths3/Test_Me_paths3.yy",},},
     {"id":{"name":"ParticleSystem1","path":"particles/ParticleSystem1/ParticleSystem1.yy",},},
     {"id":{"name":"PS_Fire","path":"particles/PS_Fire/PS_Fire.yy",},},

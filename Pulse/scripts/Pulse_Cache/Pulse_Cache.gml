@@ -70,6 +70,8 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		if array_length(_collision_obj)==0
 			return undefined
 		}
+		
+		var _collision 
 		/// Check for collision of emitter by bbox
 		switch (form_mode)
 		{
@@ -268,7 +270,8 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		if eval >= 1 { return _p}
 		//First we define where the EDGE is, where our particle should stop
 		
-		var to_transversal = abs(angle_difference(_p.dir,_p.transv))
+		var to_transversal = abs(angle_difference(_p.dir,_p.transv)) , 
+		_length_to_edge
 		
 		if to_transversal <=30	or 	 abs(to_transversal-180) <=30//TRANSVERSAL
 		{

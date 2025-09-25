@@ -8,7 +8,6 @@ function __pulse_map(_map,_parent) constructor
 	scale_v			=	1;
 	offset_u		=	0;
 	offset_v		=	0;
-	color_blend		=1;
 	
 	static	set_uv_scale	=	function(u,v)
 	{

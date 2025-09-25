@@ -524,9 +524,9 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			return self
 		}
 		
-/// @description			Choose a particle's final size by changing its rate of change, measured in pixels. The first argument can be an array [width,height] or a Real. 
+/// @description			Choose a particle's final size by changing its rate of change, measured in percentage. The first argument can be an array [width,height] or a Real. 
 /// WARNING: This will change the behaviour of the particle to either separate or unified axis.
-/// @param {Real}			_final_size : Final size desired
+/// @param {Real}			_final_size : Final size desired. can be an array [width,height] or a Real
 /// @param {Real}			_mode : 0 = apply in relation to smallest,shortest lived particle 1 = biggest, long-lived. 2 =  average of both
 /// @param {Real}			_steps : achieve the size in X amount of steps from birth instead.
 		static set_final_size	=	function(_final_size,_mode=0,_steps=undefined)
@@ -570,11 +570,11 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			return self
 		}
 		
-		/// @description			Choose a particle's total amount of spins by changing its rate of change, measured in angles
+		/// @description			Choose a particle's total amount of spins by changing its rate of change, measured in degrees
 /// @param {Real}			_revolutions : Total amount of revolutions (spins on its own axis)
 /// @param {Real}			_cw : Clockwise movement (true) or Counter-clockwise (false)
 /// @param {Real}			_mode : 0 = apply in relation to shortest lived particle 1 = longest-lived. 2 =  average of both
-/// @param {Real}			_steps : Revolutions over X amount of steps from birth instead of taking the whole ife of the particle into account.
+/// @param {Real}			_steps : Revolutions over X amount of steps from birth instead of taking the whole life of the particle into account.
 
 		static set_revolutions_over_life	=	function(_revolutions,_cw = false, _mode=0,_steps=undefined)
 		{
@@ -607,10 +607,10 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		}
 
 
-/// @description			Choose a particle's final speed by changing its acceleration
+/// @description			Changes a particle's trajectory by changing its rate of change in degrees per step. 
 /// @param {Real}			_arc : The arc described by the particle's trajectory before accounting for acceleration or gravity. 0 =  linear, 1 = full circle
 /// @param {Real}			_mode : 0 = apply in relation to slowest,shortest lived particle 1 = fastest, long-lived. 2 =  average of both
-/// @param {Real}			_steps : achieve the speed in X amount of steps from birth instead.
+/// @param {Real}			_steps : achieve the arc in X amount of steps from birth instead.
 
 	static set_arc_trajectory	=	function(_arc,_mode=0,_steps=undefined)
 	{
@@ -756,7 +756,7 @@ function __pulse_particle_class		(_name) constructor
 	time_factor		=	1
 	space_factor	=	1
 	altered_acceleration = 0
-	subparticle = undefined
+
 	
 	
 	/// @description		Sets the particle's properties to the ones saved by Pulse
@@ -820,6 +820,12 @@ function __pulse_particle_class		(_name) constructor
 				}
 			break;
 			}
+				case __PULSE_COLOR_MODE.MIX :
+			{
+				part_type_color_mix(index,color[0],color[1])
+				break;
+			}
+			
 		
 		}
 

@@ -62,7 +62,6 @@
     {"name":"ParticlesParent","order":7,"path":"objects/ParticlesParent/ParticlesParent.yy",},
     {"name":"smoke","order":4,"path":"objects/smoke/smoke.yy",},
     {"name":"snow","order":6,"path":"objects/snow/snow.yy",},
-    {"name":"Test_Me_DBG","order":9,"path":"objects/Test_Me_DBG/Test_Me_DBG.yy",},
     {"name":"PS_Fire","order":1,"path":"particles/PS_Fire/PS_Fire.yy",},
     {"name":"ExamplePath","order":2,"path":"paths/ExamplePath/ExamplePath.yy",},
     {"name":"Path2","order":3,"path":"paths/Path2/Path2.yy",},

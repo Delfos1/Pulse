@@ -20,7 +20,12 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION, _force 
 	vec[0]		= lengthdir_x(_force,direction)
 	vec[1]		= lengthdir_y(_force,direction)
 	local		= _local
-							
+					
+	/// @description			Sets the range of the force to directional.
+	/// @param {Real}			[_north] : X coordinate relative to the emitter
+	/// @param {Real}			[_south] : X coordinate relative to the emitter
+	/// @param {Real}			[_east]  : X coordinate relative to the emitter
+	/// @param {Real}			[_west]  : X coordinate relative to the emitter
 	static set_range_directional = function(_north=-1,_south=-1,_east=-1,_west=-1)
 	{
 		if (_north==-1 &&_south==-1 &&_east==-1 &&_west==-1) 
@@ -37,28 +42,37 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION, _force 
 		return self
 		
 	}
+	/// @description			Use this to create a new force to apply within an emitter. Forces can be linear or radial, range of influence is infinite by default.
+	/// @param {Real}			_radius : X coordinate relative to the emitter	
 	static set_range_radial = function (_radius)
 	{
 		radius		= _radius
 		range		= PULSE_FORCE.RANGE_RADIAL
 		return self
 	}
+	/// @description			Sets the range of the force to infinity in all directions.
 	static set_range_infinite =  function()
 	{
 		range		= PULSE_FORCE.RANGE_INFINITE
 	}
+	/// @description			Sets the direction of a force.
+	/// @param {Real}			_direction : X coordinate relative to the emitter
 	static set_direction =  function(_direction)
 	{
 		direction	= _direction
 		vec[0]		= lengthdir_x(force,direction)
 		vec[1]		= lengthdir_y(force,direction)
 	}
-	static set_force =  function(_force)
+	/// @description			Sets the strength of the force.
+	/// @param {Real}			_force : X coordinate relative to the emitter
+	static set_strength =  function(_force)
 	{
 		force		= _force
 		vec[0]		= lengthdir_x(force,direction)
 		vec[1]		= lengthdir_y(force,direction)
 	}
+	/// @description			Use this to create a new force to apply within an emitter. Forces can be linear or radial, range of influence is infinite by default.
+	/// @param {Real}			_type : PULSE_FORCE.DIRECTION or PULSE_FORCE.POINT
 	static set_type = function(_type)
 	{
 		type		= _type

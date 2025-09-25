@@ -1,16 +1,16 @@
 enum __PULSE_COLOR_MODE
 {// Color mode used with particles
-	COLOR,
-	RGB,
-	MIX,
-	HSV
+	COLOR = 1,
+	RGB	= 2,
+	MIX = 3,
+	HSV = 4
 }
 
 enum PULSE_FORM
 {
-	PATH,
-	ELLIPSE,
-	LINE
+	PATH = 5,
+	ELLIPSE = 6,
+	LINE = 7
 }
 
 enum PULSE_STENCIL
