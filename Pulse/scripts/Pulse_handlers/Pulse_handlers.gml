@@ -1,3 +1,5 @@
+//feather ignore all in ./*
+
 #region LOOK UP Helper functions
 
 function __pulse_lookup_system	(_name,_return_new=true)
@@ -105,7 +107,7 @@ function pulse_clone_system		(_system,__new_name=undefined)
 }
 
 /// @desc Duplicates the given particle. Returns a reference to the particle.
-/// @param {string or } _start_particle The name of the particle to clone, or a particle struct
+/// @param {String , Struct } _start_particle The name of the particle to clone, or a particle struct
 /// @param {string} __new_name Optional: The name of the cloned particle. By default it appends "_copy" to the original name 
 /// @returns {Struct}
 function pulse_clone_particle	(_particle,__new_name=undefined)
@@ -114,7 +116,7 @@ function pulse_clone_particle	(_particle,__new_name=undefined)
 	_particle = __pulse_lookup_particle(_particle,false)
 	
 	// Argument wasn't a particle 
-	if _particle == undefined { return undefined }
+	if _particle == undefined { return undefined; }
 	
 	if _particle.name == __new_name || __new_name ==  undefined
 	{
@@ -124,62 +126,86 @@ function pulse_clone_particle	(_particle,__new_name=undefined)
 	if  pulse_exists_particle(__new_name) > 0
 	{
 		/// Change name if the name already exists
-		var l		=	struct_names_count(global.pulse.part_types)		
+		var l		=	struct_names_count(global.pulse.part_types)	;	
 		__new_name		=	$"{__new_name}_{l}";	
 	}
 		
-	global.pulse.part_types[$__new_name]		=	variable_clone(_particle)
+	global.pulse.part_types[$__new_name]		=	variable_clone(_particle);
 	global.pulse.part_types[$__new_name].index	=	part_type_create();
-	global.pulse.part_types[$__new_name].reset()
-	global.pulse.part_types[$__new_name].name	= __new_name
-	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle")
-	global.pulse.part_types[$__new_name].subparticle= undefined
+	global.pulse.part_types[$__new_name].reset();
+	global.pulse.part_types[$__new_name].name	= __new_name;
+	variable_struct_remove(global.pulse.part_types[$__new_name],"subparticle");
+	global.pulse.part_types[$__new_name].subparticle= undefined ;
 	__pulse_show_debug_message($"Particle '{_particle.name}' cloned and named '{__new_name}'",3);
 	
-	return global.pulse.part_types[$__new_name]
+	return global.pulse.part_types[$__new_name];
 }
 
+function pulse_clone_emitter(_emitter_name)
+{
+	var _exists = pulse_exists_emitter(_emitter_name),
+		_emitter = undefined;
+		
+	if _exists <=0 
+	{
+		return undefined	;
+	}
+	else if _exists == 1 
+	{
+		_emitter =	global.pulse.emitters[$_emitter_name];
+	}
+	else
+	{
+		_emitter = _emitter_name;
+	}
+	
+	var _new_emitter = new pulse_emitter(_emitter.part_system,_emitter.part_type)
+	__pulse_copy_emitter(_new_emitter,_emitter)
+	
+	return _new_emitter
+	
+}
 #endregion
 
 #region DESTROY
 
 /// @desc Destroys a system both from the GameMaker index as from Pulse's storage
-/// @param {string} _name The name of the system to destroy
+/// @param {string,Struct} _name The name of the system to destroy, or the struct itself
 /// @returns {Bool}
-function pulse_destroy_system	(_name)
+function pulse_destroy_system	(_system)
 {
-	if is_string(_name)
+	if is_string(_system)
 	{
-		if struct_exists(global.pulse.systems,_name)
+		if struct_exists(global.pulse.systems,_system)
 		{
 			// Destroy particle system
-			part_system_destroy(global.pulse.systems[$_name].index)
+			part_system_destroy(global.pulse.systems[$_system].index)
 		
 			// Destroy time_source
-			if time_source_exists(global.pulse.systems[$_name].count)
+			if time_source_exists(global.pulse.systems[$_system].count)
 			{
-				time_source_destroy(global.pulse.systems[$_name].count,true)
+				time_source_destroy(global.pulse.systems[$_system].count,true)
 			}
 			//Remove from struct
-			variable_struct_remove(global.pulse.systems,_name)
+			variable_struct_remove(global.pulse.systems,_system)
 		}
 				else
 		{
-			__pulse_show_debug_message($"System by name `{_name}` not found.",1);
+			__pulse_show_debug_message($"System by name `{_system}` not found.",1);
 			return false
 		}
 		
 	} 
-		else if is_instanceof(_name,pulse_system)
+		else if is_instanceof(_system,pulse_system)
 	{
-		part_system_destroy(_name.index)
-		if time_source_exists(_name.count)
+		part_system_destroy(_system.index)
+		if time_source_exists(_system.count)
 		{
-			time_source_destroy(_name.count,true)
+			time_source_destroy(_system.count,true)
 		}
-		if struct_exists(global.pulse.systems,_name.name)
+		if struct_exists(global.pulse.systems,_system.name)
 		{
-			variable_struct_remove(global.pulse.systems,_name.name)
+			variable_struct_remove(global.pulse.systems,_system.name)
 		}
 	} else	{
 		__pulse_show_debug_message("Argument provided was the wrong type",1);
@@ -189,37 +215,37 @@ function pulse_destroy_system	(_name)
 }
 
 /// @desc Destroys a particle type both from the GameMaker index as from Pulse's storage
-/// @param {string} _name The name of the particle to destroy
+/// @param {string,Struct} _particle The name of the particle to destroy, or the struct itself
 /// @returns {Bool}
-function pulse_destroy_particle	(_name)
+function pulse_destroy_particle	(_particle)
 {
-	if is_string(_name)
+	if is_string(_particle)
 	{
-		if struct_exists(global.pulse.part_types,_name)
+		if struct_exists(global.pulse.part_types,_particle)
 		{
-			part_type_destroy(global.pulse.part_types[$_name].index)
-			if global.pulse.part_types[$_name].subparticle != undefined 
+			part_type_destroy(global.pulse.part_types[$_particle].index)
+			if global.pulse.part_types[$_particle].subparticle != undefined 
 			{
-				part_type_destroy(global.pulse.part_types[$_name].subparticle.index)
+				part_type_destroy(global.pulse.part_types[$_particle].subparticle.index)
 			}
-			variable_struct_remove(global.pulse.part_types,_name)
+			variable_struct_remove(global.pulse.part_types,_particle)
 		}		
 		else
 		{
-			__pulse_show_debug_message($"Particle by name `{_name}` not found.",1);
+			__pulse_show_debug_message($"Particle by name `{_particle}` not found.",1);
 			return false
 		}
 	}
-	else if is_instanceof(_name,__pulse_particle_class)
+	else if is_instanceof(_particle,__pulse_particle_class)
 	{
-		part_type_destroy(_name.index)
-		if _name.subparticle != undefined 
+		part_type_destroy(_particle.index)
+		if _particle.subparticle != undefined 
 		{
-			part_type_destroy(_name.subparticle.index)
+			part_type_destroy(_particle.subparticle.index)
 		}
-		if struct_exists(global.pulse.part_types,_name.name)
+		if struct_exists(global.pulse.part_types,_particle.name)
 		{
-			variable_struct_remove(global.pulse.part_types,_name.name)
+			variable_struct_remove(global.pulse.part_types,_particle.name)
 		}
 	}
 	else
@@ -231,40 +257,64 @@ function pulse_destroy_particle	(_name)
 }
 
 /// @desc Destroys an emitter from Pulse's storage
-/// @param {string} _name The name of the emitter to destroy
+/// @param {string,Struct} _emitter The name of the emitter to destroy, or the struct itself
+/// @param {Bool} [destroy_stored] Whether to search and destroy the stored element,  looking for its name. Default =  FALSE
 /// @returns {Bool}
-function pulse_destroy_emitter	(_name)
+function pulse_destroy_emitter(_emitter, destroy_stored = true)
 {
-	if is_string(_name)
+	if is_string(_emitter)
 	{
-		if struct_exists(global.pulse.emitters,_name)
-		{
-			animcurve_destroy(global.pulse.emitters[$_name].stencil_profile)
-			if global.pulse.emitters[$_name].imported
+		if struct_exists(global.pulse.emitters,_emitter)
+		{	
+			with (global.pulse.emitters[$_emitter])
 			{
-				animcurve_destroy(global.pulse.emitters[$_name].distributions)
+				animcurve_destroy(stencil_profile)
+				if imported
+				{
+					if animcurve_really_exists(distributions)
+					{
+						animcurve_destroy(distributions)
+					}
+					if path_res == -100
+					{
+						path.Destroy()
+					}
+				}
 			}
-			variable_struct_remove(global.pulse.part_types,_name)
+			variable_struct_remove(global.pulse.emitters,_emitter)
 		}
 		else
 		{
-			__pulse_show_debug_message($"Emitter by name `{_name}` not found.",1);
+			__pulse_show_debug_message($"Emitter by name `{_emitter}` not found.",1);
 			return false
 		}
 	}
-	else if is_instanceof(_name,pulse_emitter)
+	else if is_instanceof(_emitter,pulse_emitter)
 	{
-		animcurve_destroy(_name.stencil_profile)
-		if _name.imported
+		with (_emitter)
 		{
-			animcurve_destroy(_name.distributions)
+			animcurve_destroy(stencil_profile)
+			if imported
+			{
+				if animcurve_really_exists(distributions)
+				{
+					animcurve_destroy(distributions)
+				}
+				if path_res == -100
+				{
+					path.Destroy()
+				}
+			}
 		}
-		if struct_exists(global.pulse.emitters,_name.name)
+		if _emitter.name != undefined && destroy_stored
 		{
-			variable_struct_remove(global.pulse.emitters,_name.name)
+			if struct_exists(global.pulse.emitters,_emitter.name)
+			{
+				variable_struct_remove(global.pulse.emitters,_emitter.name)
+			}
 		}
 		
-		delete _name
+		delete _emitter
 	}
 	  else
 	{
@@ -319,6 +369,10 @@ function pulse_destroy_all()
 			animcurve_destroy(global.pulse.emitters[$emit[i]].stencil_profile)
 			if global.pulse.emitters[$emit[i]].imported
 			{
+				if path_res == -100
+				{
+					path.Destroy()
+				}
 				animcurve_destroy(global.pulse.emitters[$emit[i]].distributions)
 			}
 		}
@@ -335,7 +389,7 @@ function pulse_destroy_all()
 
 /// Checks if a system exists with the name provided as string or if its a struct.
 /// Returns 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name
-/// @param { String || Struct }	_name : The name or the struct of Pulse System you wish to check
+/// @param { String , Struct }	_name : The name or the struct of Pulse System you wish to check
 function pulse_exists_system	(_name)
 {
 	var system_found =  1 /// 2 found, ref on a variable, 1 = found , 0 = not found ,-1 = not a struct and not a string, create with default name , 
@@ -479,10 +533,18 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 {	
 	/// __assign
 	/// @description			Assigns properties to the newly created particle
-	/// @param {Sruct}			_parsed : the json parsed particle
+	/// @param {Struct}			_parsed : the json parsed particle
 	function __assign(_parsed)
 	{
-		var _new_part = new pulse_particle(_parsed.name)
+		var _new_part;
+			if _parsed.type == 0
+		{
+			_new_part = new pulse_particle(_parsed.name)
+		}else if _parsed.type == 1
+		{
+			_new_part = new pulse_instance_particle(_parsed.index,_parsed.name)
+		}
+		
 		with _new_part
 		{
 				size					=	_parsed.size
@@ -511,22 +573,30 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 			}
 			if _new_part.step_type != undefined 
 			{
-				var _step = pulse_fetch_particle(_new_part.step_type.name)
+				var _step = pulse_fetch_particle(_new_part.step_type.name);
 					_step ??= __assign(_new_part.step_type)
 					_new_part.set_step_particle(_new_part.step_number,_step)
 
 			}
 			if _new_part.death_type != undefined 
 			{
-				var _death = pulse_fetch_particle(_new_part.step_type.name)
-				_death ??= __assign(_new_part.death_type)
-				_new_part.set_death_particle(_new_part.death_number,_death)
+				var _death = pulse_fetch_particle(_new_part.step_type.name);
+				
+				_death ??= __assign(_new_part.death_type);
+				_new_part.set_death_particle(_new_part.death_number,_death);
 			}
 			if _new_part.subparticle != undefined 
 			{
-				var _subp = pulse_fetch_particle(_new_part.subparticle.death_type.name)
-				 _subp ??= __assign(_new_part.subparticle.death_type)
-				_new_part.set_death_on_collision(_new_part.subparticle.death_number,_subp)
+				var _subp = pulse_fetch_particle(_new_part.subparticle.death_type.name);
+				
+				 _subp ??= __assign(_new_part.subparticle.death_type);
+				_new_part.set_death_on_collision(_new_part.subparticle.death_number,_subp);
+			}
+			
+			if type == 1
+			{
+				alpha_mode =  _parsed.alpha_mode
+				alpha_curve = _parsed.alpha_curve
 			}
 			
 			return _new_part
@@ -538,19 +608,20 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 		return undefined
 	}
 	
-	var _buffer = buffer_load(_particle_file)
+	var _buffer = buffer_load(_particle_file);
 		buffer_seek(_buffer, buffer_seek_start, 0);
 	var _string = buffer_read(_buffer, buffer_string) ,
-		_parsed = json_parse(_string) 
-		buffer_delete(_buffer)
+		_parsed = json_parse(_string) ;
+		buffer_delete(_buffer);
 		
-		var _exists = pulse_exists_particle(_parsed.name)
+		var _exists = pulse_exists_particle(_parsed.name);
 		if  ( _exists == 1 && _overwrite ) or _exists == 0
 		{
-			var _new_part = __assign(_parsed)
-			_new_part.reset()
-			__pulse_show_debug_message($"Particle {_new_part.name} was imported succesfully",)
-			return  pulse_store_particle(_new_part,true)
+			// feather ignore once GM1019
+			var _new_part = __assign(_parsed);
+			_new_part.reset();
+			__pulse_show_debug_message($"Particle {_new_part.name} was imported succesfully",3);
+			return  pulse_store_particle(_new_part,true);
 		}
 
 		// else return the existintg particle
@@ -715,369 +786,10 @@ function pulse_import_emitter	(file, _overwrite = false)
 
 		
 	var _new_emitter  = new pulse_emitter(_sys,_part)
-	with _new_emitter
-	{
-		name = _parsed.name
-		imported = true
-		#region Emitter Form
-		stencil_mode		=	_parsed.stencil_mode
-		form_mode			=	_parsed.form_mode
-		path				=	_parsed.path
-	if path == -1 && form_mode == PULSE_FORM.PATH 
-	{
-		form_mode = PULSE_FORM.ELLIPSE
-		__pulse_show_debug_message("Path not found on import, replacing with ellipse",1)
-	}
-	path_res			=	_parsed.path_res
-	stencil_tween		=	_parsed.stencil_tween
-	radius_external		=	_parsed.radius_external
-	radius_internal		=	_parsed.radius_internal
-	edge_external		=	_parsed.edge_external
-	edge_internal		=	_parsed.edge_internal
-	mask_start			=	_parsed.mask_start
-	mask_end			=	_parsed.mask_end
-	mask_v_start		=	_parsed.mask_v_start
-	mask_v_end			=	_parsed.mask_v_end
-	line				=	_parsed.line
+	__pulse_copy_emitter(_new_emitter,_parsed)
+	_new_emitter.imported =  true
 
-	#endregion
-	
-	#region Emitter properties
-	x_focal_point		=	_parsed.x_focal_point
-	y_focal_point		=	_parsed.y_focal_point
-	x_scale				=	_parsed.x_scale
-	y_scale				=	_parsed.y_scale
-	stencil_offset		=	_parsed.stencil_offset
-	direction_range		=	_parsed.direction_range
-	#endregion
-	
-	#region Distributions
-	distr_along_v_coord	=	_parsed.distr_along_v_coord
-	distr_along_u_coord	=	_parsed.distr_along_u_coord
-	distr_speed			=	_parsed.distr_speed
-	distr_life			=	_parsed.distr_life
-	distr_orient		=	_parsed.distr_orient
-	distr_size			=	_parsed.distr_size
-	distr_color_mix		=	_parsed.distr_color_mix
-	distr_frame			=	_parsed.distr_frame
-	divisions_v			=	_parsed.divisions_v
-	divisions_u			=	_parsed.divisions_u
-	divisions_v_offset	=	_parsed.divisions_v_offset
-	divisions_u_offset	=	_parsed.divisions_u_offset
-	#endregion
-	
-	#region Channels
 
-	__color_mix_A		=	_parsed.__color_mix_A
-	__color_mix_B		=	_parsed.__color_mix_B
-	
-if 	_parsed.__v_coord_channel	!=	undefined  || 	_parsed.__u_coord_channel	!=	undefined ||
-	_parsed.__speed_channel		!=	undefined  ||	_parsed.__life_channel		!=	undefined ||
-	_parsed.__orient_channel	!=	undefined  ||	_parsed.__size_x_channel	!=	undefined ||
-	_parsed.__size_y_channel	!=	undefined  || 	_parsed.__color_mix_channel	!=	undefined ||
-	_parsed.__frame_channel		!=	undefined
-	{
-		distributions = animcurve_really_create( {curve_name : "distributions" , channels : []})
-		var _channels = []
-		var _last = -1
-		if _parsed.__v_coord_channel	!=	undefined
-		{
-		var current = _parsed.__v_coord_channel
-		var channel				=  animcurve_channel_new()
-			channel.name		= "v_coord"
-			channel.type		= current.type
-			channel.iterations	= current.iterations
-			
-			var points = current.points 
-			var _l = array_length(points)
-			var _new_channel = []
-			for(var _i = 0 ;_i<_l ;_i++)
-			{
-				animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-			}
-				
-			channel.points = _new_channel
-			
-			array_push(_channels,channel)
-
-		}
-		if _parsed.__u_coord_channel	!=	undefined
-		{
-			var current = _parsed.__u_coord_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "u_coord"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__speed_channel		!=	undefined
-		{
-			var current = _parsed.__speed_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "speed"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__life_channel		!=	undefined
-		{
-			var current = _parsed.__life_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "life"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__orient_channel		!=	undefined
-		{
-			var current = _parsed.__orient_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "orient"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__size_x_channel		!=	undefined
-		{
-			var current = _parsed.__size_x_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "size_x"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__size_y_channel		!=	undefined
-		{
-			var current = _parsed.__size_y_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "size_y"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__color_mix_channel	!=	undefined
-		{
-			var current = _parsed.__color_mix_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "color_mix"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-		if _parsed.__frame_channel		!=	undefined
-		{
-			var current = _parsed.__frame_channel
-			var channel				=  animcurve_channel_new()
-				channel.name		= "frame_channel"
-				channel.type		= current.type
-				channel.iterations	= current.iterations
-			
-				var points = current.points 
-				var _l = array_length(points)
-				var _new_channel = []
-				for(var _i = 0 ;_i<_l ;_i++)
-				{
-					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
-				}
-				
-				channel.points = _new_channel
-			
-				array_push(_channels,channel)
-		}
-	
-		distributions.channels = _channels
-		
-		if animcurve_channel_exists(distributions,"v_coord")
-		{
-			distr_along_v_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__v_coord_channel = animcurve_get_channel(distributions,"v_coord")
-		}
-		if animcurve_channel_exists(distributions,"u_coord")
-		{
-			distr_along_u_coord	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__u_coord_channel = animcurve_get_channel(distributions,"u_coord")
-		}
-		if animcurve_channel_exists(distributions,"speed")
-		{
-			distr_speed	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__speed_channel = animcurve_get_channel(distributions,"speed")
-		}
-		if animcurve_channel_exists(distributions,"life")
-		{
-			distr_life	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__life_channel = animcurve_get_channel(distributions,"life")
-		}
-		if animcurve_channel_exists(distributions,"orient")
-		{
-			distr_orient	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__orient_channel = animcurve_get_channel(distributions,"orient")
-		}
-		if animcurve_channel_exists(distributions,"size_x")
-		{
-			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__size_x_channel = animcurve_get_channel(distributions,"size_x")
-		}
-		if animcurve_channel_exists(distributions,"size_y")
-		{
-			distr_size	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__size_y_channel = animcurve_get_channel(distributions,"size_y")
-		}
-		if animcurve_channel_exists(distributions,"color_mix")
-		{
-			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__color_mix_channel = animcurve_get_channel(distributions,"color_mix")
-		}
-		if animcurve_channel_exists(distributions,"frame")
-		{
-			distr_color_mix	= PULSE_DISTRIBUTION.ANIM_CURVE
-			__frame_channel = animcurve_get_channel(distributions,"frame")
-		}
-	}
-	
-	__speed_link			=	_parsed.__speed_link
-	__life_link				=	_parsed.__life_link	
-	__orient_link			=	_parsed.__orient_link
-	__size_link				=	_parsed.__size_link	
-	__color_mix_link		=	_parsed.__color_mix_link
-	__frame_link			=	_parsed.__frame_link	
-
-	__speed_weight			=	_parsed.__speed_weight
-	__life_weight			=	_parsed.__life_weight
-	__orient_weight			=	_parsed.__orient_weight
-	__size_weight			=	_parsed.__size_weight
-	__color_mix_weight		=	_parsed.__color_mix_weight
-	__frame_weight			=	_parsed.__frame_weight
-	
-	#endregion
-	
-	boundary			=	_parsed.boundary
-	alter_direction		=	_parsed.alter_direction	
-	
-	//Image maps
-	displacement_map	=	_parsed.displacement_map
-	color_map			=	_parsed.color_map			
-
-	//Forces, Groups, Colliders
-	forces				=	_parsed.forces
-		// collisions
-	collisions			=	_parsed.collisions
-	is_colliding		=	_parsed.is_colliding
-	colliding_entities	=	_parsed.colliding_entities
-	
-	
-	/// Anim curve conversion
-	var points = _parsed.stencil_profile.channels[0].points ,
-	_l = array_length(points)
-	var _stencil_profile_a = []
-	for(var _i = 0 ;_i<_l ;_i++)
-	{
-		animcurve_point_add(_stencil_profile_a,points[_i].posx,points[_i].value)
-	}
-	animcurve_points_set(stencil_profile,"a",_stencil_profile_a)
-	
-	//------
-	var points = _parsed.stencil_profile.channels[1].points ,
-	_l = array_length(points)
-	var _stencil_profile_b = []
-	for(var _i = 0 ;_i<_l ;_i++)
-	{
-		animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
-	}
-	animcurve_points_set(stencil_profile,"b",_stencil_profile_b)
-
-	//------
-	points = _parsed.stencil_profile.channels[2].points 
-	_l = array_length(points)
-	var _stencil_profile_c = []
-	for(var _i = 0 ;_i<_l ;_i++)
-	{
-		animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
-	}
-	animcurve_points_set(stencil_profile,"c",_stencil_profile_c)
-
-	_channel_01			=	animcurve_get_channel(stencil_profile,0)
-	_channel_02			=	animcurve_get_channel(stencil_profile,1)
-	_channel_03			=	animcurve_get_channel(stencil_profile,2)
-			
-
-			}
 	return  _new_emitter
 }
 
@@ -1141,13 +853,18 @@ function pulse_import_cache	(_cache_file, _overwrite = false)
 
 	_new_cache.shuffle				= _parsed.shuffle
 
-	var _exists = pulse_exists_system(_parsed.part_system.name)
+//	var _exists = pulse_exists_system(_parsed.part_system.name)
 	var _sys = pulse_fetch_system(_parsed.part_system.name)
 	if  _sys == undefined
 	{
 		__pulse_show_debug_message("Cache imported doesn't have a system. Please assign one before use",2)
 	}
-	_new_cache.part_system = _sys
+	var _part = pulse_fetch_particle(_parsed.particle.name)
+	if  _part == undefined
+	{
+		__pulse_show_debug_message($"Cache imported requires a particle named `{_parsed.particle.name}`. Please import particle before importing cache ",2)
+	}
+	_new_cache.particle = _part
 
 	return _new_cache
 }
@@ -1243,7 +960,7 @@ function pulse_store_particle		(_particle,_override = false)
 		}
 	}
 	
-	__pulse_show_debug_message($" Stored particle \"{_name}\"",3);
+	__pulse_show_debug_message($"Stored particle \"{_name}\"",3);
 		global.pulse.part_types[$_name] = variable_clone(_particle)
 		return  global.pulse.part_types[$_name]
 }
@@ -1284,161 +1001,27 @@ function pulse_store_emitter			(_emitter,_name , _override = false)
 		return
 	}
 	
-	_emitter.name = string(_name)
+	_name = string(_name);
 
-	if pulse_exists_emitter(_name) > 0 && !_override
+	if			pulse_exists_emitter(_name) > 0 && !_override
 	{
 		/// Change name if the name already exists
-		var l		=	struct_names_count(global.pulse.emitters)		
+		var l		=	struct_names_count(global.pulse.emitters)		;
 		_name		=	$"{_name}_{l}";	
-		_emitter.name = _name
 	}
-	
-	__pulse_show_debug_message($"Created emitter by the name {_name}",3);
-	global.pulse.emitters[$_name] = new pulse_emitter(_emitter.part_system,_emitter.part_type)
-	with global.pulse.emitters[$_name]
+	else if		pulse_exists_emitter(_name) > 0 && _override
 	{
-		#region Emitter Form
-		stencil_mode		=	_emitter.stencil_mode
-		form_mode			=	_emitter.form_mode
-		path				=	_emitter.path
-		path_res			=	_emitter.path_res
-		stencil_tween		=	_emitter.stencil_tween
-		radius_external		=	_emitter.radius_external
-		radius_internal		=	_emitter.radius_internal
-		edge_external		=	_emitter.edge_external
-		edge_internal		=	_emitter.edge_internal
-		mask_start			=	_emitter.mask_start
-		mask_end			=	_emitter.mask_end
-		mask_v_start		=	_emitter.mask_v_start
-		mask_v_end			=	_emitter.mask_v_end
-		line				=	_emitter.line
-
-	#endregion
-	
-	#region Emitter properties
-		x_focal_point		=	_emitter.x_focal_point
-		y_focal_point		=	_emitter.y_focal_point
-		x_scale				=	_emitter.x_scale
-		y_scale				=	_emitter.y_scale
-		stencil_offset		=	_emitter.stencil_offset
-		direction_range		=	_emitter.direction_range
-	#endregion
-	
-	#region Distributions
-		distr_along_v_coord	=	_emitter.distr_along_v_coord
-		distr_along_u_coord	=	_emitter.distr_along_u_coord
-		distr_speed			=	_emitter.distr_speed
-		distr_life			=	_emitter.distr_life
-		distr_orient		=	_emitter.distr_orient
-		distr_size			=	_emitter.distr_size
-		distr_color_mix		=	_emitter.distr_color_mix
-		distr_frame			=	_emitter.distr_frame
-		divisions_v			=	_emitter.divisions_v
-		divisions_u			=	_emitter.divisions_u
-		divisions_v_offset	=	_emitter.divisions_v_offset
-		divisions_u_offset	=	_emitter.divisions_u_offset
-	#endregion
-	
-		#region Channels
-
-	__color_mix_A		=	_emitter.__color_mix_A
-	__color_mix_B		=	_emitter.__color_mix_B
-	
-		
-
-			distr_along_v_coord	= _emitter.distr_along_v_coord	
-			__v_coord_channel =_emitter.__v_coord_channel
-
-			distr_along_u_coord	= _emitter.distr_along_u_coord
-			__u_coord_channel = _emitter.__u_coord_channel
-
-			distr_speed	= _emitter.distr_speed
-			__speed_channel = _emitter.__speed_channel
-
-			distr_life	= _emitter.distr_life
-			__life_channel = _emitter.__life_channel 
-
-			distr_orient	=_emitter.distr_orient
-			__orient_channel = _emitter.__orient_channel
-
-			distr_size	=_emitter.distr_size
-			__size_x_channel = _emitter.__size_x_channel
-
-			distr_size	= _emitter.distr_size
-			__size_y_channel = _emitter.__size_y_channel
-
-			distr_color_mix	= _emitter.distr_color_mix
-			__color_mix_channel = _emitter.__color_mix_channel
-
-			distr_color_mix	= _emitter.distr_color_mix
-			__frame_channel =_emitter.__frame_channel
-	
-	
-	__speed_link			=	_emitter.__speed_link
-	__life_link				=	_emitter.__life_link	
-	__orient_link			=	_emitter.__orient_link
-	__size_link				=	_emitter.__size_link	
-	__color_mix_link		=	_emitter.__color_mix_link
-	__frame_link			=	_emitter.__frame_link	
-
-	__speed_weight			=	_emitter.__speed_weight
-	__life_weight			=	_emitter.__life_weight
-	__orient_weight			=	_emitter.__orient_weight
-	__size_weight			=	_emitter.__size_weight
-	__color_mix_weight		=	_emitter.__color_mix_weight
-	__frame_weight			=	_emitter.__frame_weight
-	
-	#endregion
-		boundary			=	_emitter.boundary
-		alter_direction		=	_emitter.alter_direction	
-	
-		//Image maps
-		displacement_map	=	_emitter.displacement_map
-		color_map			=	_emitter.color_map			
-
-		//Forces, Groups, Colliders
-		forces				=	_emitter.forces
-			// collisions
-		collisions			=	_emitter.collisions
-		is_colliding		=	_emitter.is_colliding
-		colliding_entities	=	_emitter.colliding_entities
-	
-	/// Anim curve conversion
-		var points = _emitter.stencil_profile.channels[0].points ,
-		_l = array_length(points)
-		var _stencil_profile_a = []
-		for(var _i = 0 ;_i<_l ;_i++)
-		{
-			animcurve_point_add(_stencil_profile_a,points[_i].posx,points[_i].value)
-		}
-		animcurve_points_set(stencil_profile,"a",_stencil_profile_a)
-	
-		//------
-		var points = _emitter.stencil_profile.channels[1].points ,
-		_l = array_length(points)
-		var _stencil_profile_b = []
-		for(var _i = 0 ;_i<_l ;_i++)
-		{
-			animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
-		}
-		animcurve_points_set(stencil_profile,"b",_stencil_profile_b)
-
-		//------
-		points = _emitter.stencil_profile.channels[2].points 
-		_l = array_length(points)
-		var _stencil_profile_c = []
-		for(var _i = 0 ;_i<_l ;_i++)
-		{
-			animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
-		}
-		animcurve_points_set(stencil_profile,"c",_stencil_profile_c)
-
-		_channel_01			=	animcurve_get_channel(stencil_profile,0)
-		_channel_02			=	animcurve_get_channel(stencil_profile,1)
-		_channel_03			=	animcurve_get_channel(stencil_profile,2)
+		pulse_destroy_emitter(_name)
 	}
-
+	
+	
+	global.pulse.emitters[$_name] = new pulse_emitter(_emitter.part_system,_emitter.part_type)
+	var _new_emitter = global.pulse.emitters[$_name] ;
+	__pulse_copy_emitter(_new_emitter,_emitter) ;
+	_new_emitter.name = _name ;
+	
+	//__pulse_show_debug_message($"Created and stored emitter by the name /"{_name}/"",3);
+	
 	return  global.pulse.emitters[$_name]
 }
 
@@ -1522,3 +1105,361 @@ function pulse_fetch_system			(_name)
 }
 
 #endregion
+
+function __pulse_copy_emitter(_new_emitter,_old_emitter)
+{
+	with _new_emitter
+	{
+		name = _old_emitter.name
+		default_amount = _old_emitter.default_amount
+		#region Emitter Form
+		stencil_mode		=	_old_emitter.stencil_mode
+		form_mode			=	_old_emitter.form_mode
+		path				=	_old_emitter.path
+	if path == -1 && form_mode == PULSE_FORM.PATH 
+	{
+		form_mode = PULSE_FORM.ELLIPSE
+		__pulse_show_debug_message("Path not found on import, replacing with ellipse",1)
+	}
+	path_res			=	_old_emitter.path_res
+	stencil_tween		=	_old_emitter.stencil_tween
+	radius_external		=	_old_emitter.radius_external
+	radius_internal		=	_old_emitter.radius_internal
+	edge_external		=	_old_emitter.edge_external
+	edge_internal		=	_old_emitter.edge_internal
+	mask_start			=	_old_emitter.mask_start
+	mask_end			=	_old_emitter.mask_end
+	mask_v_start		=	_old_emitter.mask_v_start
+	mask_v_end			=	_old_emitter.mask_v_end
+	line				=	_old_emitter.line
+
+	#endregion
+	
+	#region Emitter properties
+	x_focal_point		=	_old_emitter.x_focal_point
+	y_focal_point		=	_old_emitter.y_focal_point
+	x_scale				=	_old_emitter.x_scale
+	y_scale				=	_old_emitter.y_scale
+	stencil_offset		=	_old_emitter.stencil_offset
+	direction_range		=	_old_emitter.direction_range
+	#endregion
+	
+	#region Distributions
+	distr_along_v_coord	=	_old_emitter.distr_along_v_coord
+	distr_along_u_coord	=	_old_emitter.distr_along_u_coord
+	distr_speed			=	_old_emitter.distr_speed
+	distr_life			=	_old_emitter.distr_life
+	distr_orient		=	_old_emitter.distr_orient
+	distr_size			=	_old_emitter.distr_size
+	distr_color_mix		=	_old_emitter.distr_color_mix
+	distr_frame			=	_old_emitter.distr_frame
+	divisions_v			=	_old_emitter.divisions_v
+	divisions_u			=	_old_emitter.divisions_u
+	divisions_v_offset	=	_old_emitter.divisions_v_offset
+	divisions_u_offset	=	_old_emitter.divisions_u_offset
+	#endregion
+	
+	#region Channels
+
+	__color_mix_A		=	_old_emitter.__color_mix_A
+	__color_mix_B		=	_old_emitter.__color_mix_B
+	
+if 	_old_emitter.__v_coord_channel	!=	undefined  || 	_old_emitter.__u_coord_channel	!=	undefined ||
+	_old_emitter.__speed_channel		!=	undefined  ||	_old_emitter.__life_channel		!=	undefined ||
+	_old_emitter.__orient_channel	!=	undefined  ||	_old_emitter.__size_x_channel	!=	undefined ||
+	_old_emitter.__size_y_channel	!=	undefined  || 	_old_emitter.__color_mix_channel	!=	undefined ||
+	_old_emitter.__frame_channel		!=	undefined
+	{
+		distributions = animcurve_really_create( {curve_name : "distributions" , channels : []})
+		var _channels = []
+		var _last = -1
+		if _old_emitter.__v_coord_channel	!=	undefined
+		{
+		var current = _old_emitter.__v_coord_channel
+		var channel				=  animcurve_channel_new()
+			channel.name		= "v_coord"
+			channel.type		= current.type
+			channel.iterations	= current.iterations
+			
+			var points = current.points 
+			var _l = array_length(points)
+			var _new_channel = []
+			for(var _i = 0 ;_i<_l ;_i++)
+			{
+				animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+			}
+				
+			channel.points = _new_channel
+			
+			array_push(_channels,channel)
+
+		}
+		if _old_emitter.__u_coord_channel	!=	undefined
+		{
+			var current = _old_emitter.__u_coord_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "u_coord"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__speed_channel		!=	undefined
+		{
+			var current = _old_emitter.__speed_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "speed"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__life_channel		!=	undefined
+		{
+			var current = _old_emitter.__life_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "life"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__orient_channel		!=	undefined
+		{
+			var current = _old_emitter.__orient_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "orient"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__size_x_channel		!=	undefined
+		{
+			var current = _old_emitter.__size_x_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "size_x"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__size_y_channel		!=	undefined
+		{
+			var current = _old_emitter.__size_y_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "size_y"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__color_mix_channel	!=	undefined
+		{
+			var current = _old_emitter.__color_mix_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "color_mix"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+		if _old_emitter.__frame_channel		!=	undefined
+		{
+			var current = _old_emitter.__frame_channel
+			var channel				=  animcurve_channel_new()
+				channel.name		= "frame_channel"
+				channel.type		= current.type
+				channel.iterations	= current.iterations
+			
+				var points = current.points 
+				var _l = array_length(points)
+				var _new_channel = []
+				for(var _i = 0 ;_i<_l ;_i++)
+				{
+					animcurve_point_add(_new_channel,points[_i].posx,points[_i].value)
+				}
+				
+				channel.points = _new_channel
+			
+				array_push(_channels,channel)
+		}
+	
+		distributions.channels = _channels
+		
+		if animcurve_channel_exists(distributions,"v_coord")
+		{
+			__v_coord_channel = animcurve_get_channel(distributions,"v_coord")
+		}
+		if animcurve_channel_exists(distributions,"u_coord")
+		{
+			__u_coord_channel = animcurve_get_channel(distributions,"u_coord")
+		}
+		if animcurve_channel_exists(distributions,"speed")
+		{
+			__speed_channel = animcurve_get_channel(distributions,"speed")
+		}
+		if animcurve_channel_exists(distributions,"life")
+		{
+			__life_channel = animcurve_get_channel(distributions,"life")
+		}
+		if animcurve_channel_exists(distributions,"orient")
+		{
+			__orient_channel = animcurve_get_channel(distributions,"orient")
+		}
+		if animcurve_channel_exists(distributions,"size_x")
+		{
+			__size_x_channel = animcurve_get_channel(distributions,"size_x")
+		}
+		if animcurve_channel_exists(distributions,"size_y")
+		{
+			__size_y_channel = animcurve_get_channel(distributions,"size_y")
+		}
+		if animcurve_channel_exists(distributions,"color_mix")
+		{
+			__color_mix_channel = animcurve_get_channel(distributions,"color_mix")
+		}
+		if animcurve_channel_exists(distributions,"frame")
+		{
+			__frame_channel = animcurve_get_channel(distributions,"frame")
+		}
+	}
+	
+	__speed_link			=	_old_emitter.__speed_link
+	__life_link				=	_old_emitter.__life_link	
+	__orient_link			=	_old_emitter.__orient_link
+	__size_link				=	_old_emitter.__size_link	
+	__color_mix_link		=	_old_emitter.__color_mix_link
+	__frame_link			=	_old_emitter.__frame_link	
+
+	__speed_weight			=	_old_emitter.__speed_weight
+	__life_weight			=	_old_emitter.__life_weight
+	__orient_weight			=	_old_emitter.__orient_weight
+	__size_weight			=	_old_emitter.__size_weight
+	__color_mix_weight		=	_old_emitter.__color_mix_weight
+	__frame_weight			=	_old_emitter.__frame_weight
+	
+	#endregion
+	
+	boundary			=	_old_emitter.boundary
+	alter_direction		=	_old_emitter.alter_direction	
+	
+	//Image maps
+	displacement_map	=	_old_emitter.displacement_map
+	color_map			=	_old_emitter.color_map			
+
+	//Forces, Groups, Colliders
+	forces				=	_old_emitter.forces
+		// collisions
+	collisions			=	_old_emitter.collisions
+	is_colliding		=	_old_emitter.is_colliding
+	colliding_entities	=	_old_emitter.colliding_entities
+	
+	
+	/// Anim curve conversion
+	var points = _old_emitter.stencil_profile.channels[0].points ,
+	_l = array_length(points)
+	var _stencil_profile_a = []
+	for(var _i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_a,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"a",_stencil_profile_a)
+	
+	//------
+	var points = _old_emitter.stencil_profile.channels[1].points ,
+	_l = array_length(points)
+	var _stencil_profile_b = []
+	for(var _i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_b,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"b",_stencil_profile_b)
+
+	//------
+	points = _old_emitter.stencil_profile.channels[2].points 
+	_l = array_length(points)
+	var _stencil_profile_c = []
+	for(var _i = 0 ;_i<_l ;_i++)
+	{
+		animcurve_point_add(_stencil_profile_c,points[_i].posx,points[_i].value)
+	}
+	animcurve_points_set(stencil_profile,"c",_stencil_profile_c)
+
+	_channel_01			=	animcurve_get_channel(stencil_profile,0)
+	_channel_02			=	animcurve_get_channel(stencil_profile,1)
+	_channel_03			=	animcurve_get_channel(stencil_profile,2)
+			
+
+			}	
+}

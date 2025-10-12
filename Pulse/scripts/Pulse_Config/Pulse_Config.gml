@@ -115,7 +115,7 @@ enum PULSE_FORCE
 
 
 //The default external radius for emitters
-#macro __PULSE_DEFAULT_EMITTER_RADIUS					50
+#macro __PULSE_DEFAULT_EMITTER_RADIUS					150
 
 #macro __PULSE_DEFAULT_EMITTER_STENCIL_MODE				PULSE_STENCIL.NONE
 

@@ -1,6 +1,10 @@
-debug = true
-show_debug_overlay(debug)
-//debug_resources()
+debug = false
+auto_create = true
+if (debug)
+{
+	show_debug_overlay(debug)
+	debug_resources()
+}
 // Welcome to Pulse!
 
 
@@ -19,7 +23,7 @@ s_l = 0
 cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
 cacheing = false
-alarm_set(0,2)
+if auto_create alarm_set(0,2)
 
 dbg_view("Welcome to Pulse!",true,30,30,300,300)
 
@@ -59,13 +63,21 @@ dbg_text_input(ref_create(self,"emitter_name"),"New Emitter Name")
 
 dbg_button("Create Emitter",function()
 {
-	var _emitter = new pulse_emitter(systems[s_l].system,particles[p_l].particle)
-	instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
-	array_push(emitters,_emitter)
-	//array_push(particle_names,_part.name)*/
+	if s_l == -1 or p_l ==-1
+	{
+		show_message("Can't create an emitter without particles or systems!")
+		return
+	}
+	var _temp_emitter =  new pulse_emitter(systems[s_l].system,particles[p_l].particle)
+	var _emitter = pulse_store_emitter(_temp_emitter,emitter_name,false)
+	
+	pulse_destroy_emitter(_temp_emitter)
+	
+	var _inst  = instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
+	array_push(emitters,_inst)
 })
 
-dbg_text("Emitters are created with the latest \nparticles and systems created \nor selected as current")
+dbg_text("Emitters are created with the latest \nparticles and systems created \nor selected as active")
 
 
 dbg_section("Import")
@@ -103,9 +115,11 @@ dbg_button("Import Emitter",function(){
 	if _p != ""
 	{
 		var _emitter = pulse_import_emitter(_p,true)	
+			_emitter = pulse_store_emitter(_emitter,_emitter.name,false)
+			///it should try to fetch before creating new particles/system, same for cache
 		var _inst_s		= instance_create_layer(0,0,layer,DBG_System,{system: _emitter.part_system})
 							array_push(systems,_inst_s)
-							s_l = array_length(_inst_s)-1
+							s_l = array_length(systems)-1
 		var	_inst_p = instance_create_layer(0,0,layer,DBG_Particle,{particle: _emitter.part_type})
 							array_push(particles,_inst_p)
 							p_l = array_length(particles)-1

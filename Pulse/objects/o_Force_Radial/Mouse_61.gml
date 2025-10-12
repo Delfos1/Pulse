@@ -1,2 +1,2 @@
 if !hover exit
-force.set_strength(force.force-3)
+force.set_strength(force.strength-3)

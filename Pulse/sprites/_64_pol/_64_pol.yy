@@ -59,7 +59,7 @@
   "origin":0,
   "parent":{
     "name":"64 pol",
-    "path":"folders/Examples/Sprites/64 pol.yy",
+    "path":"folders/DBG Project/Sprites/64 pol.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

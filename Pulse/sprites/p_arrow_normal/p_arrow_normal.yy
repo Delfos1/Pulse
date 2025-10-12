@@ -32,8 +32,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Linked Properties",
-    "path":"folders/Examples/Linked Properties.yy",
+    "name":"Sprites",
+    "path":"folders/DBG Project/Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

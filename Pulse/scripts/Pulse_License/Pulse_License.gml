@@ -1,8 +1,6 @@
-__pulse_show_debug_message("∴ v 0.8.00 ∴",0)
-
 /*
-PULSE v 0.8.00
-2025.MARCH
+PULSE v 1.00
+2025.OCTOBER
 
 
 Pulse is a Particle Library for GameMaker, made by Matias 'Delfos' Poggini

@@ -8,13 +8,10 @@
   "name":"DBG_Particle",
   "overriddenProperties":[],
   "parent":{
-    "name":"Examples",
-    "path":"folders/Examples.yy",
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
   },
-  "parentObjectId":{
-    "name":"ParticlesParent",
-    "path":"objects/ParticlesParent/ParticlesParent.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -30,6 +27,7 @@
   "physicsStartAwake":true,
   "properties":[
     {"$GMObjectProperty":"v1","%Name":"particle","filters":[],"listItems":[],"multiselect":false,"name":"particle","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"","varType":4,},
+    {"$GMObjectProperty":"v1","%Name":"active","filters":[],"listItems":[],"multiselect":false,"name":"active","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"1","varType":0,},
   ],
   "resourceType":"GMObject",
   "resourceVersion":"2.0",

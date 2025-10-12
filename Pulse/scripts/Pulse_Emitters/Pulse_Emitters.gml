@@ -10,7 +10,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	part_system = 	 __pulse_lookup_system(__part_system)
 	part_type =  __pulse_lookup_particle(__part_type)
 	imported = false
-
+	default_amount = 50
+	
 	#region Emitter Form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
 	form_mode			=	__PULSE_DEFAULT_EMITTER_FORM_MODE
@@ -92,10 +93,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	__color_mix_A			=	[0,0,0]
 	__color_mix_B			=	[0,0,0]
 	
+	distributions = anim_curve
 	if animcurve_really_exists(anim_curve)
 	{
-
-		distributions = anim_curve
 		
 		if animcurve_channel_exists(distributions,"v_coord")
 		{
@@ -163,13 +163,22 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	static set_system				=	function(_system)
 	{
-		system =  __pulse_lookup_particle(_system)
+		part_system =  __pulse_lookup_system(_system)
 		return		
 	}
 	
 	#endregion
 
 	#region EMITTER SETTINGS
+	
+	/// @description	Sets the default amount of particles requested on each pulse.
+	/// @param {Real}	_amount_request : The default amount of particles requested on each pulse
+	static set_default_amount = function(_amount_request)
+	{
+		default_amount = floor(max(0,_amount_request))
+		
+		return self
+	}
 	
 	/// @description	Sets an animation curves as a stencil
 	/// @param {Asset.GMAnimCurve}	__ac_curve : Animation curve
@@ -371,6 +380,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the orientation of the particles. 
 	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : Requires one of the following: PULSE_LINK_TO.NONE,	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+		/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @context pulse_emitter
 	static set_distribution_orient	=  function (_curve = undefined, _link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
@@ -432,6 +442,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the life of the particles. 
 	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+		/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @context pulse_emitter
 	static set_distribution_life	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
@@ -495,6 +506,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the speed of the particles. 
 	/// @param {Real.Enum.PULSE_DISTRIBUTION}	_mode : Distribution mode. It can be PULSE_DISTRIBUTION.ANIM_CURVE or PULSE_DISTRIBUTION.LINKED .PULSE_DISTRIBUTION.RANDOM by default
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+		/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @context pulse_emitter
 	static set_distribution_speed	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
@@ -562,6 +574,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the size of the particles. 
 	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+		/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @context pulse_emitter
 	static set_distribution_size	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
@@ -640,6 +653,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @param {Constant.Colour, Real}	_color_B : Color B
 	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+	/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @param {Real.Enum.PULSE_COLOR}	_color_mode : Color mode. It can be PULSE_COLOR.A_TO_B_HSV , PULSE_COLOR.A_TO_B_RGB or PULSE_COLOR.COLOR_MAP. PULSE_COLOR.NONE by default
 	/// @context pulse_emitter
 	static set_distribution_color_mix=  function ( _color_A, _color_B,_curve,_link_to = PULSE_LINK_TO.NONE,_weight = 1,_color_mode = PULSE_COLOR.NONE )
@@ -666,7 +680,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		}
 		distr_color_mix_type = _color_mode
 		var _mode = PULSE_DISTRIBUTION.RANDOM
-		_weight = clamp(_weight,0,1)
+		
 		
 		if _link_to != PULSE_LINK_TO.NONE
 		{
@@ -711,6 +725,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @description	Sets the type of distribution for the frames of the particle's sprite.
 	/// @param {Array}		_curve : Supply an array containing [curve,channel], with the channel as a real or a string, or leave undefined to not assign a curve.
 	/// @param {Real.Enum.PULSE_LINK_TO}	_link_to : If mode is Linked, supply one of the following: 	PULSE_LINK_TO.DIRECTION ,	PULSE_LINK_TO.PATH_SPEED, 	PULSE_LINK_TO.SPEED,	PULSE_LINK_TO.U_COORD,	PULSE_LINK_TO.V_COORD
+/// @param {Real,Array.Real}	_weight : Strength  of the distribution. Can be either a real from 0 to 1 or an array of reals of size 3.
 	/// @context pulse_emitter
 	static set_distribution_frame	=  function (_curve = undefined,_link_to = PULSE_LINK_TO.NONE,_weight = 1 )
 	{
@@ -952,7 +967,11 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		if is_instanceof(_force,pulse_force)
 		{
-			array_push(forces,_force)
+			var _i = array_get_index(forces,_force)
+			if _i == -1
+			{
+				array_push(forces,_force)
+			}
 		}
 		return self
 	}
@@ -1057,15 +1076,19 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @context pulse_emitter
 	static	add_collisions			=	function(_object)
 	{
-		array_push(collisions,_object)
+		var ind = array_get_index(collisions, _object)
+		if ind == -1
+		{
+			array_push(collisions,_object)
+		}
 		
 		return self
 	}
 	
-	static remove_collisions =	function(_object)
+	static remove_collisions		=	function(_object)
 	{
-		var ind = array_find_index(collisions,function(_element, _index){return _element == _object})
-		if ind > -1
+		var ind = array_get_index(collisions, _object)
+		if ind != -1
 		{
 			array_delete(collisions,ind,1)
 		}
@@ -1229,9 +1252,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return _p
 	}
 	
-	static __assign_properties		=	function(_p)
-	{				
-		function get_link_value(_link,_p,_weight,_save)
+	static __get_link_value			=	function (_link,_p,_weight,_save)
 		{
 			var _amount
 			switch( _link )
@@ -1283,20 +1304,13 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 				break
 				case PULSE_LINK_TO.COLOR_MAP:
-				if _save[$ "color"] == undefined
-				{
+
 					var u = color_map.scale_u * (_p.u_coord+color_map.offset_u);
 					u = u>1||u<0 ?  abs(frac(u)): u ;
 					var v = color_map.scale_v * (_p.v_coord+color_map.offset_v);
 					v = v>1||v<0 ?  abs(frac(v)): v ;
 					
 					 _amount = color_map.buffer.GetNormalised(u,v)
-					 _save.color = _amount
-				}
-				else
-				{
-					_amount = _save.color
-				}
 				break
 			}
 			
@@ -1334,7 +1348,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 			return _amount
 		}	
-		
+	
+	static __assign_properties		=	function(_p)
+	{				
+
 		#region SPEED
 		
 		var _amount = 0,
@@ -1351,7 +1368,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_speed == PULSE_DISTRIBUTION.LINKED_CURVE || distr_speed == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__speed_link,_p,__speed_weight,_save)
+					_amount = __get_link_value(__speed_link,_p,__speed_weight,_save)
 				}
 				else
 				{
@@ -1379,7 +1396,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				if distr_life == PULSE_DISTRIBUTION.LINKED_CURVE || distr_life == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__life_link,_p,__life_weight,_save)
+					_amount = __get_link_value(__life_link,_p,__life_weight,_save)
 					
 				}
 				else
@@ -1404,7 +1421,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_orient == PULSE_DISTRIBUTION.LINKED_CURVE || distr_orient == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__orient_link,_p,__orient_weight,_save)
+					_amount = __get_link_value(__orient_link,_p,__orient_weight,_save)
 				}
 				else
 				{
@@ -1428,7 +1445,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				
 				if distr_size == PULSE_DISTRIBUTION.LINKED_CURVE || distr_size == PULSE_DISTRIBUTION.LINKED
 				{
-					var _amount_x = get_link_value(__size_link,_p,__size_weight,_save)
+					var _amount_x = __get_link_value(__size_link,_p,__size_weight,_save)
 					var _amount_y =	_amount_x
 				}
 				else
@@ -1458,7 +1475,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
 				{
-					_amount = get_link_value(__frame_link,_p,__frame_weight,_save)
+					_amount = __get_link_value(__frame_link,_p,__frame_weight,_save)
 				}
 				else
 				{
@@ -1482,7 +1499,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		{
 			if distr_color_mix == PULSE_DISTRIBUTION.LINKED  || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
 			{
-				_amount = get_link_value(__color_mix_link,_p,__color_mix_weight,_save)
+				_amount = __get_link_value(__color_mix_link,_p,__color_mix_weight,_save)
 			}
 			else
 			{
@@ -1491,7 +1508,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 			if distr_color_mix == PULSE_DISTRIBUTION.ANIM_CURVE || distr_color_mix == PULSE_DISTRIBUTION.LINKED_CURVE
 			{
-				if __color_mix_link == PULSE_LINK_TO.COLOR_MAP
+				if __color_mix_link == PULSE_LINK_TO.COLOR_MAP && is_array(_amount)
 				{
 					_amount[0] = animcurve_channel_evaluate(__color_mix_channel,_amount[0])
 					_amount[1] = animcurve_channel_evaluate(__color_mix_channel,_amount[1])
@@ -1503,7 +1520,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 				}
 			}
 			
-			if __color_mix_link == PULSE_LINK_TO.COLOR_MAP
+			if __color_mix_link == PULSE_LINK_TO.COLOR_MAP  && is_array(_amount)
 			{
 					_p.color_mode =PULSE_COLOR.COLOR_MAP
 					_p.r_h =  lerp(__color_mix_A[2],_amount[0],__color_mix_weight[0])
@@ -1511,16 +1528,26 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 					_p.b_v =  lerp(__color_mix_A[0],_amount[2],__color_mix_weight[2])
 					var _alpha = lerp(1,_amount[3]/255,__color_mix_weight[3])
 					//Uses alpha channel to reduce size of particle , as there is no way to pass individual alpha
-				if _p[$ "size"] != undefined && _alpha != 1
+				if color_map.alpha_mode == 0
 				{
-					_p.size[0] =  lerp(0,_p.size[0],_alpha)
-					_p.size[2] =  _p.size[0]
-					_p.size[1] =  lerp(0,_p.size[1],_alpha)
-					_p.size[3] =  _p.size[1]
+					if _p[$ "size"] != undefined && _alpha != 1
+					{
+						_p.size[0] =  lerp(0,_p.size[0],_alpha)
+						_p.size[2] =  _p.size[0]
+						_p.size[1] =  lerp(0,_p.size[1],_alpha)
+						_p.size[3] =  _p.size[1]
+					}
+					else if _alpha != 1
+					{
+						_p.size = array_create(4,lerp(0,part_type.size[1],_alpha))
+					}
 				}
-				else if _alpha != 1
+					else if color_map.alpha_mode == 1
 				{
-					_p.size = array_create(4,lerp(0,part_type.size[1],_alpha))
+					if _alpha < .5
+					{
+						_p.life=0
+					}
 				}
 			}
 			else
@@ -1812,8 +1839,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				var dir_force	=	(point_direction( __force_x,__force_y,_p.x_origin,_p.y_origin)+forces[k].direction)%360
 				
-				_vec2f[0] += lengthdir_x(forces[k].force*_weight,dir_force);
-				_vec2f[1] += lengthdir_y(forces[k].force*_weight,dir_force);
+				_vec2f[0] += lengthdir_x(forces[k].strength*_weight,dir_force);
+				_vec2f[1] += lengthdir_y(forces[k].strength*_weight,dir_force);
 			}else
 			{
 				_vec2f[0] +=(forces[k].vec[0]*_weight)
@@ -1844,9 +1871,10 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	 * @desc Generates a modified stencil which adapts to colliding objects. Returns an array that contains the IDs of all colliding instances 
 	 * @param {Real} _x X coordinate
 	 * @param {Real} _y Y coordinate
-	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions
-	 * @param {bool}[_prec] Whether the collision is precise (true, slow) or not (false, fast)
-	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
+	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions.  Default : Stored collisions
+	 * @param {bool} [_occlude] Whether to apply the collision to the shape or not. Default : TRUE
+	 * @param {bool} [_prec] Whether the collision is precise (true, slow) or not (false, fast) .  Default : FALSE
+	 * @param {real} [_rays] amount of rays emitted to create a stencil collision.  Default : 32
 	 */
 	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
 	{
@@ -1987,12 +2015,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	}
 	
 	/// @description	Emits the particles from the emitter. Result can be cached instead
-	/// @param {Real}	_amount_request : Amount of particles requested for creation. Actual amount might vary if the system has a limit.
-	/// @param {Real}	x : X coordinate in System space.
-	/// @param {Real}	y : Y coordinate in System space.
+	/// @param {Real}	[_amount_request] : Amount of particles requested for creation. Actual amount might vary if the system has a limit.  Defaults to the default amount set for the emitter.
+	/// @param {Real}	[x] : X coordinate in System space. Default = 0
+	/// @param {Real}	[y] : Y coordinate in System space.  Default = 0
 	/// @param {Bool}	[_cache] : Whether to save the results of the burst to a cache or not. If true, returns an array instead of emitting particles.
 	/// @context pulse_emitter
-	static	pulse				=	function(_amount_request,x,y,_cache=false)
+	static	pulse				=	function(_amount_request = default_amount,x=0,y=0,_cache=false)
 	{
 		if !_cache
 		{
@@ -2018,10 +2046,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 						time_source_start(part_system.count)
 					}
 				}
-				if _amount_request >= part_system.limit
-				{
-					part_system.factor *= (part_system.limit/_amount_request)
-				}
+				
+				_amount_request = min(_amount_request,part_system.limit)
+
 			}
 		
 			var _amount = floor((_amount_request*part_system.factor)*global.pulse.particle_factor)
@@ -2102,7 +2129,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			// DIRECTION (angle) 
 				
 				__assign_direction(particle_struct)
-			// ----- Alter a whole set of particle properties based on a pre-processed sprite or surface
+			
 			div_v++
 			if div_v	>	divisions_v+divisions_v_offset
 			{

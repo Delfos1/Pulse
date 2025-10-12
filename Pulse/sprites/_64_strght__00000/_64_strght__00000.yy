@@ -26,7 +26,7 @@
   "origin":0,
   "parent":{
     "name":"64 stght",
-    "path":"folders/Examples/Sprites/64 stght.yy",
+    "path":"folders/DBG Project/Sprites/64 stght.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

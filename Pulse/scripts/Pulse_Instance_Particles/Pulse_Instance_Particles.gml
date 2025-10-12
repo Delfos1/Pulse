@@ -5,10 +5,9 @@
 function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
 	name			=	string(_name)
-	if particle_exists(index) part_type_destroy(index)
 	index			=	_object
 	sprite			=	[object_get_sprite(_object),false,false,true]
-	
+	type			=	1
 	alpha_mode =  false // TRUE for Curve, FALSE for Lerp
 	alpha_curve = undefined
 	

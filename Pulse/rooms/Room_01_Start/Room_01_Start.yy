@@ -11,7 +11,6 @@
     {"name":"inst_195549A8","path":"rooms/Room_01_Start/Room_01_Start.yy",},
     {"name":"inst_26C1DDF8","path":"rooms/Room_01_Start/Room_01_Start.yy",},
     {"name":"inst_32AF05D8","path":"rooms/Room_01_Start/Room_01_Start.yy",},
-    {"name":"inst_2CD5E2A0","path":"rooms/Room_01_Start/Room_01_Start.yy",},
   ],
   "isDnd":false,
   "layers":[
@@ -21,7 +20,6 @@
     {"$GMRPathLayer":"","%Name":"Path_1","colour":4278190335,"depth":100,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"layers":[],"name":"Path_1","pathId":{"name":"ExamplePath","path":"paths/ExamplePath/ExamplePath.yy",},"properties":[],"resourceType":"GMRPathLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Above_Obstacles","depth":200,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[],"layers":[],"name":"Above_Obstacles","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Same_as_Obstacles","depth":300,"effectEnabled":false,"effectType":"none","gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[
-        {"$GMRInstance":"v2","%Name":"inst_2CD5E2A0","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":true,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_2CD5E2A0","objectId":{"name":"Comparative","path":"objects/Comparative/Comparative.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":904.0,"y":353.0,},
         {"$GMRInstance":"v2","%Name":"inst_6DCA59CA","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_6DCA59CA","objectId":{"name":"o_Collider","path":"objects/o_Collider/o_Collider.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":5.5452523,"scaleY":4.2870855,"x":1441.0,"y":960.0,},
         {"$GMRInstance":"v2","%Name":"inst_195549A8","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":true,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_195549A8","objectId":{"name":"o_Collider","path":"objects/o_Collider/o_Collider.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":47.79754,"scaleX":11.075581,"scaleY":1.53125,"x":247.73602,"y":572.8733,},
         {"$GMRInstance":"v2","%Name":"inst_26C1DDF8","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_26C1DDF8","objectId":{"name":"o_Collider","path":"objects/o_Collider/o_Collider.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":44.0,"scaleX":1.0878196,"scaleY":6.165178,"x":1668.0,"y":390.0,},
@@ -38,7 +36,7 @@
   "name":"Room_01_Start",
   "parent":{
     "name":"Rooms",
-    "path":"folders/Examples/Rooms.yy",
+    "path":"folders/DBG Project/Rooms.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

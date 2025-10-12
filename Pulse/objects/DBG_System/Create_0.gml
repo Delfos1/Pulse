@@ -3,17 +3,36 @@
 ///////   SYSTEM  ////////
 //////////////////////////
 //////////////////////////
+	with DBG_System
+	{
+		active = 0
+	}
+	active=1
 
-
-dbg_view($"System :{system.name}",true,330,330,300,700)
+this = dbg_view($"System :{system.name}",true,330,330,300,700)
 dbg_section("File",true)
 #region File
 
 dbg_text($"System :{system.name}")
 
-dbg_button("Select as Current",function(){
-	DBG_General.s_l = array_find_index(DBG_General.systems,function(value){ return value == id })		
-	})
+active=1
+active_spr = s_pulse_star
+ref_active = ref_create(self,"active")
+ref_active_spr = ref_create(self,"active_spr")
+active_func = function(){
+	
+	with DBG_System
+	{
+		active = 0
+	}
+	DBG_General.s_l = array_find_index(DBG_General.systems,function(value){ return value == id })			
+	active=1
+}
+ref_active_func = ref_create(self,"active_func")
+
+dbg_sprite_button(ref_active_func,ref_active_spr,ref_active)
+dbg_same_line()
+dbg_button("Make Active",ref_active_func)
 
 dbg_text_separator("Clone")
 
@@ -27,7 +46,28 @@ dbg_button("Clone",function(){
 	array_push(DBG_General.systems,_inst)
 	DBG_General.s_l = array_length(DBG_General.systems)-1
 })
-
+dbg_button("Destroy",function(){
+	
+	array_delete(DBG_General.systems, array_find_index(DBG_General.systems,function(_element, _index){return _element==id}),1)
+	DBG_General.s_l = array_length(DBG_General.systems)-1
+	with DBG_Emitter
+	{	
+		if system_instance == other.id
+		{
+			if DBG_General.s_l == -1 
+			{
+				system_instance =  undefined
+			}else{
+			system_instance = DBG_General.systems[DBG_General.s_l]
+			emitter.set_system(system_instance.system)
+			}
+		}
+	}
+	pulse_destroy_system(system.name)
+	delete system
+	dbg_view_delete(this)
+	instance_destroy()
+})
 dbg_button("Export",function(){
 	pulse_export_system(system)})
 

@@ -58,8 +58,8 @@
   "optionsFile":"options.json",
   "packageId":"",
   "parent":{
-    "name":"Pulse",
-    "path":"Pulse.yyp",
+    "name":"Extensions",
+    "path":"folders/Extensions.yy",
   },
   "productId":"",
   "resourceType":"GMExtension",

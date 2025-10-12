@@ -14,11 +14,6 @@ dbg_view("Cache",true,630,330,300,700)
 
 dbg_section("Properties",true)
 
-/*
-dbg_text_separator("Elements:")
-dbg_text($"Particle : {cache.particle.name}")
-dbg_text($"System   : {cache.part_system.name}")*/
-
 dbg_text_separator("Cache properties:")
 e_amount = 50
 e_freq = 1

@@ -9,13 +9,10 @@
   "name":"DBG_System",
   "overriddenProperties":[],
   "parent":{
-    "name":"Examples",
-    "path":"folders/Examples.yy",
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
   },
-  "parentObjectId":{
-    "name":"ParticlesParent",
-    "path":"objects/ParticlesParent/ParticlesParent.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,

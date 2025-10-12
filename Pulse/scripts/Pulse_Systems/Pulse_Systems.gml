@@ -373,11 +373,11 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 				}
 				particle_amount =  part_particles_count(index)
 				// if there are more particles than desired limit
-				if particle_amount-limit > limit*.1
+				if particle_amount-limit > limit*.125
 				{
 					factor *= (limit/particle_amount)
 				} 
-				else if limit-particle_amount > limit*.1 && factor<1
+				else if limit-particle_amount > limit*.125 && factor<1
 				{
 					factor /= (particle_amount/limit)
 					factor = min(1,factor)

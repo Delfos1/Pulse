@@ -6,7 +6,7 @@
   "name":"TGM_Collisions",
   "parent":{
     "name":"Code",
-    "path":"folders/KazanGames/TurboGML/Code.yy",
+    "path":"folders/Extensions/KazanGames/TurboGML/Code.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

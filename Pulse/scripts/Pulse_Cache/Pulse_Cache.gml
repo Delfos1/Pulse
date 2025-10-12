@@ -1,3 +1,5 @@
+//feather ignore all in ./*
+	
 	/// @description	Creates a Pulse Cache storage
 	
 	/// @param { Struct.pulse_emitter}		_emitter : The emitter from which the particles will be emitted. This is used to update collisions and to get the main particle type.
@@ -11,6 +13,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	part_system			= _emitter.part_system
 	index				= 0
 	shuffle				= true
+	default_amount		= _emitter.default_amount
 	cache				= _array_clean(_cache)
 	length				= array_length(_cache)
 	flag_stencil		= false
@@ -60,9 +63,10 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	 * @desc Generates a modified stencil which adapts to colliding objects. Returns an array that contains the IDs of all colliding instances 
 	 * @param {Real} _x X coordinate
 	 * @param {Real} _y Y coordinate
-	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions
-	 * @param {bool} [_prec] Whether the collision is precise (true, slow) or not (false, fast)
-	 * @param {real} [_rays] amount of rays emitted to create a stencil collision
+	 * @param {any} [_collision_obj] Any collideable element that can regularly be an argument for collision functions.  Default : Stored collisions
+	 * @param {bool} [_occlude] Whether to apply the collision to the shape or not. Default : TRUE
+	 * @param {bool} [_prec] Whether the collision is precise (true, slow) or not (false, fast) .  Default : FALSE
+	 * @param {real} [_rays] amount of rays emitted to create a stencil collision.  Default : 32
 	 */
 	static	check_collision = function(x,y,_collision_obj=collisions, _occlude = true, _prec = false , _rays = 32 )
 	{
@@ -348,7 +352,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	/// @param {real} _amount    Amount of particles to emit
 	/// @param {real} x			X coordinate, relative to the stored position
 	/// @param {real} y			Y coordinate, relative to the stored position
-	static	pulse = function(_amount,x,y)
+	static	pulse = function(_amount = default_amount ,x=0,y=0)
 	{
 		if part_system.index = -1
 		{

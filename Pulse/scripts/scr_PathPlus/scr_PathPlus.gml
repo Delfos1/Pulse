@@ -1300,6 +1300,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen = false
 	}
 	
+	static Destroy			=function()
+	{
+		path_delete(path)
+	}
 	/// Draws either a path, a polyline or its cached version.
 	/// @param {Real}   _x		Drawing offset
 	/// @param {Real}   _y		Drawing offset

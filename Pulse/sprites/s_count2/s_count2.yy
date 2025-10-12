@@ -35,7 +35,7 @@
   "origin":4,
   "parent":{
     "name":"Sprites",
-    "path":"folders/Examples/Sprites.yy",
+    "path":"folders/DBG Project/Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

@@ -27,7 +27,7 @@
   "origin":9,
   "parent":{
     "name":"Sprites",
-    "path":"folders/Examples/Sprites.yy",
+    "path":"folders/DBG Project/Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

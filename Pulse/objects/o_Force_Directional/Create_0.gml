@@ -1,7 +1,7 @@
 force = new pulse_force(x,y,0,PULSE_FORCE.DIRECTION,20,1,false)
 
 var name = $"Linear Force : {id} "
-dbg_view(name,true,700,50,100,100)
+dbg_view(name,true,700,50,150,100)
 dbg_section("Properties",true)
 
 dbg_text("Position X")
@@ -15,7 +15,7 @@ dbg_text_separator("")
 
 dir = 0
 dbg_slider(ref_create(force,"weight"),0,1,"Weight")
-dbg_slider(ref_create(force,"force"),0,100,"Force")
+dbg_slider(ref_create(force,"strength"),0,100,"Strength")
 dbg_slider(ref_create(self,"dir"),0,360,"Direction")
 dbg_button("Apply",function()
 {

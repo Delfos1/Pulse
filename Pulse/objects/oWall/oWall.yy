@@ -7,7 +7,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
-    "path":"folders/Examples/Linked Properties/Objects.yy",
+    "path":"folders/DBG Project/Objects.yy",
   },
   "parentObjectId":null,
   "persistent":false,

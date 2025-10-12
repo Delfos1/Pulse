@@ -11,6 +11,7 @@ global.pulse =
 /// @return {Struct}
 function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_class(_name) constructor
 {
+	index			=	part_type_create();
 	#region //SET BASIC PROPERTIES
 		#region jsDoc
 		/// @desc    Sets the size of the particle, as a percentage of the sprite, 1 == 100%. 
@@ -572,7 +573,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		
 		/// @description			Choose a particle's total amount of spins by changing its rate of change, measured in degrees
 /// @param {Real}			_revolutions : Total amount of revolutions (spins on its own axis)
-/// @param {Real}			_cw : Clockwise movement (true) or Counter-clockwise (false)
+/// @param {Bool}			_cw : Clockwise movement (true) or Counter-clockwise (false)
 /// @param {Real}			_mode : 0 = apply in relation to shortest lived particle 1 = longest-lived. 2 =  average of both
 /// @param {Real}			_steps : Revolutions over X amount of steps from birth instead of taking the whole life of the particle into account.
 
@@ -729,7 +730,8 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 function __pulse_particle_class		(_name) constructor
 {
 	name			=	string(_name)
-	index			=	part_type_create();
+	index			=	undefined
+	type			=	0;
 	size			=	__PULSE_DEFAULT_PART_SIZE
 	scale			=	__PULSE_DEFAULT_PART_SCALE
 	life			=	__PULSE_DEFAULT_PART_LIFE
@@ -762,7 +764,6 @@ function __pulse_particle_class		(_name) constructor
 	/// @description		Sets the particle's properties to the ones saved by Pulse
 	static reset	=	function()
 	{
-	
 		part_type_scale(index,scale[0],scale[1]);
 		
 		if size[0]!=size[1] or size[2]!=size[3] or size[4]!=size[5] or size[6]!=size[7]

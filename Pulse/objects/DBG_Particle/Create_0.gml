@@ -1,21 +1,42 @@
 collision_particle =  pulse_fetch_particle("collision_particle")
 
-
 //////////////////////////
 //////////////////////////
 ///////   PARTICLE  ///////
 //////////////////////////
 //////////////////////////
+	with DBG_Particle
+	{
+		active = 0
+	}
+	active = 1
 
+this = dbg_view($"Particle: {particle.name}",true,30,330,300,700)
 
-dbg_view($"Particle: {particle.name}",true,30,330,300,700)
+active=1
+active_spr = s_pulse_star
+ref_active = ref_create(self,"active")
+ref_active_spr = ref_create(self,"active_spr")
+active_func = function(){
+	
+	with DBG_Particle
+	{
+		active = 0
+	}
+	DBG_General.p_l = array_find_index(DBG_General.particles,function(value){ return value == id })		
+	active=1
+}
+ref_active_func = ref_create(self,"active_func")
+
 
 dbg_section("File",true)
 
 dbg_text($"Particle: {particle.name}")
-dbg_button("Select as Current",function(){
-	DBG_General.p_l = array_find_index(DBG_General.particles,function(value){ return value == id })		
-	})
+
+dbg_sprite_button(ref_active_func,ref_active_spr,ref_active)
+dbg_same_line()
+dbg_button("Make Active",ref_active_func)
+
 
 p_newname = string(particle.name)+"_clone"
 
@@ -29,7 +50,29 @@ dbg_button("Clone",function(){
 	array_push(DBG_General.particles,_inst)
 	DBG_General.p_l = array_length(DBG_General.particles)-1
 })
-
+dbg_button("Destroy",function(){
+	
+	array_delete(DBG_General.particles, array_find_index(DBG_General.particles,function(_element, _index){return _element==id}),1)
+	DBG_General.p_l = array_length(DBG_General.particles)-1
+	with DBG_Emitter
+	{	
+		if particle_instance == other.id
+		{
+			if DBG_General.p_l == -1 
+			{
+				particle_instance =  undefined
+			}else
+			{
+				particle_instance = DBG_General.particles[DBG_General.p_l]
+				emitter.set_particle_type(particle_instance.particle)
+			}
+		}
+	}
+	pulse_destroy_particle(particle.name)
+	delete particle
+	dbg_view_delete(this)
+	instance_destroy()
+})
 dbg_button("Export",function(){
 	pulse_export_particle(particle,"none")})
 dbg_button("Randomize",function(){
@@ -140,8 +183,8 @@ dbg_button("Randomize",function(){
 		}
 })
 
-dbg_section("Properties",false)	
-dbg_text_separator("Life")
+dbg_section("Life",false)	
+
 p_life = [30,50]
 dbg_text_input(ref_create(self,"p_life",0),"Life Minimum","i")
 dbg_text_input(ref_create(self,"p_life",1),"Life Maximum","i")
@@ -151,9 +194,9 @@ dbg_button("Apply",function(){
 	particle.set_life(p_life[0],p_life[1])			
 })
 
-dbg_text_separator("Speed")
+dbg_section("Speed Settings",false)	
 p_speed = [1,2,0,0]
-
+dbg_text_separator("Speed")
 dbg_text_input(ref_create(self,"p_speed",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_speed",1),"Range Maximum","f")
 dbg_text_input(ref_create(self,"p_speed",2),"Acceleration","f")
@@ -178,6 +221,7 @@ dbg_button("Apply",function(){
 	p_speed[3] = particle.speed[3]
 })
 
+dbg_section("Direction Settings",false)	
 dbg_text_separator("Direction")
 p_dir = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_dir",0),"Range Minimum","f")
@@ -211,6 +255,7 @@ dbg_slider(ref_create(self,"p_grav",1),0,360,"Direction")
 dbg_button("Apply",function(){
 	particle.set_gravity(p_grav[0],p_grav[1])						})
 
+dbg_section("Orientation Settings",false)	
 dbg_text_separator("Orientation")
 p_orient = [1,2,0,0,true]
 dbg_text_input(ref_create(self,"p_orient",0),"Range Minimum","f")
@@ -221,7 +266,7 @@ dbg_checkbox(ref_create(self,"p_orient",4),"Relative to direction")
 dbg_button("Apply",function(){
 	particle.set_orient(p_orient[0],p_orient[1],p_orient[2],p_orient[3],p_orient[4])			})
 	
-dbg_section("Sprite",false)
+dbg_section("Sprite Settings",false)
 
 dbg_text_separator("Shape")
 p_shape = pt_shape_circle
@@ -256,9 +301,9 @@ dbg_button("Apply",function(){
 						})
 
 
-dbg_section("Size",false)
+dbg_section("Size Settings",false)
 
-dbg_text_separator("Size")
+dbg_text_separator("Scale")
 
 p_scale = [1,1]
 
@@ -268,8 +313,8 @@ dbg_button("Apply",function(){
 	particle.set_scale(p_scale[0],p_scale[1])
 })
 
-dbg_text_separator("Size")
-
+dbg_text_separator("Size (Relative)")
+dbg_text("Sets the size of a particle relative to its own size, where 1==100% size ")
 p_size = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_size",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_size",1),"Range Maximum","f")
@@ -297,8 +342,8 @@ dbg_button("Apply",function(){
 	}
 						})
 				
-dbg_text_separator("Set Absolute Size ")
-dbg_text("It sets the size of a particle in absolute pixel size")
+dbg_text_separator("Size (Absolute)")
+dbg_text("Sets the size of a particle in absolute pixel size")
 p_size_abs = [1,2,0,0]
 dbg_text_input(ref_create(self,"p_size_abs",0),"Range Minimum","f")
 dbg_text_input(ref_create(self,"p_size_abs",1),"Range Maximum","f")
@@ -329,8 +374,8 @@ dbg_button("Apply",function(){
 	}
 })
 	
-dbg_text_separator("Set Final Size ")
-dbg_text("It sets the size acceleration of a particle to approximate a size in relative scale terms")
+dbg_text_separator("Set Final Size")
+dbg_text("Sets the size acceleration of a particle to approximate a size in relative scale terms")
 p_size_final = [0,0,undefined]
 p_size_final_split = false
 p_size_final_mode = 0
@@ -390,7 +435,7 @@ dbg_button("Apply",function()
 })
 
 dbg_section("Time and Space Scaling",false)
-
+dbg_text("It changes the properties of the particle relative to a factor.\n Time scaling changes the timing \n(life, speed, acceleration, gravity) while\n Space changes the trajectory of the\n particle as if it was zoomed in or out")
 p_time_factor = 1
 dbg_text_input(ref_create(self,"p_time_factor"),"Time Factor","f")
 dbg_button("Apply",function()

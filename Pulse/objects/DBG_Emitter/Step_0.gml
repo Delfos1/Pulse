@@ -1,3 +1,9 @@
+if system_instance == undefined or particle_instance == undefined
+{
+	++counter
+	exit	
+}
+
 if e_collide && activate_collision
 {
 	if cacheing
@@ -6,7 +12,7 @@ if e_collide && activate_collision
 	}
 	else
 	{
-			emitter.check_collision(x,y)
+		emitter.check_collision(x,y)
 	}
 	activate_collision =  false
 }
@@ -14,58 +20,21 @@ if counter % e_freq == 0
 {
 	if cacheing
 	{
-		//cache.check_collision(x,y)
+		// Restarting the particle prevents carry-over from color data
+		particle_instance.particle.reset()
 		cache.pulse(e_amount*system_instance.s_resampling,0,0)
 	}
 	else
 	{
-	emitter.pulse(e_amount*system_instance.s_resampling,x,y,false)	;
+		// Restarting the particle prevents carry-over from color data
+		particle_instance.particle.reset()
+		emitter.pulse(e_amount*system_instance.s_resampling,x,y,false)	;
 	}
 };
 ++counter
 
 
-#region Emitter
 
-if e_bound != e_bound_prev
-{
-	switch(e_bound)
-	{
-	case "Life": 
-		emitter.set_boundaries(PULSE_BOUNDARY.LIFE)
-	break
-	case "Speed": 
-		emitter.set_boundaries(PULSE_BOUNDARY.SPEED)
-	break
-	case "Focus Life": 
-		emitter.set_boundaries(PULSE_BOUNDARY.FOCAL_LIFE)
-	break
-	case "Focus Speed": 
-		emitter.set_boundaries(PULSE_BOUNDARY.FOCAL_SPEED)
-	break
-	case "None": 
-		emitter.set_boundaries(PULSE_BOUNDARY.NONE)
-	break
-	}
-	e_bound_prev = e_bound
-	
-}
-
-if !array_equals(e_radius_prev,e_radius)
-{
-	emitter.set_radius(e_radius[0],e_radius[1],e_radius[2],e_radius[3])
-	e_radius_prev[0] = e_radius[0]
-	e_radius_prev[1] = e_radius[1]
-	e_radius_prev[2] = e_radius[2]
-	e_radius_prev[3] = e_radius[3]
-}
-if !array_equals(e_scale_prev, e_scale)
-{
-	emitter.set_scale(e_scale[0],e_scale[1])
-
-	e_scale_prev[0] = e_scale[0]
-	e_scale_prev[1] = e_scale[1]
-}
 if !array_equals(e_mask_u_prev,e_mask_u)
 {
 	emitter.set_u_mask(e_mask_u[0],e_mask_u[1])

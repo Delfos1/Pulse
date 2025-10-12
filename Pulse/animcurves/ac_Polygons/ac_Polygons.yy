@@ -55,7 +55,7 @@
   "name":"ac_Polygons",
   "parent":{
     "name":"Animation Curves",
-    "path":"folders/Animation Curves.yy",
+    "path":"folders/DBG Project/Animation Curves.yy",
   },
   "resourceType":"GMAnimCurve",
   "resourceVersion":"2.0",

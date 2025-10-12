@@ -5,8 +5,8 @@
   "kind":1,
   "name":"ExamplePath",
   "parent":{
-    "name":"Examples",
-    "path":"folders/Examples.yy",
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
   },
   "points":[
     {"speed":100.0,"x":1408.0112,"y":863.4931,},

@@ -5,7 +5,7 @@
  * @param {real} _padding	Padding in pixels for the bbox
  * @param {real} _from	Starting point of the path, from 0 to 1
  * @param {real} _to	Ending point of the path, from 0 to 1
- * @return {array}	
+ * @return {array(real)}	
  */
 #endregion
 function path_get_bbox(_path,_padding=0,_from=0,_to=1)

@@ -16,8 +16,8 @@
   "name":"o_Force_Directional",
   "overriddenProperties":[],
   "parent":{
-    "name":"Examples",
-    "path":"folders/Examples.yy",
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
   },
   "parentObjectId":null,
   "persistent":false,

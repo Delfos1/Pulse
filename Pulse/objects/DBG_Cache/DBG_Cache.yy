@@ -13,13 +13,10 @@
   "name":"DBG_Cache",
   "overriddenProperties":[],
   "parent":{
-    "name":"Examples",
-    "path":"folders/Examples.yy",
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
   },
-  "parentObjectId":{
-    "name":"ParticlesParent",
-    "path":"objects/ParticlesParent/ParticlesParent.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -34,7 +31,7 @@
   "physicsShapePoints":[],
   "physicsStartAwake":true,
   "properties":[
-    {"$GMObjectProperty":"v1","%Name":"emitter","filters":[],"listItems":[],"multiselect":false,"name":"emitter","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"","varType":4,},
+    {"$GMObjectProperty":"v1","%Name":"cache","filters":[],"listItems":[],"multiselect":false,"name":"cache","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"","varType":4,},
     {"$GMObjectProperty":"v1","%Name":"system_instance","filters":[],"listItems":[],"multiselect":false,"name":"system_instance","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"","varType":4,},
     {"$GMObjectProperty":"v1","%Name":"particle_instance","filters":[],"listItems":[],"multiselect":false,"name":"particle_instance","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"","varType":4,},
   ],
