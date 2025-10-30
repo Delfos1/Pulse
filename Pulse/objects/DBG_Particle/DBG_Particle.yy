@@ -8,8 +8,8 @@
   "name":"DBG_Particle",
   "overriddenProperties":[],
   "parent":{
-    "name":"DBG Project",
-    "path":"folders/DBG Project.yy",
+    "name":"Objects",
+    "path":"folders/DBG Project/Objects.yy",
   },
   "parentObjectId":null,
   "persistent":false,

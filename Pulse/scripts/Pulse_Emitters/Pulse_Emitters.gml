@@ -83,12 +83,12 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	__color_mix_link		=	undefined
 	__frame_link			=	undefined
 	
-	__speed_weight			=	undefined
-	__life_weight			=	undefined
-	__orient_weight			=	undefined
-	__size_weight			=	undefined
-	__color_mix_weight		=	undefined
-	__frame_weight			=	undefined
+	__speed_weight			=	1
+	__life_weight			=	1
+	__orient_weight			=	1
+	__size_weight			=	1
+	__color_mix_weight		=	1
+	__frame_weight			=	1
 	
 	__color_mix_A			=	[0,0,0]
 	__color_mix_B			=	[0,0,0]
@@ -931,7 +931,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		if buffer_exists(_map.noise)
 		{
-			displacement_map	=	new __pulse_map(_map,self) 
+			displacement_map	=	new __pulse_map(_map) 
 		}
 		else
 		{		
@@ -947,7 +947,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	{
 		if  is_instanceof(_map, __buffered_sprite) 
 		{
-			color_map			=	new __pulse_map(_map, self) 
+			color_map			=	new __pulse_map(_map) 
 		}
 		else
 		{
@@ -991,6 +991,38 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		return self
 	}
 	#endregion
+	
+	/// @description	Destroys all contents of the emitter struct.
+	/// @context pulse_emitter
+	static destroy = function(ignore_imported=false)
+	{
+		animcurve_destroy(stencil_profile)
+		if imported && !ignore_imported
+			{
+				if animcurve_really_exists(distributions)
+				{
+					animcurve_destroy(distributions)
+				}
+				if path_res == -100
+				{
+					path.Destroy()
+				}
+				if displacement_map != undefined
+				{
+					if buffer_exists(displacement_map.buffer.noise)	
+					{
+						buffer_delete(displacement_map.buffer.noise)
+					}
+				}
+				if color_map != undefined
+				{
+					if buffer_exists(color_map.buffer.noise)	
+					{
+						buffer_delete(color_map.buffer.noise)
+					}
+				}
+			}	
+	}
 	
 	static	draw_debug				=	function(x,y)
 	{

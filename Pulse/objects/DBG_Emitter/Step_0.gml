@@ -56,13 +56,6 @@ if !array_equals(e_dir_prev,e_dir)
 	e_dir_prev[0] = e_dir[0]
 	e_dir_prev[1] = e_dir[1]
 }
-if !array_equals(e_focal_prev, e_focal)
-{
-	emitter.set_focal_point(e_focal[0],e_focal[1])
-
-	e_focal_prev[0] = e_focal[0]
-	e_focal_prev[1] = e_focal[1]
-}
 
 if !array_equals(e_stencils,e_stencils_prev) || e_stencils_mode != e_stencils_mode_prev
 {

@@ -78,16 +78,16 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 	}
 		#region jsDoc
 			/// @desc    It sets the color of a particle. It combines the regular color options for particles.
-			/// __PULSE_COLOR_MODE.COLOR will use one to three colors, and interpolate them throughout the particles life.
-			///  __PULSE_COLOR_MODE.RGB will use either three colors or three arrays, corresponding to the minimum and maximum values of the Red,Green and Blue components
-			///  __PULSE_COLOR_MODE.HSV will use either three colors or three arrays, corresponding to the minimum and maximum values of the Hue,Saturation and Value components
-			///  __PULSE_COLOR_MODE.MIX will use two colors, which will be mixed at random for each particle.
+			/// PULSE_COLOR_PARTICLE.COLOR will use one to three colors, and interpolate them throughout the particles life.
+			///  PULSE_COLOR_PARTICLE.RGB will use either three colors or three arrays, corresponding to the minimum and maximum values of the Red,Green and Blue components
+			///  PULSE_COLOR_PARTICLE.HSV will use either three colors or three arrays, corresponding to the minimum and maximum values of the Hue,Saturation and Value components
+			///  PULSE_COLOR_PARTICLE.MIX will use two colors, which will be mixed at random for each particle.
 			/// @param   {Real, Array<Real>} color1 : Can be a color, a Red value, a Hue value, or an array of minimum or maximum Red/Hue
 			/// @param   {Real, Array<Real>} [color2] : Can be a color, a Green value, a Saturation value, or an array of minimum or maximum Green/Saturation
 			/// @param   {Real, Array<Real>} [color3] : Can be a color, a Blue value, a Value component, or an array of minimum or maximum Blue/Value
-			/// @param   {Enum.__PULSE_COLOR_MODE} [_mode] :  The mode which will be used. Use the enum __PULSE_COLOR_MODE.
+			/// @param   {Enum.PULSE_COLOR_PARTICLE} [_mode] :  The mode which will be used. Use the enum PULSE_COLOR_PARTICLE.
 		#endregion
-	static set_color		=	function(color1,color2=-1,color3=-1,_mode = __PULSE_COLOR_MODE.COLOR)
+	static set_color		=	function(color1,color2=-1,color3=-1,_mode = PULSE_COLOR_PARTICLE.COLOR)
 	{
 		if color3 != -1 && color2 != -1
 		{
@@ -96,7 +96,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			switch(_mode)
 			{
 
-				case __PULSE_COLOR_MODE.RGB :
+				case PULSE_COLOR_PARTICLE.RGB :
 					if is_array(color1) && is_array(color2) && is_array(color3)
 					{
 						part_type_color_rgb(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
@@ -106,7 +106,7 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 						part_type_color_rgb(index,color[0],color[0],color[1],color[1],color[2],color[2])
 					}
 				break
-				case __PULSE_COLOR_MODE.HSV :
+				case PULSE_COLOR_PARTICLE.HSV :
 					if is_array(color1) && is_array(color2) && is_array(color3)
 					{
 						part_type_color_hsv(index,color[0][0],color[0][1],color[1][0],color[1][1],color[2][0],color[2][1])
@@ -116,8 +116,8 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 						part_type_color_hsv(index,color[0],color[0],color[1],color[1],color[2],color[2])
 					}
 				break
-				default: 		//		case __PULSE_COLOR_MODE.COLOR :
-				_mode = __PULSE_COLOR_MODE.COLOR
+				default: 		//		case PULSE_COLOR_PARTICLE.COLOR :
+				_mode = PULSE_COLOR_PARTICLE.COLOR
 					part_type_color3(index,color[0],color[1],color[2])
 				break
 			}
@@ -126,18 +126,18 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		{
 			color=[color1,color2]
 			
-			 if _mode == __PULSE_COLOR_MODE.MIX
+			 if _mode == PULSE_COLOR_PARTICLE.MIX
 			{
 				part_type_color_mix(index,color[0],color[1])
-			}else		// __PULSE_COLOR_MODE.COLOR
+			}else		// PULSE_COLOR_PARTICLE.COLOR
 			{
-				_mode = __PULSE_COLOR_MODE.COLOR
+				_mode = PULSE_COLOR_PARTICLE.COLOR
 				part_type_color2(index,color[0],color[1])
 			}
 		}
 		else
 		{
-			_mode = __PULSE_COLOR_MODE.COLOR
+			_mode = PULSE_COLOR_PARTICLE.COLOR
 			color=[color1]
 			part_type_color1(index,color[0])
 		}
@@ -683,6 +683,16 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 			part_particles_create(_sys_index, x_origin+x,y_origin+y,particle.index, 1);
 		}		
 	}
+	
+	static destroy =  function()
+	{
+		part_type_destroy(index)
+		if subparticle != undefined 
+		{
+			part_type_destroy(subparticle.index)
+		}
+	}
+	
 	reset()
 }
 
@@ -782,7 +792,7 @@ function __pulse_particle_class		(_name) constructor
 		switch(color_mode)
 		{
 		
-			case __PULSE_COLOR_MODE.COLOR :
+			case PULSE_COLOR_PARTICLE.COLOR :
 			{
 					var _color = array_length(color)
 					if _color==3
@@ -797,7 +807,7 @@ function __pulse_particle_class		(_name) constructor
 					}
 				break
 			}
-			case __PULSE_COLOR_MODE.RGB :
+			case PULSE_COLOR_PARTICLE.RGB :
 			{
 				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
 				{
@@ -809,7 +819,7 @@ function __pulse_particle_class		(_name) constructor
 				}
 			break;
 			}
-			case __PULSE_COLOR_MODE.HSV :
+			case PULSE_COLOR_PARTICLE.HSV :
 			{
 				if is_array(color[0]) && is_array(color[1]) && is_array(color[2])
 				{
@@ -821,7 +831,7 @@ function __pulse_particle_class		(_name) constructor
 				}
 			break;
 			}
-				case __PULSE_COLOR_MODE.MIX :
+				case PULSE_COLOR_PARTICLE.MIX :
 			{
 				part_type_color_mix(index,color[0],color[1])
 				break;

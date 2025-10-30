@@ -48,14 +48,14 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __p
 	}
 	#region jsDoc
 			/// @desc    It sets the color of a particle. It combines the regular color options for particles.
-			/// __PULSE_COLOR_MODE.COLOR will use one to three colors, and interpolate them throughout the particles life.
-			///  __PULSE_COLOR_MODE.RGB will use either three colors or three arrays, corresponding to the minimum and maximum values of the Red,Green and Blue components
-			///  __PULSE_COLOR_MODE.HSV will use either three colors or three arrays, corresponding to the minimum and maximum values of the Hue,Saturation and Value components
-			///  __PULSE_COLOR_MODE.MIX will use two colors, which will be mixed at random for each particle.
+			/// PULSE_COLOR_PARTICLE.COLOR will use one to three colors, and interpolate them throughout the particles life.
+			///  PULSE_COLOR_PARTICLE.RGB will use either three colors or three arrays, corresponding to the minimum and maximum values of the Red,Green and Blue components
+			///  PULSE_COLOR_PARTICLE.HSV will use either three colors or three arrays, corresponding to the minimum and maximum values of the Hue,Saturation and Value components
+			///  PULSE_COLOR_PARTICLE.MIX will use two colors, which will be mixed at random for each particle.
 			/// @param   {Real, Array<Real>} color1 : Can be a color, a Red value, a Hue value, or an array of minimum or maximum Red/Hue
 			/// @param   {Real, Array<Real>} [color2] : Can be a color, a Green value, a Saturation value, or an array of minimum or maximum Green/Saturation
 			/// @param   {Real, Array<Real>} [color3] : Can be a color, a Blue value, a Value component, or an array of minimum or maximum Blue/Value
-			/// @param   {Enum.__PULSE_COLOR_MODE} [_mode] :  The mode which will be used. Use the enum __PULSE_COLOR_MODE.
+			/// @param   {Enum.PULSE_COLOR_PARTICLE} [_mode] :  The mode which will be used. Use the enum PULSE_COLOR_PARTICLE.
 		#endregion
 	static set_color		=	function(color1,color2=-1,color3=-1)
 	{
@@ -71,7 +71,7 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __p
 		{
 			color=[color1]
 		}
-		color_mode		= __PULSE_COLOR_MODE.COLOR
+		color_mode		= PULSE_COLOR_PARTICLE.COLOR
 		return self
 	}
 	#region jsDoc
@@ -215,5 +215,10 @@ function pulse_instance_particle	(_object,_name=__PULSE_DEFAULT_PART_NAME) : __p
 			_i = instance_create_layer(_struct.x_origin,_struct.y_origin,_struct.part_system.layer,index,_struct)	
 		}
 
+	}
+	
+	static destroy = function()
+	{
+		
 	}
 }

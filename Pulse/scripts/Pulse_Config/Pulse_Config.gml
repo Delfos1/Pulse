@@ -1,4 +1,4 @@
-enum __PULSE_COLOR_MODE
+enum PULSE_COLOR_PARTICLE
 {// Color mode used with particles
 	COLOR = 1,
 	RGB	= 2,
@@ -75,7 +75,7 @@ enum PULSE_FORCE
 #macro __PULSE_SHOW_DEBUG				true
 #macro __PULSE_SHOW_DEBUG_STACK			true
 // Default naming
-#macro __PULSE_DEFAULT_SYS_NAME			"_system"
+#macro __PULSE_DEFAULT_SYS_NAME			"system"
 
 #macro __PULSE_DEFAULT_PART_NAME		"part_type"
 
@@ -94,7 +94,7 @@ enum PULSE_FORCE
 
 #macro __PULSE_DEFAULT_PART_COLOR		[c_white,c_aqua,c_navy]
 
-#macro __PULSE_DEFAULT_PART_COLOR_MODE	__PULSE_COLOR_MODE.COLOR
+#macro __PULSE_DEFAULT_PART_COLOR_MODE	PULSE_COLOR_PARTICLE.COLOR
 
 #macro __PULSE_DEFAULT_PART_ALPHA		[1,1,0]
 

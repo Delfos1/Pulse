@@ -22,7 +22,6 @@ function buffer_from_sprite(_sprite,_subimage){
 	
 }
 
-
 /// @description           Loads a surface into a struct that saves the buffer reference and the size of the image.  Statics: Get, Get Normalized, Destroy. Based on Dragonite's Macaw
 /// @param _surface {Id.Surface}     
 /// @return {struct}

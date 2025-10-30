@@ -52,6 +52,22 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	count				= undefined
 	
 	#region jsDoc
+	/// @desc    Destroys the system and all its components. It doesn't remove a system from the storage.
+	#endregion
+	static destroy = function()
+	{
+		if part_system_exists(index)
+		{
+			part_system_destroy(index)
+		}
+		// Destroy time_source
+		if time_source_exists(count)
+		{
+			time_source_destroy(count,true)
+		}
+	}
+	
+	#region jsDoc
 		/// @desc    Sets the draw depth of the system
 		/// @param   {Real} _depth : The depth for the system.
 	#endregion
@@ -71,12 +87,16 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	#region jsDoc
 	/// @desc    Sets the system on a defined layer to draw it onto.
-	/// @param   {Id.Layer} _layer : The layer to set the system to.
+	/// @param   {Id.Layer, String} _layer : The layer to set the system to.
 	#endregion
 	static set_layer				= function(_layer)
 	{
+		if !layer_exists(_layer)
+		{
+			__pulse_show_debug_message("Layer doesn't exist",1)
+			return self	
+		}
 		layer	=	_layer;
-		
 		if index == -1 
 		{
 			__pulse_show_debug_message("System is asleep",1)
@@ -306,7 +326,47 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	
 		part_system_drawit(index)	
 	}
-	
+	#region jsDoc
+	/// @desc    Changes the persistency and layer of the system. It destroys the previous system to do so.
+	/// @param   {Id.Layer, String} _layer : The layer to set the system to.
+	/// @param   {Bool} _persistent : Whether to make the system persistent or not.
+	#endregion
+	static set_persistent			= function(_layer,_persistent)
+	{
+		if persistent == _persistent
+		{
+			if layer != _layer && layer_exists(_layer)
+			{
+				set_layer(_layer)
+			}
+		}
+		else
+		{
+			if part_system_exists(index)
+			{
+				part_system_destroy(index)
+			}
+			
+			if layer_exists(_layer)
+			{
+				if is_string(_layer)
+				{
+					layer	=	layer_get_id(_layer)
+					depth	=	layer_get_depth(layer);
+				}
+				else
+				{
+					layer	=	_layer
+					depth	=	layer_get_depth(layer);
+				}
+					index	=	part_system_create_layer(layer,_persistent);
+					persistent = _persistent
+			}
+			
+			
+		}
+		
+	}
 	//RESOURCE MANAGEMENT
 	#region jsDoc
 	/// @desc    Makes the system asleep. This frees the system from memory but doesn't detroy its configuration.
@@ -402,6 +462,17 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			time_source_start(count)
 		}
 		
+		particle_amount =  part_particles_count(index)
+				// if there are more particles than desired limit
+		if particle_amount-limit > limit*.125
+		{
+			factor *= (limit/particle_amount)
+		} 
+		else if limit-particle_amount > limit*.125 && factor<1
+		{
+			factor /= (particle_amount/limit)
+			factor = min(1,factor)
+		}
 		return self
 	}
 

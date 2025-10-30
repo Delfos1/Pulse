@@ -1,8 +1,7 @@
 /// feather ignore all
 
-function __pulse_map(_map,_parent) constructor
+function __pulse_map(_map) constructor
 {
-	parent			= _parent;
 	buffer			= _map;
 	scale_u			=	1;
 	scale_v			=	1;
@@ -11,8 +10,8 @@ function __pulse_map(_map,_parent) constructor
 	alpha_mode		=	0;
 	static	set_uv_scale	=	function(u,v)
 	{
-		scale_u = abs(u);
-		scale_v = abs(v);
+		scale_u = u;
+		scale_v = v;
 		return self
 	}
 	
@@ -24,9 +23,15 @@ function __pulse_map(_map,_parent) constructor
 	}
 
 	/// sets how the alpha is used in color maps. 0 changes the size of particles, 1 turns the particle off if alpha is below 50%, 2 doesn't use the alpha information.
-	static set_alpha_mode = function(_mode)
+	static	set_alpha_mode = function(_mode)
 	{
 		alpha_mode = clamp(_mode,0,2)
 		return self
 	}
+
+    static destroy = function() {
+        buffer_delete(buffer.noise);
+		delete buffer
+    };
+
 }
