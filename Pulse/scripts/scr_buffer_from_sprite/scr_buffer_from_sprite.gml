@@ -5,8 +5,8 @@
 /// @return {struct}
 function buffer_from_sprite(_sprite,_subimage){
 	
-    var _sh = sprite_get_width(_sprite),
-		_sw = sprite_get_height(_sprite),
+    var _sw = sprite_get_width(_sprite),
+		_sh = sprite_get_height(_sprite),
 		_surf = surface_create(_sw, _sh),
 		_xoff =  sprite_get_xoffset(_sprite),
 		_yoff =  sprite_get_yoffset(_sprite);
@@ -44,22 +44,31 @@ function __buffered_sprite(buffer, w, h) constructor {
     self.noise = buffer;
     self.width = w;
     self.height = h;
-            
+    x_previous = -1    
+	y_previous = -1 
+	result = [0,0,0,0]
+	
     static Get = function(x, y) {
         x = floor(clamp(x, 0, self.width - 1));
         y = floor(clamp(y, 0, self.height - 1));
-		var a = buffer_peek(self.noise, ((x  +( y* self.width)) * 4)+3, buffer_u8);
-		var b = buffer_peek(self.noise, ((x  +( y* self.width)) * 4)+2, buffer_u8);
-		var g = buffer_peek(self.noise, ((x  +( y* self.width)) * 4)+1, buffer_u8);
-		var r = buffer_peek(self.noise, ((x  +( y* self.width)) * 4), buffer_u8);
-		var array = [r,g,b,a]
-		return array
+		
+		if x != x_previous || y != y_previous
+		{
+			x_previous = x
+			y_previous = y
+			buffer_seek(self.noise,buffer_seek_start,((x  +( y* self.width)) * 4))
+
+			result[0] = buffer_read(self.noise,buffer_u8) // Red
+			result[1] = buffer_read(self.noise,buffer_u8) // Green
+			result[2] = buffer_read(self.noise,buffer_u8) // Blue
+			result[3] = buffer_read(self.noise,buffer_u8) // Alpha
+		}
+		return result
      
     };
             
     static GetNormalized = function(u, v) {
-		u = clamp(u,0,1)
-		v =1- clamp(v,0,1)
+		v = 1- v
         return self.Get(u * self.width, v * self.height);
     };
     

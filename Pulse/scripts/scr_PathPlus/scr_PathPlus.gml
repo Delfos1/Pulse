@@ -1226,9 +1226,37 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return path
 	}
 	
+	static Export			= function()
+	{
+		var file;
+		file = get_save_filename("*.pp", "path");
+		if (file != "")
+		{
+	
+		if filename_ext(file) != ".pp"
+		{
+			file = filename_change_ext(file,".pp")
+		}
+		
+		var	 _stringy = json_stringify(self , true, function(key,value)
+		{
+			if key == "path"
+			{
+				return undefined
+			}
+			return value
+		}
+			),
+		_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+		buffer_write(_buff, buffer_text, _stringy);
+		buffer_save(_buff, file);
+		buffer_delete(_buff);
+	}
+}
 	/// Export a .yy file with the contents of the cache polyline. You need to overwrite an existing path in your GameMaker project for it to work.
 	/// Recommended that you simplify the result before exporting to avoid redundant information
-	static Export			= function()
+	static ExportToYY		= function()
 	{
 
 	show_message("Warning : You must replace an already existing path in your Game Maker project")
@@ -1758,6 +1786,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	#endregion
 
 }
+
 
 /**
  * Private function used by PathPlus

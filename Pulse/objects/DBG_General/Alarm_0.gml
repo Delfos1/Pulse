@@ -8,7 +8,7 @@ emitter_instance	= instance_create_layer(random_range(1300,1600),random_range(30
 
 
 emitter.set_displacement_map(displ_map[0])
-emitter.set_color_map(color_map)
+emitter.set_color_map(color_map[0])
 	
 array_push(particles,particle_instance)
 array_push(systems,system_instance)

@@ -270,14 +270,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	static __check_form_collide		=	function(_p)
 	{
 		var eval	=	clamp(animcurve_channel_evaluate(_channel_03,_p.u_coord),0,1);
-		
-		if _p[$ "origin_speed"]	!= undefined 
-		{
-			_p.speed = _p.origin_speed
-			_p.life = _p.origin_life
-			_p.to_edge = _p.origin_to_edge
-		}
-		
+
 		if eval >= 1 { return _p}
 		//First we define where the EDGE is, where our particle should stop
 		
@@ -339,9 +332,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	
 		if	_p.disp > _length_to_edge
 		{
-			_p[$ "origin_speed"]	??= _p.speed
-			_p[$ "origin_life"]		??= _p.life
-			_p[$ "origin_to_edge"]	??= _p.to_edge
+			_p =  variable_clone(_p)
 			if boundary == PULSE_BOUNDARY.SPEED || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 				_p.speed	=	(_length_to_edge-_p.accel)/_p.life
@@ -388,7 +379,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		
 		_amount = floor((_amount*part_system.factor)*global.pulse.particle_factor)
 		if _amount	== 0 exit
-			
+		
 		do
 		{
 			var _target , _i  = index
@@ -409,11 +400,9 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 
 			if collide && is_colliding
 			{
-				//var _cache = variable_clone(cache)
-				//array_copy(_cache,_i ,cache,_i,_target-_i)
 				for(_i = _i  ; _i < _target ; _i++)
 				{
-					var _p = array_get(cache,_i),
+					var _p = cache[_i],
 						_particle = __check_form_collide(_p)
 					if _particle == undefined continue
 					particle.launch(_particle,x,y,part_system.index)

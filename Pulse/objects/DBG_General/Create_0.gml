@@ -1,5 +1,5 @@
 debug = true
-auto_create = false
+auto_create = true
 if (debug)
 {
 	show_debug_overlay(debug)
@@ -24,7 +24,7 @@ s_l = 0
 cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
 cacheing = false
-if auto_create alarm_set(0,1)
+if auto_create alarm_set(0,2)
 
 dbg_view("Welcome to Pulse!",true,30,30,300,300)
 

@@ -74,13 +74,15 @@ function __pulse_copy_emitter(_new_emitter,_old_emitter)
 {
 	with _new_emitter
 	{
-		name = _old_emitter.name
-		default_amount = _old_emitter.default_amount
-		imported = _old_emitter.imported
-		#region Emitter Form
+		name			= _old_emitter.name
+		default_amount	= _old_emitter.default_amount
+		gc_flags		= _old_emitter.gc_flags
+	#region Emitter Form
 		stencil_mode		=	_old_emitter.stencil_mode
 		form_mode			=	_old_emitter.form_mode
 		path				=	_old_emitter.path
+	/// if path is re-created
+	//gc_flags |= 1
 	if path == -1 && form_mode == PULSE_FORM.PATH 
 	{
 		form_mode = PULSE_FORM.ELLIPSE
@@ -359,6 +361,9 @@ if 	_old_emitter.__v_coord_channel	!=	undefined  || 	_old_emitter.__u_coord_chan
 		{
 			__frame_channel = animcurve_get_channel(distributions,"frame")
 		}
+		
+
+		gc_flags |= (1 << 2)
 	}
 	
 	__speed_link			=	_old_emitter.__speed_link
@@ -396,6 +401,8 @@ if 	_old_emitter.__v_coord_channel	!=	undefined  || 	_old_emitter.__u_coord_chan
 			displacement_map.offset_v		= _old_emitter.displacement_map.offset_v
 			displacement_map.scale_u		= _old_emitter.displacement_map.scale_u
 			displacement_map.scale_v		= _old_emitter.displacement_map.scale_v
+			gc_flags |= (1 << 3)
+			
 	}
 
 	if _old_emitter.color_map !=  undefined
@@ -412,6 +419,7 @@ if 	_old_emitter.__v_coord_channel	!=	undefined  || 	_old_emitter.__u_coord_chan
 			color_map.offset_v		= _old_emitter.color_map.offset_v
 			color_map.scale_u		= _old_emitter.color_map.scale_u
 			color_map.scale_v		= _old_emitter.color_map.scale_v
+			gc_flags |= (1 << 4)
 	}
 
 	//Forces, Groups, Colliders
@@ -550,7 +558,6 @@ function pulse_clone_emitter(_emitter_name)
 	
 	var _new_emitter = new pulse_emitter(_emitter.part_system,_emitter.part_type)
 	__pulse_copy_emitter(_new_emitter,_emitter)
-	_new_emitter.imported = true
 	
 	return _new_emitter
 	
@@ -1158,10 +1165,18 @@ function pulse_import_emitter	(file, _overwrite = false)
 	
 	var _new_emitter  = new pulse_emitter(_sys,_part)
 	__pulse_copy_emitter(_new_emitter,_parsed)
-	_new_emitter.imported =  true
-	if _imported_col _buffercolmap.Destroy()
+
+
+	if _imported_map
+	{
+		_buffermap.Destroy()
+	}
+	if _imported_col
+	{
+		_buffercolmap.Destroy()
+	}
 	
-	if _imported_map _buffermap.Destroy()
+
 	
 	return  _new_emitter
 }

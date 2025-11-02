@@ -2,7 +2,7 @@
   "$GMProject":"v1",
   "%Name":"Pulse",
   "AudioGroups":[
-    {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
+    {"$GMAudioGroup":"v1","%Name":"audiogroup_default","exportDir":"","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
   ],
   "configs":{
     "children":[],
@@ -42,7 +42,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.13.1.193",
+    "IDEVersion":"2024.14.0.207",
   },
   "name":"Pulse",
   "resources":[
@@ -118,6 +118,7 @@
     {"id":{"name":"_64_strght__00002","path":"sprites/_64_strght__00002/_64_strght__00002.yy",},},
     {"id":{"name":"_64_strght__00003","path":"sprites/_64_strght__00003/_64_strght__00003.yy",},},
     {"id":{"name":"_64_strght__00004","path":"sprites/_64_strght__00004/_64_strght__00004.yy",},},
+    {"id":{"name":"colormap_nobg","path":"sprites/colormap_nobg/colormap_nobg.yy",},},
     {"id":{"name":"colormap","path":"sprites/colormap/colormap.yy",},},
     {"id":{"name":"flame_01","path":"sprites/flame_01/flame_01.yy",},},
     {"id":{"name":"p_arrow_diffuse","path":"sprites/p_arrow_diffuse/p_arrow_diffuse.yy",},},

@@ -6,11 +6,11 @@
 function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,anim_curve = undefined)  constructor
 {
 	
-	name = undefined
-	part_system = 	 __pulse_lookup_system(__part_system)
-	part_type =  __pulse_lookup_particle(__part_type)
-	imported = false
-	default_amount = 50
+	name			= undefined
+	part_system		= __pulse_lookup_system(__part_system)
+	part_type		= __pulse_lookup_particle(__part_type)
+	gc_flags		= 0
+	default_amount	= 50
 	
 	#region Emitter Form
 	stencil_mode		=	__PULSE_DEFAULT_EMITTER_STENCIL_MODE
@@ -929,6 +929,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @context pulse_emitter
 	static	set_displacement_map	=	function(_map)
 	{
+		if (gc_flags & (1 << 3)) != 0
+		{
+			if displacement_map != undefined
+			{
+				if buffer_exists(displacement_map.buffer.noise)	
+				{
+					buffer_delete(displacement_map.buffer.noise)
+				}
+			}
+		}		
+		
 		if buffer_exists(_map.noise)
 		{
 			displacement_map	=	new __pulse_map(_map) 
@@ -945,6 +956,17 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	/// @context pulse_emitter
 	static	set_color_map			=	function(_map)
 	{
+		if (gc_flags & (1 << 4)) != 0
+		{		
+			if color_map != undefined
+			{
+				if buffer_exists(color_map.buffer.noise)	
+				{
+					buffer_delete(color_map.buffer.noise)
+				}
+			}
+		}	
+		
 		if  is_instanceof(_map, __buffered_sprite) 
 		{
 			color_map			=	new __pulse_map(_map) 
@@ -994,34 +1016,43 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 	
 	/// @description	Destroys all contents of the emitter struct.
 	/// @context pulse_emitter
-	static destroy = function(ignore_imported=false)
+	static destroy = function()
 	{
 		animcurve_destroy(stencil_profile)
-		if imported && !ignore_imported
+		if (gc_flags & 1) != 0
+		{
+			if animcurve_really_exists(distributions)
 			{
-				if animcurve_really_exists(distributions)
+				animcurve_destroy(distributions)
+			}
+		}
+		if (gc_flags & (1 << 2)) != 0
+		{
+			if path_res == -100
+			{
+				path.Destroy()
+			}
+		}
+		if (gc_flags & (1 << 3)) != 0
+		{
+			if displacement_map != undefined
+			{
+				if buffer_exists(displacement_map.buffer.noise)	
 				{
-					animcurve_destroy(distributions)
+					buffer_delete(displacement_map.buffer.noise)
 				}
-				if path_res == -100
+			}
+		}		
+		if (gc_flags & (1 << 4)) != 0
+		{		
+			if color_map != undefined
+			{
+				if buffer_exists(color_map.buffer.noise)	
 				{
-					path.Destroy()
+					buffer_delete(color_map.buffer.noise)
 				}
-				if displacement_map != undefined
-				{
-					if buffer_exists(displacement_map.buffer.noise)	
-					{
-						buffer_delete(displacement_map.buffer.noise)
-					}
-				}
-				if color_map != undefined
-				{
-					if buffer_exists(color_map.buffer.noise)	
-					{
-						buffer_delete(color_map.buffer.noise)
-					}
-				}
-			}	
+			}
+		}	
 	}
 	
 	static	draw_debug				=	function(x,y)

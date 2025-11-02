@@ -635,23 +635,33 @@ dbg_button("Apply", function()
 dbg_text_separator("Color Map")
 
 
-e_colormap = colormap
+e_colormap = colormap_nobg
 e_colormap_ref = ref_create(self,"e_colormap")
 ecolormap_frame = 0
 ecolormap_frame_ref = ref_create(self,"ecolormap_frame")
 
-//dbg_slider(ecolormap_frame_ref,0,7,"Map",1)
-dbg_sprite(e_colormap_ref,ecolormap_frame_ref,"Selected Map")
-/*
+dbg_slider(ecolormap_frame_ref,0,2,"Map",1)
+dbg_sprite(e_colormap_ref,0,"Selected Map")
+
 dbg_button("Apply", function()
 {
-	emitter.set_displacement_map(DBG_General.displ_map[emap_frame])
-})*/
+	emitter.set_color_map(DBG_General.color_map[ecolormap_frame])
+	if ecolormap_frame == 0
+	{
+		e_colormap = colormap_nobg
+	} else if ecolormap_frame == 1
+	{
+		e_colormap = s_gradientb
+	}else
+	{
+		e_colormap = Smoke_up___200_200__n
+	}
+})
 dbg_text_separator("Color Map Properties")
 
 s_color_uv = [1,1]
 s_color_xy = [1,1]
-
+s_color_alpha = 0
 dbg_text_input(ref_create(self,"s_color_uv",0),"U scale","r")
 dbg_text_input(ref_create(self,"s_color_uv",1),"V scale","r")
 dbg_button("Apply", function()
@@ -665,6 +675,11 @@ dbg_button("Apply", function()
 {
 	emitter.color_map.set_offset(s_color_xy[0],s_color_xy[1])
 })
-
+dbg_text("Sets how the alpha is used in color maps.\n 0 changes the size of particles\n 1 turns the particle off if alpha is below 50%\n 2 doesn't use the alpha information.")
+dbg_drop_down(ref_create(self,"s_color_alpha"),[0,1,2],["Alpha to Size","Alpha Threshold","No Alpha"])
+dbg_button("Apply", function()
+{
+	emitter.color_map.set_alpha_mode(s_color_alpha)
+})
 #endregion
 
