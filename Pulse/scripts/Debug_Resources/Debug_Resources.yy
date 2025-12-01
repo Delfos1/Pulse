@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Debug_Resources",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Debug_Resources",
+  "parent":{
+    "name":"Extensions",
+    "path":"folders/Extensions.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

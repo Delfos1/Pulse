@@ -52,18 +52,9 @@
 /// @param {Real} val The value to check.
 /// @param {Real} minn The min value.
 /// @param {Real} maxx The max value.
-function clamp_wrap(val, minn, maxx) {
-	if (val > maxx) val = minn; else if (val < minn) val = maxx;
+/*
+function _pulse_clamp_wrap(val, minn, maxx) {
+	val = val - floor((val-minn)/(maxx-minn))*(maxx-minn)
 	return val;
-}
+}*/
 
-/// @desc Works like a lerp() but for angles, no rotation limits.
-/// @param {Real} a The first angle to check.
-/// @param {Real} b The second angle to check.
-/// @param {Real} amount The amount to interpolate.
-/// @returns {Real} 
-function lerp_angle(a, b, amount) {
-	var _a = a + angle_difference(b, a);
-	return lerp(a, _a, amount);
-	//return a - (angle_difference(a, b) * _amount);
-}

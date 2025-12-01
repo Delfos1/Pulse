@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "TurboGML_Extract",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Pulse",
-    "path": "folders/Pulse.yy",
+  "$GMScript":"v1",
+  "%Name":"TurboGML_Extract",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"TurboGML_Extract",
+  "parent":{
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

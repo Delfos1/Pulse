@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Pulse_Cache",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pulse_Cache",
+  "parent":{
+    "name":"Pulse",
+    "path":"folders/Pulse.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

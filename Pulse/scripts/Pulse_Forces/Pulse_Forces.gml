@@ -3,23 +3,29 @@
 /// @param {Real}			_y : Y coordinate relative to the emitter
 /// @param {Real}			_direction	: Direction in degrees of the force
 /// @param {Real}			_type	: Can be either PULSE_FORCE.DIRECTION or PULSE_FORCE.RADIAL
-/// @param {Real}			_weight	: Amount that this will influence the particle, from 0 to 1.
-/// @param {Real}			_force	: Amount that this will influence the particle, from 0 to 1.
+/// @param {Real}			_strength	: Strength of the force, in pixels.
+/// @param {Real}			_weight	: Amount that this force will influence the particle, from 0 to 1.
 /// @param {Bool}			_local	: Whether the force is placed in relation to the emitter (true) or in room space (false)
 /// @return {Struct}
-function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight = 1, _force = 1 , _local = true) constructor
+function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION, _strength = 1  ,_weight = 1, _local = true) constructor
 {
 	x			= _x
 	y			= _y
 	type		= _type
 	range		= PULSE_FORCE.RANGE_INFINITE
 	direction	= _direction
+	strength	= _strength
 	weight		= _weight
 	vec			= [0,0];
-	vec[0]		= lengthdir_x(_force,direction)
-	vec[1]		= lengthdir_y(_force,direction)
+	vec[0]		= lengthdir_x(_strength,direction)
+	vec[1]		= lengthdir_y(_strength,direction)
 	local		= _local
-							
+					
+	/// @description			Sets the range of the force to directional.
+	/// @param {Real}			[_north] : X coordinate relative to the emitter
+	/// @param {Real}			[_south] : X coordinate relative to the emitter
+	/// @param {Real}			[_east]  : X coordinate relative to the emitter
+	/// @param {Real}			[_west]  : X coordinate relative to the emitter
 	static set_range_directional = function(_north=-1,_south=-1,_east=-1,_west=-1)
 	{
 		if (_north==-1 &&_south==-1 &&_east==-1 &&_west==-1) 
@@ -36,11 +42,39 @@ function pulse_force				(_x,_y,_direction,_type = PULSE_FORCE.DIRECTION,_weight 
 		return self
 		
 	}
+	/// @description			Use this to create a new force to apply within an emitter. Forces can be linear or radial, range of influence is infinite by default.
+	/// @param {Real}			_radius : X coordinate relative to the emitter	
 	static set_range_radial = function (_radius)
 	{
 		radius		= _radius
 		range		= PULSE_FORCE.RANGE_RADIAL
 		return self
 	}
-	
+	/// @description			Sets the range of the force to infinity in all directions.
+	static set_range_infinite =  function()
+	{
+		range		= PULSE_FORCE.RANGE_INFINITE
+	}
+	/// @description			Sets the direction of a force.
+	/// @param {Real}			_direction : Direction of the force in degrees
+	static set_direction =  function(_direction)
+	{
+		direction	= _direction
+		vec[0]		= lengthdir_x(strength,direction)
+		vec[1]		= lengthdir_y(strength,direction)
+	}
+	/// @description			Sets the strength of the force.
+	/// @param {Real}			_strength : Strength of the force
+	static set_strength =  function(_strength)
+	{
+		strength		= _strength
+		vec[0]		= lengthdir_x(strength,direction)
+		vec[1]		= lengthdir_y(strength,direction)
+	}
+	/// @description			Use this to create a new force to apply within an emitter. Forces can be linear or radial, range of influence is infinite by default.
+	/// @param {Real}			_type : PULSE_FORCE.DIRECTION or PULSE_FORCE.POINT
+	static set_type = function(_type)
+	{
+		type		= _type
+	}
 }

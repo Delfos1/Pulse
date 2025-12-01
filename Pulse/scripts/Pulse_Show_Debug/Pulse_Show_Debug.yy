@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Pulse_Show_Debug",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pulse_Show_Debug",
+  "parent":{
+    "name":"Pulse",
+    "path":"folders/Pulse.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

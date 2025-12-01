@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_animcurves_simplify",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_animcurves_simplify",
+  "parent":{
+    "name":"AnimCurves_scripts",
+    "path":"folders/Pulse/Dependencies/AnimCurves_scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_path_get_bbox",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_path_get_bbox",
+  "parent":{
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

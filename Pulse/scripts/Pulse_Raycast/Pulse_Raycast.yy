@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Pulse_Raycast",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pulse_Raycast",
+  "parent":{
+    "name":"Dependencies",
+    "path":"folders/Pulse/Dependencies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

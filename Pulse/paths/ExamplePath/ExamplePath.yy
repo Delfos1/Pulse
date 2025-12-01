@@ -1,0 +1,25 @@
+{
+  "$GMPath":"",
+  "%Name":"ExamplePath",
+  "closed":false,
+  "kind":1,
+  "name":"ExamplePath",
+  "parent":{
+    "name":"DBG Project",
+    "path":"folders/DBG Project.yy",
+  },
+  "points":[
+    {"speed":100.0,"x":1408.0112,"y":863.4931,},
+    {"speed":0.0,"x":1400.0,"y":728.0,},
+    {"speed":10.0,"x":1264.0,"y":638.0,},
+    {"speed":100.0,"x":1298.3221,"y":457.33392,},
+    {"speed":50.0,"x":1453.0,"y":433.0,},
+    {"speed":100.0,"x":1570.0,"y":490.0,},
+    {"speed":20.0,"x":1523.0,"y":656.0,},
+    {"speed":100.0,"x":1376.0,"y":628.0,},
+    {"speed":100.0,"x":1404.0,"y":552.0,},
+  ],
+  "precision":4,
+  "resourceType":"GMPath",
+  "resourceVersion":"2.0",
+}

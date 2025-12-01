@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_PathPlus",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_PathPlus",
+  "parent":{
+    "name":"PathPlus",
+    "path":"folders/Pulse/Dependencies/PathPlus.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

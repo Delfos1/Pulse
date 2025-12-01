@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Pulse_Instance_Particles",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pulse_Instance_Particles",
+  "parent":{
+    "name":"Particles",
+    "path":"folders/Pulse/Particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
