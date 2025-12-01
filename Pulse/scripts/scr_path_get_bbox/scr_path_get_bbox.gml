@@ -10,6 +10,7 @@
 #endregion
 function path_get_bbox(_path,_padding=0,_from=0,_to=1)
 {
+	if !path_exists(_path) return
 	var _points = path_get_number(_path)
 	
 	_from	= floor(lerp(1,_points,_from))

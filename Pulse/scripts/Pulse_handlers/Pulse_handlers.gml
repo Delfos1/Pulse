@@ -81,8 +81,7 @@ function __pulse_copy_emitter(_new_emitter,_old_emitter)
 		stencil_mode		=	_old_emitter.stencil_mode
 		form_mode			=	_old_emitter.form_mode
 		path				=	_old_emitter.path
-	/// if path is re-created
-	//gc_flags |= 1
+
 	if path == -1 && form_mode == PULSE_FORM.PATH 
 	{
 		form_mode = PULSE_FORM.ELLIPSE
@@ -1057,20 +1056,36 @@ function pulse_export_emitter(_emitter,_export_particle = true,_export_system =t
 		file = get_save_filename("*.pulsee", $"emitter_");
 
 		if (file == "") return
-	}
-	
-	
+	}	
 	if _export_particle||_export_system||_export_path
 	{
 		// Export particle and system
-		var _fname	= filename_change_ext(file,""),
-		_fpartname	= string_concat(_fname,"_particle",".pulsep"),
-		_fsysname	= string_concat(_fname,"_system",".pulses"),
-		_fbuffermap = string_concat(_fname,"_buffmap",".pulsem"),
-		_fbuffercolor = string_concat(_fname,"_buffcol",".pulsem")
-		var _pfile	= pulse_export_particle(_emitter.part_type,_fpartname)
-		var _psys	= pulse_export_system(_emitter.part_system,_fsysname)
+		var _fname	= filename_change_ext(file,"")
 		
+		if _export_particle
+		{
+			var _fpartname	= string_concat(_fname,"_particle",".pulsep")
+			pulse_export_particle(_emitter.part_type,_fpartname)
+		}
+		if _export_system
+		{
+			var _fsysname	= string_concat(_fname,"_system",".pulses")
+			pulse_export_system(_emitter.part_system,_fsysname)
+		}
+		if _export_path && _emitter.path != undefined
+		{
+			var _fpath	= string_concat(_fname,"_path",".pp")
+			
+			if is_instanceof(_emitter.path,PathPlus)
+			{
+				_emitter.path.Export(_fpath)
+			}
+				else
+			{
+				var _tempPath = new PathPlus(_emitter.path,true)
+				_tempPath.Export(_fpath)
+			}
+		}
 	}
 	
 	if filename_ext(file) != ".pulsee"
@@ -1087,6 +1102,10 @@ function pulse_export_emitter(_emitter,_export_particle = true,_export_system =t
 		if key == "noise" 
 		{
 			return buffer_base64_encode(value,0,buffer_get_size(value))
+		}
+		if key == "path" && value != undefined
+		{
+			return -999
 		}
 		return value
 	}),
@@ -1128,6 +1147,7 @@ function pulse_import_emitter	(file, _overwrite = false)
 	}
 	
 	var _imported_map=false,_imported_col=false
+	_parsed.gc_flags = 0 
 	
 	if _parsed.displacement_map != undefined
 	{
@@ -1163,10 +1183,23 @@ function pulse_import_emitter	(file, _overwrite = false)
 	_parsed.displacement_map	= _dispmap
 	_parsed.color_map			= _colmap
 	
+	if _parsed.path != undefined 
+	{
+		var _fpath	= string_concat(_fname,"_path",".pp")
+		var _path= new PathPlus()
+		_path.Import(_fpath)
+		_parsed.gc_flags |= 1
+		_parsed.path = _path
+		_parsed.path_res = -100
+	}
+	
 	var _new_emitter  = new pulse_emitter(_sys,_part)
-	__pulse_copy_emitter(_new_emitter,_parsed)
-
-
+	__pulse_copy_emitter(_new_emitter,_parsed)/*
+	if _parsed.path != undefined 
+	{
+		_new_emitter.path = _path
+		_new_emitter.path_res = -100
+	}*/
 	if _imported_map
 	{
 		_buffermap.Destroy()
@@ -1176,14 +1209,12 @@ function pulse_import_emitter	(file, _overwrite = false)
 		_buffercolmap.Destroy()
 	}
 	
-
-	
 	return  _new_emitter
 }
 
 /////// Cache
 
-function pulse_export_cache	(_cache,_cache_name,file = undefined)
+function pulse_export_cache	(_cache,_cache_name,file = undefined,_export_particle=false,_export_system=false,_export_path=false)
 {
 	if !is_instanceof(_cache,pulse_cache) 
 	{
@@ -1207,7 +1238,48 @@ function pulse_export_cache	(_cache,_cache_name,file = undefined)
 		file = filename_change_ext(file,".pulsec")
 	}
 	
-	var	 _stringy = json_stringify(_cache , true),
+		if _export_particle||_export_system||_export_path
+	{
+		// Export particle and system
+		var _fname	= filename_change_ext(file,"")
+		
+		if _export_particle
+		{
+			var _fpartname	= string_concat(_fname,"_particle",".pulsep")
+			pulse_export_particle(_cache.part_type,_fpartname)
+		}
+		if _export_system
+		{
+			var _fsysname	= string_concat(_fname,"_system",".pulses")
+			pulse_export_system(_cache.part_system,_fsysname)
+		}
+		if _export_path && _cache.path != undefined
+		{
+			var _fpath	= string_concat(_fname,"_path",".pp")
+			
+			if is_instanceof(_cache.path,PathPlus)
+			{
+				_cache.path.Export(_fpath)
+			}
+				else
+			{
+				var _tempPath = new PathPlus(_cache.path,true)
+				_tempPath.Export(_fpath)
+			}
+		}
+	}
+		var	 _stringy = json_stringify(_cache , true, function(key,value)
+		{
+			if key == "part_type" || key == "part_system"
+			{
+				return value[$ "name"]
+			}
+			if key == "path" && value != undefined
+			{
+				return -999
+			}
+			return value
+		}),
 			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
 	
 	buffer_write(_buff, buffer_text, _stringy);
@@ -1219,7 +1291,7 @@ function pulse_export_cache	(_cache,_cache_name,file = undefined)
 	return file
 }
 
-function pulse_import_cache	(_cache_file, _overwrite = false)
+function pulse_import_cache	(_cache_file)
 {
 	if filename_ext(_cache_file) != ".pulsec"	
 	{
@@ -1237,22 +1309,50 @@ function pulse_import_cache	(_cache_file, _overwrite = false)
 		_parsed = json_parse(_string) 
 		buffer_delete(_buffer)
 
+	var _fname	= filename_change_ext(_cache_file,""),
+	_fpartname	= string_concat(_fname,"_particle",".pulsep"),
+	_fsysname	= string_concat(_fname,"_system",".pulses"),
+	_part,_sys
+
+	if !pulse_exists_particle(_parsed.part_type)
+	{
+		_part	= pulse_import_particle	(_fpartname,false)
+	}else{
+		_part	= pulse_fetch_particle(_parsed.part_type)
+	}
+	
+	if !pulse_exists_system(_parsed.part_system) 
+	{
+		_sys	= pulse_import_system(_fsysname,false)
+	}else{
+		_sys	= pulse_fetch_system(_parsed.part_system)
+	}
+	if _parsed.path != undefined 
+	{
+		var _fpath	= string_concat(_fname,"_path",".pp")
+		var _path= new PathPlus()
+		_path.Import(_fpath)
+		_parsed.gc_flags |= 1
+		_parsed.path = _path
+		_parsed.path_res = -100
+	}
+
 	var _new_cache = new pulse_cache(_parsed,_parsed.cache)
 
 	_new_cache.shuffle				= _parsed.shuffle
+	_new_cache.part_system			= _sys
+	_new_cache.part_type			= _part
 
-//	var _exists = pulse_exists_system(_parsed.part_system.name)
-	var _sys = pulse_fetch_system(_parsed.part_system.name)
 	if  _sys == undefined
 	{
 		__pulse_show_debug_message("Cache imported doesn't have a system. Please assign one before use",2)
 	}
-	var _part = pulse_fetch_particle(_parsed.particle.name)
+
 	if  _part == undefined
 	{
 		__pulse_show_debug_message($"Cache imported requires a particle named `{_parsed.particle.name}`. Please import particle before importing cache ",2)
 	}
-	_new_cache.particle = _part
+
 
 	return _new_cache
 }

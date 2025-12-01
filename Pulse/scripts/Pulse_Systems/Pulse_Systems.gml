@@ -30,6 +30,7 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 		depth			=	0;
 	}
 	
+	pulse_ver		=	_PULSE_VERSION
 	limit			=	0
 	draw			=	true;
 	draw_oldtonew	=	true;

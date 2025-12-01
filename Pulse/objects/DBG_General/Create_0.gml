@@ -1,4 +1,4 @@
-debug = true
+debug = false
 auto_create = true
 if (debug)
 {
@@ -10,8 +10,6 @@ if (debug)
 displ_map = array_create(8)
 color_map = 0
 created_maps = false
-collision_particle =  pulse_store_particle( new pulse_particle("collision_particle"))
-collision_particle.set_direction(0,365).set_shape(pt_shape_line).set_color(c_yellow,c_orange).set_alpha(1,1,.6).set_speed(3,5,-.01).set_life(10,20)
 part_name		= "Particle"
 sys_name		= "System"
 emitter_name	= "Emitter"
@@ -24,7 +22,7 @@ s_l = 0
 cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
 cacheing = false
-if auto_create alarm_set(0,2)
+if auto_create alarm_set(1,2)
 
 dbg_view("Welcome to Pulse!",true,30,30,300,300)
 
@@ -74,8 +72,8 @@ dbg_button("Create Emitter",function()
 	
 	_temp_emitter.destroy()
 	
-	_emitter.set_displacement_map(displ_map[0])
-	_emitter.set_color_map(color_map)
+	//_emitter.set_displacement_map(displ_map[0])
+	//_emitter.set_color_map(color_map[0])
 
 	var _inst  = instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
 	array_push(emitters,_inst)
@@ -195,18 +193,103 @@ dbg_button("Import Cache",function(){
 	
 	if _p != ""
 	{
-		var _cache = pulse_import_cache(_p,true)	
-		_cache.part_system =  systems[s_l].system
-		/*
-		var _inst_s		= instance_create_layer(0,0,layer,DBG_System,{system: _cache.part_system})
-							array_push(systems,_inst_s)
-							s_l = array_length(_inst_s)-1
-		var	_inst_p = instance_create_layer(0,0,layer,DBG_Particle,{particle: _cache.part_type})
-							array_push(particles,_inst_p)
-							p_l = array_length(particles)-1*/
-		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Cache,{cache: _cache, system_instance: systems[s_l] , particle_instance : particles[p_l]})
+		var _cache = pulse_import_cache(_p)	
+
+		var _check = false,_sys,_part
+		
+		
+		with DBG_System
+		{
+			if system == _cache.part_system
+			{
+				_check = true	
+				_sys = id
+			}
+		}
+		
+		if !_check
+		{
+			var _inst_s		= instance_create_layer(0,0,layer,DBG_System,{system: _cache.part_system})
+					array_push(systems,_inst_s)
+					s_l = array_length(systems)-1
+					_sys = _inst_s
+		}
+		
+		_check = false
+		with DBG_Particle
+		{
+			if particle == _cache.part_type
+			{
+				_check = true	
+				_part = id
+			}
+		}
+		
+		if  !_check
+		{
+			var	_inst_p = instance_create_layer(0,0,layer,DBG_Particle,{particle: _cache.part_type})
+				array_push(particles,_inst_p)
+				p_l = array_length(particles)-1
+				_part = _inst_p
+		}
+
+
+		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Cache,{cache: _cache, system_instance: _sys , particle_instance : _part})
 	}
 })
 e_dbg_check = true
 dbg_checkbox(ref_create(self,"e_dbg_check"),"Draw debug helpers")
 
+dbg_section("Stress test")
+
+
+
+dbg_button("Create 100 Particles",function()
+{
+	repeat(100)	{
+	var _part = pulse_store_particle(new pulse_particle(part_name)),
+		_inst = instance_create_layer(0,0,layer,DBG_Particle,{particle: _part})
+	array_push(particles,_inst)
+	}
+		p_l = array_length(particles)-1
+})
+dbg_same_line()
+dbg_button("Create 100 Instance Particle",function()
+{	repeat(100)	{
+	var _part = pulse_store_particle(new pulse_instance_particle(o_particle_example,part_name)),
+		_inst = instance_create_layer(0,0,layer,DBG_Particle,{particle: _part})
+	array_push(particles,_inst)
+}
+	p_l = array_length(particles)-1
+})
+
+dbg_button("Create 100 Systems",function()
+{
+	repeat(100)	{
+	var _sys = pulse_store_system(new pulse_system(sys_name)),
+	_inst = instance_create_layer(0,0,layer,DBG_System,{system: _sys})
+	array_push(systems,_inst)
+	}
+	s_l = array_length(systems)-1
+})
+
+dbg_button("Create 100 Emitters",function()
+{
+	if s_l == -1 or p_l ==-1
+	{
+		show_message("Can't create an emitter without particles or systems!")
+		return
+	}
+		repeat(100)	{
+	var _temp_emitter =  new pulse_emitter(systems[s_l].system,particles[p_l].particle)
+	var _emitter = pulse_store_emitter(_temp_emitter,emitter_name,false)
+	
+	_temp_emitter.destroy()
+	
+	_emitter.set_displacement_map(displ_map[0])
+	_emitter.set_color_map(color_map)
+
+	var _inst  = instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
+	array_push(emitters,_inst)
+	}
+})

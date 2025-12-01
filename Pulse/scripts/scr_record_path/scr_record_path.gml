@@ -73,7 +73,7 @@ function PathRecordStop(_record_speed = true,smooth= false,prec= 8,_closed=false
 			var ppf = _d / (_f/ (game_get_speed(gamespeed_microseconds)*0.001) )
 			var _speed =  (ppf/_spdmax)*100
 		}
-		_p[_i].speed = _speed
+		_p[_i].speed = clamp(_speed,0,100)
 	}
 		_pathPlus.SetClosed(_closed).SetPrecision(2).BakeToPath()
 		_pathPlus.GenerateCache()

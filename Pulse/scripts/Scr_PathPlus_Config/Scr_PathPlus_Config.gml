@@ -3,7 +3,8 @@
 // ✦ ░▀░░░▀░▀░░▀░░▀░▀░▀░░░▀▀▀░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀░▀░▀░░░▀▀▀░▀▀▀  ☾
 
 
-__pathplus_show_debug("▉✦✧✦ Using PathPlus v 2.1.1 - by Delfos ✦✧✦▉")
+#macro PP_VERSION "2.2"
+__pathplus_show_debug($"▉✦✧✦ Using PathPlus v {PP_VERSION} - by Delfos ✦✧✦▉")
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~╡ 
 

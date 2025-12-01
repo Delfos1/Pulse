@@ -647,40 +647,40 @@ function pulse_particle				(_name=__PULSE_DEFAULT_PART_NAME) : __pulse_particle_
 		with(_struct)
 		{
 			_sys_index ??= part_system.index
-			
-			part_type_life(particle.index,life,life);
-			part_type_speed(particle.index,speed,speed,particle.speed[2],particle.speed[3])
-			part_type_direction(particle.index,dir,dir,particle.direction[2],particle.direction[3])
+			var _index = particle.index
+			part_type_life(_index,life,life);
+			part_type_speed(_index,speed,speed,particle.speed[2],particle.speed[3])
+			part_type_direction(_index,dir,dir,particle.direction[2],particle.direction[3])
 		
 			if size !=undefined
 			{
-				part_type_size_x(particle.index,size[0],size[2],particle.size[4],particle.size[6])	
-				part_type_size_y(particle.index,size[1],size[3],particle.size[5],particle.size[7])	
+				part_type_size_x(_index,size[0],size[2],particle.size[4],particle.size[6])	
+				part_type_size_y(_index,size[1],size[3],particle.size[5],particle.size[7])	
 			}
 			
 			if orient !=undefined
 			{
-				part_type_orientation(particle.index,orient,orient,particle.orient[2],particle.orient[3],particle.orient[4])	
+				part_type_orientation(_index,orient,orient,particle.orient[2],particle.orient[3],particle.orient[4])	
 			}
 			
 			if frame != undefined
 			{
-				part_type_subimage(particle.index,frame)
+				part_type_subimage(_index,frame)
 			}
 			
 			if color_mode  !=undefined
 			{
 				if color_mode == PULSE_COLOR.A_TO_B_RGB or color_mode == PULSE_COLOR.COLOR_MAP
 				{
-					part_type_color_rgb(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
+					part_type_color_rgb(_index,r_h,r_h,g_s,g_s,b_v,b_v)
 				} 
 				else if color_mode == PULSE_COLOR.A_TO_B_HSV
 				{
-					part_type_color_hsv(particle.index,r_h,r_h,g_s,g_s,b_v,b_v)
+					part_type_color_hsv(_index,r_h,r_h,g_s,g_s,b_v,b_v)
 				}
 			}
 			
-			part_particles_create(_sys_index, x_origin+x,y_origin+y,particle.index, 1);
+			part_particles_create(_sys_index, x_origin+x,y_origin+y,_index, 1);
 		}		
 	}
 	
@@ -739,6 +739,7 @@ function __pulse_subparticle		(_parent,_number,_death_particle) : __pulse_partic
 /// @param {String}			_name : Name of the particle.
 function __pulse_particle_class		(_name) constructor
 {
+	pulse_ver		=	_PULSE_VERSION
 	name			=	string(_name)
 	index			=	undefined
 	type			=	0;
@@ -868,7 +869,7 @@ function __pulse_particle_class		(_name) constructor
 		
 		if step_type != undefined 
 		{
-			if is_instanceof(step_type,__pulse_particle)
+			if is_instanceof(step_type,__pulse_particle_class)
 			{
 				part_type_step(index,step_number,step_type.index)
 			}

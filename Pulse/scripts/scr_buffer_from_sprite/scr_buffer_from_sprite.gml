@@ -63,7 +63,7 @@ function __buffered_sprite(buffer, w, h) constructor {
 			result[2] = buffer_read(self.noise,buffer_u8) // Blue
 			result[3] = buffer_read(self.noise,buffer_u8) // Alpha
 		}
-		return result
+		return [result[0],result[1],result[2],result[3]]
      
     };
             

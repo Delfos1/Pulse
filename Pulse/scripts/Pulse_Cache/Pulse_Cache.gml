@@ -6,7 +6,7 @@
 	/// @param {Array}						_cache : An array populated by a Pulse emitter's output. By default is empty. Particles can be added with the add_particles() methods
 function	pulse_cache(_emitter , _cache=[] ) constructor
 {
-
+	pulse_ver		=	_PULSE_VERSION
 	path				= _emitter.path
 	path_res			= _emitter.path_res
 	line				= _emitter.line
@@ -17,10 +17,9 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	cache				= _array_clean(_cache)
 	length				= array_length(_cache)
 	flag_stencil		= false
-	if length > 0
-	{
-		particle = pulse_fetch_particle(cache[0].particle.name)	
-	}
+	gc_flags			= _emitter.gc_flags
+	part_type			= _emitter.part_type
+
 
 	stencil_profile		=	animcurve_really_create({curve_name: "stencil_profile",channels:[	{name:"c",type: animcurvetype_catmullrom , iterations : 8}]})
 	_channel_03			=	animcurve_get_channel(stencil_profile,0)
@@ -37,7 +36,6 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 	y_scale				=	_emitter.y_scale
 	collide				= false							// Whether to perform the collision code
 	is_colliding		= false							// Whether the cached emitter is colliding or not
-	colliding_cache		= undefined						// modified cache for collisions
 	colliding_entities	= _emitter.colliding_entities	// Entities to search for collisions
 	collisions			= _emitter.collisions			// Entities currently colliding with cached emitter
 	/// @desc Adds particles to the cache
@@ -47,7 +45,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		cache = array_concat(cache,array)
 		length	= array_length(cache)
 		
-		particle = pulse_fetch_particle(cache[0].particle.name)	
+		part_type = pulse_fetch_particle(cache[0].part_type.name)	
 	}
 	
 		/// @description	Adds a collision element to be checked by the collision function.
@@ -82,7 +80,12 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 			case PULSE_FORM.PATH:
 			{
 				/// if path, find bounding box of path, then check with collision
+				if path_res==-100
+				{
+					var _bbox = path.GetBbox(path,edge_external,mask_start,mask_end)
+				}else{
 				var _bbox = path_get_bbox(path,edge_external,mask_start,mask_end)
+				}
 				var _collision = collision_rectangle(_bbox[0],_bbox[1],_bbox[2],_bbox[3],_collision_obj,_prec,true)
 
 				break;
@@ -272,7 +275,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		var eval	=	clamp(animcurve_channel_evaluate(_channel_03,_p.u_coord),0,1);
 
 		if eval >= 1 { return _p}
-		//First we define where the EDGE is, where our particle should stop
+		//First we define where the EDGE is, where our part_type should stop
 		
 		var to_transversal = abs(angle_difference(_p.dir,_p.transv)) , 
 		_length_to_edge
@@ -298,7 +301,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		}
 		else			//NORMAL TOWARDS CENTER
 		{	
-			// If particle is going towards a focal point and thats the limit to be followed
+			// If part_type is going towards a focal point and thats the limit to be followed
 			if boundary == PULSE_BOUNDARY.FOCAL_LIFE || boundary == PULSE_BOUNDARY.FOCAL_SPEED
 			{
 					var _length_to_edge	=	point_distance(x+x_focal_point,y+y_focal_point,_p.x_origin,_p.y_origin)
@@ -326,9 +329,9 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		{
 			return undefined
 		}
-				_p.accel ??=  _p.particle.speed[2]*(_p.life*_p.life)*.5
+				_p.accel ??=  _p.part_type.speed[2]*(_p.life*_p.life)*.5
 				_p[$ "disp"] ??= (_p.speed*_p.life)+_p.accel
-		// If the particle moves beyond the edge of the radius, change either its speed or life
+		// If the part_type moves beyond the edge of the radius, change either its speed or life
 	
 		if	_p.disp > _length_to_edge
 		{
@@ -341,7 +344,7 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 			{
 				_p.life	=	(_length_to_edge-_p.accel)/_p.speed
 			}
-			//We save this in a boolean as it could be used to change something in the particle appeareance if we wished to
+			//We save this in a boolean as it could be used to change something in the part_type appeareance if we wished to
 			_p.to_edge	+=	1
 		}
 				
@@ -396,7 +399,6 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				index = _target % length
 				_amount = 0
 			}
-			
 
 			if collide && is_colliding
 			{
@@ -405,12 +407,13 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 					var _p = cache[_i],
 						_particle = __check_form_collide(_p)
 					if _particle == undefined continue
-					particle.launch(_particle,x,y,part_system.index)
+					part_type.launch(_particle,x,y,part_system.index)
 				}
 			} else {
 				for(_i = _i  ; _i < _target ; _i++)
 				{
-					particle.launch(cache[_i],x,y,part_system.index)
+					part_type.launch(cache[_i],x,y,part_system.index)
+				
 				}
 			}
 	
@@ -420,6 +423,22 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 				if shuffle array_shuffle_ext(cache,irandom_range(0,floor(length/2)),length/2)
 			}
 		} until(_amount == 0)
+	}
+	
+		/// @description	Destroys all contents of the emitter struct.
+	/// @context pulse_emitter
+	static destroy = function()
+	{
+		animcurve_destroy(stencil_profile)
+		
+		if (gc_flags & 1) != 0
+		{
+			if is_instanceof(path,PathPlus)
+			{
+				path.Destroy()
+			}
+		}
+		
 	}
 }
 

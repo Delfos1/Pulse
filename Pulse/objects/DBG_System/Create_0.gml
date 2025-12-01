@@ -191,9 +191,7 @@ dbg_button("Apply",function(){
 	system.set_angle(s_angle)
 })
 /// Color
-dbg_drop_down(ref_create(self,"s_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
-c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Gray","Dark Gray","Black"],"Color")	
+dbg_colour(ref_create(self,"s_color",0),"Color")
 dbg_slider(ref_create(self,"s_color",1),0,1,"Alpha")
 dbg_button("Apply",function(){
 	system.set_color(s_color[0],s_color[1])

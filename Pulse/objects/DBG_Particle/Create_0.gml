@@ -1,5 +1,3 @@
-collision_particle =  pulse_fetch_particle("collision_particle")
-
 //////////////////////////
 //////////////////////////
 ///////   PARTICLE  ///////
@@ -398,16 +396,9 @@ dbg_section("Color",false)
 
 p_color = [c_blue,c_aqua,c_white]
 
-
-dbg_drop_down(ref_create(self,"p_color",0),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
-c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Gray","Dark Gray","Black"],"Color 1")
-dbg_drop_down(ref_create(self,"p_color",1),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
-c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Light Gray","Dark Gray","Black","None"],"Color 2")
-dbg_drop_down(ref_create(self,"p_color",2),[c_white,c_aqua,c_teal,c_blue,c_navy,c_purple,
-c_fuchsia,c_red,c_maroon,c_orange,c_yellow,c_olive,c_green,c_ltgrey,c_silver,c_grey,c_dkgrey,c_black,undefined],
-["White","Aqua","Teal","Blue","Navy","Purple","Fuchsia","Red","Maroon","Orange","Yellow","Olive","Bright Green","Light Gray","Silver","Light Gray","Dark Gray","Black","None"],"Color 3")
+dbg_colour(ref_create(self,"p_color",0),"Color 1")
+dbg_colour(ref_create(self,"p_color",1),"Color 2")
+dbg_colour(ref_create(self,"p_color",2),"Color 3")
 p_blend = false
 dbg_checkbox(ref_create(self,"p_blend"),"Additive Blending")
 
@@ -457,24 +448,27 @@ p_step=1
 p_death=1
 p_collision=1
 dbg_text_separator("Step")
-
+dbg_text("Applies the active Particle")
 dbg_text_input(ref_create(self,"p_step"),"Step particles amount","i")
 dbg_button("Apply",function(){
-particle.set_step_particle(p_step,DBG_General.particles[DBG_General.p_l].particle)				
+	if DBG_General.particles[DBG_General.p_l] == id{ return}
+	particle.set_step_particle(p_step,DBG_General.particles[DBG_General.p_l].particle)				
 	})
 
 dbg_text_separator("Death")
-
+dbg_text("Applies the active Particle")
 dbg_text_input(ref_create(self,"p_death"),"Death particles amount","i")
 dbg_button("Apply",function(){
+	if DBG_General.particles[DBG_General.p_l] == id{ return}
 	particle.set_death_particle(p_death,DBG_General.particles[DBG_General.p_l].particle)		
 	})
 
 dbg_text_separator("Death on Collision")
-
+dbg_text("Applies the active Particle")
 dbg_text_input(ref_create(self,"p_collision"),"Death particles amount","i")
 dbg_button("Apply",function(){
-	particle.set_death_on_collision(p_collision,collision_particle)					
+	if DBG_General.particles[DBG_General.p_l] == id {return}
+	particle.set_death_on_collision(p_collision,DBG_General.particles[DBG_General.p_l].particle)					
 	})
 	
 	function refresh()

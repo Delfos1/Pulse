@@ -69,6 +69,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 
 	#region Polyline Setters
 	
+	/// Sets the default precision for the path
 	static SetPrecision			= function(_precision)
 	{
 		if !is_real(_precision)
@@ -83,6 +84,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen	=	false
 		return self
 	}
+	/// Sets the path being open (false) or closed (true)
 	static SetClosed			= function(_closed)
 	{
 		if !is_bool(_closed)
@@ -107,11 +109,20 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Adds point at the end of the Polyline
+	/// @param {Real}   _x				Position X
+	/// @param {Real}   _y				Position Y
+	/// @param {Real}   [_speed]		Speed of the point, from 0 to 100. Default: 100
+	/// @param {Struct} _optional_vars	Any additional variables to attach to the point
 	static AddPoint				= function(_x,_y,_speed = 100,_optional_vars = {}) 
 	{
 		return InsertPoint(l,_x,_y,_speed,_optional_vars)
 	}
 	/// Inserts a point to the polyline at the n position
+	/// @param {Real}   _n				Position on the path, as an index
+	/// @param {Real}   _x				Position X
+	/// @param {Real}   _y				Position Y
+	/// @param {Real}   [_speed]		Speed of the point, from 0 to 100. Default: 100
+	/// @param {Struct} _optional_vars	Any additional variables to attach to the point
 	static InsertPoint			= function(n,_x,_y,_speed = 100,_optional_vars = {}) 
 	{
 		if !is_real(_x) || !is_real(_y) || !is_real(n) || !is_real(_speed) 
@@ -164,6 +175,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Removes the point on the polyline at the n position
+	/// @param {Real}   _n				Position on the path, as an index
+	/// @param {Real}   [_amount]		Amount of points to remove. Default: 1
 	static RemovePoint			= function(n,_amount = 1) 
 	{
 		if !is_real(n) || !is_real(_amount) 
@@ -199,6 +212,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Changes the point on the polyline at the n position
+	/// @param {Real}   _n				Position on the path, as an index
+	/// @param {Real}   _x				Position X
+	/// @param {Real}   _y				Position Y
+	/// @param {Real}   [_speed]		Speed of the point, from 0 to 100. Default: undefined (leaves unchanged)
 	static ChangePoint			= function(n,_x,_y,_speed = undefined) 
 	{
 		if !is_real(_x) || !is_real(_y) || !is_real(n)
@@ -246,6 +263,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Translates the n point on the polyline relative to its current position
+	/// @param {Real}   _n				Position on the path, as an index
+	/// @param {Real}   _x				Amount of pixels to move on X
+	/// @param {Real}   _y				Amount of pixels to move on Y
 	static TranslatePoint		= function(n,_x,_y) 
 	{
 		if !is_real(_x) || !is_real(_y) || !is_real(n)
@@ -263,6 +283,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Changes a single variable within a point. To be used with user made variables. For PathPlus variables use the proper getters
+	/// @param {Real}		_n				Position on the path, as an index
+	/// @param {String}		_var_as_string	Name of the variable to change, as a string
+	/// @param {Any}		_new_value		New value to set
 	static ChangePointVariable	= function(n,_var_as_string,_new_value) 
 	{
 		if _var_as_string == "x" || _var_as_string == "y" || _var_as_string == "h1" || _var_as_string == "h2" || _var_as_string == "weight" 
@@ -320,6 +343,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		
 		return self
 	}
+	
 	///Removes redundant points with the Ramer-Douglas-Pecker algorithm . By default, it tries to find a measured number that will work for most cases.
 	/// @arg _epsilon Number between 0 and 1 (representing 0 and the max distance between points on the path). 0 = no change, 1 = removes all but 2 points. 
 	static Simplify				= function (_epsilon=undefined)
@@ -667,12 +691,17 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	return _point
 	}
 	/// Gets a point along the path, from 0 to 1, from the cache (faster)
-	static SampleFromCache = function(_n)
+	/// @arg {Real} _n
+	/// @arg {Bool} _position Whether to return the position (x,y) of the point. Default: True
+	/// @arg {Bool} _angle Whether to return the angles (transversal,normal) of the point. Default: True
+	/// @arg {Bool} _speed Whether to return the speed (speed) of the point. Default: True
+	/// @arg {Bool} _closest_only Whether to return the data from the closest point instead of lerping an inbetween position. Default: False
+	static SampleFromCache = function(_n,_position=true,_angle=true,_speed=true,_closest_only=false)
 	{
 		if  !is_real(_n)
 		{
 			__pathplus_show_debug("▉╳▉ ✦PathPlus✦ Error ▉╳▉: Wrong type provided")
-			return self
+			return undefined
 		}
 		
 		if !_cache_gen && PP_AUTO_GEN_CACHE GenerateCache()
@@ -680,7 +709,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		var _length = array_length(cache) ,
 		_l = pixel_length * _n ,
 		_t = 0 ,
-		_point = {}
+		_point = {l: _l}
 
 		var _min = 0,
 		_max	= _length-1,
@@ -704,6 +733,28 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			} else _min = _ind+1;
 		}
 	
+		if _angle
+		{
+				_point.transversal = cache[_ind].transversal
+				_point.normal = _point.transversal + 90
+		}
+		if _speed 
+		{	
+			_point.speed = cache[_ind].speed
+		}
+		if !_position return _point
+		
+		if cache[_ind].l == _l
+		{
+			
+			if _position
+			{
+				_point.x =	cache[_ind].x
+				_point.y =	cache[_ind].y
+			}
+
+			return _point
+		}
 		// Get the next point to establish a segment. If greater than the length of the array, wrap around
 		var _ind2 = (_ind + 1)%_length
 
@@ -717,15 +768,26 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_t =  _w != 0 ? _l / _w : _l
 		}
 	
-
-		_point = { x : lerp(cache[_ind].x,cache[_ind2].x,_t), y : lerp(cache[_ind].y,cache[_ind2].y,_t)}
-		_point.transversal = lerp_angle(cache[_ind].transversal,cache[_ind2].transversal,_t)
-		_point.normal = _point.transversal + 90
-		_point.speed = lerp(cache[_ind].speed,cache[_ind2].speed,_t)
-		_point.l = pixel_length * _n
+		if _position
+		{
+			if _closest_only
+			{
+				_point.x = _t<=.5 ? cache[_ind].x : cache[_ind2].x
+				_point.y = _t<=.5 ? cache[_ind].y : cache[_ind2].y
+			}
+			else
+			{
+				_point.x = lerp(cache[_ind].x,cache[_ind2].x,_t)
+				_point.y = lerp(cache[_ind].y,cache[_ind2].y,_t)
+			}
+		}
+		
 		return _point
 	}
-	
+	/// Gets the bounding box of the path based on the path points alone.
+	/// @arg {Real} _padding Amount of pixels added to each side as padding.  DEFAULT: 0
+	/// @arg {Real} _from Start position on the path, from 0 to 1.  DEFAULT: 0
+	/// @arg {Real} _to End position on the path, from 0 to 1. DEFAULT: 1
 	static GetBbox = function(_padding=0,_from=0,_to=1)
 	{
 		var _path= type == PATHPLUS.LINEAR ? polyline : cache ,
@@ -963,7 +1025,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen	=	false
 		return self
 	}
-	
+	/// Gets the length of a Bezier Handle
+	/// @param {Real}  _n Index of the point
+	/// @param {Bool}  [_handle] The handle to get. true: handle 1 (with-flow handle) false: handle 2 (counter-flow handle)
 	static GetBezierHandleLength	= function(_n,_handle=true)
 	{
 		if type != PATHPLUS.BEZIER return;
@@ -973,6 +1037,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return		point_distance(polyline[_n].x, polyline[_n].y, _handle.x,_handle.y) ;
 		
 	}
+	/// Gets the Angle of a Bezier Handle
+	/// @param {Real}  _n Index of the point
+	/// @param {Bool}  [_handle] The handle to get. true: handle 1 (with-flow handle) false: handle 2 (counter-flow handle)
 	static GetBezierHandleAngle		= function(_n,_handle=true)
 	{
 		if type != PATHPLUS.BEZIER return;
@@ -992,6 +1059,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_regen()
 	}
 	/// Generates a cache of the curve. Use if you want a different kind of cache from the standard or if you deactivated automatic cache from the Config file
+	/// @param {Real}  [ _precision]	The precision is the amount of inbetween points generated between
+	/// @param {Bool}   [_force]		Whether to force the Cache generation (true) or to generate only if necessary (false). DEFAULT: False
 	static GenerateCache	= function(_precision =precision , _force=false )
 	{
 		if (_cache_gen && !_force )|| l <= 1  return
@@ -1100,7 +1169,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			
 	return
 	}
-		/// Generates a cache of the path at even intervals, in pixels. Samples from an inbetween cache that can be generated beforehand.
+	/// Generates a cache of the path at even intervals, in pixels. Samples from an inbetween cache that can be generated beforehand.
+	/// @param {Real}  _pxlength   Generate a cache point every certain amount of pixels.
 	static GenerateCacheEven = function(_pxlength)
 	{
 		if !_cache_gen
@@ -1136,6 +1206,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_cache_gen = true	
 	}
 	/// Generates a polyline out of the path
+	/// @param {Bool}  [_bake_smooth] Whether to bake inbetween points (true) or just the path points (false). Default: False
+	/// @param {Bool}  [_keep_speed] Whether to save the speed of the path (true) or not. Default: True
 	static PathToPoly		= function(_bake_smooth = false , _keep_speed =true)
 	{
 		var _l = path_get_number(path)
@@ -1225,34 +1297,31 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		
 		return path
 	}
-	
-	static Export			= function()
+	/// Export a .pp (pathplus) file containing all of the pathplus properties.
+	static Export			= function(file=undefined)
 	{
-		var file;
-		file = get_save_filename("*.pp", "path");
+		file ??= get_save_filename("*.pp", "path");
 		if (file != "")
-		{
-	
-		if filename_ext(file) != ".pp"
-		{
-			file = filename_change_ext(file,".pp")
-		}
-		
-		var	 _stringy = json_stringify(self , true, function(key,value)
-		{
-			if key == "path"
+		{	
+			if filename_ext(file) != ".pp"
 			{
-				return undefined
+				file = filename_change_ext(file,".pp")
 			}
-			return value
-		}
-			),
-		_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+			var	 _stringy = json_stringify(self , true, function(key,value)
+			{
+				if key == "path"
+				{
+					return undefined
+				}
+				return value
+			}
+				),
+			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
 	
-		buffer_write(_buff, buffer_text, _stringy);
-		buffer_save(_buff, file);
-		buffer_delete(_buff);
-	}
+			buffer_write(_buff, buffer_text, _stringy);
+			buffer_save(_buff, file);
+			buffer_delete(_buff);
+		}
 }
 	/// Export a .yy file with the contents of the cache polyline. You need to overwrite an existing path in your GameMaker project for it to work.
 	/// Recommended that you simplify the result before exporting to avoid redundant information
@@ -1282,6 +1351,49 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		buffer_delete(_buff);
 	}
 }
+	/// Import a .pp file, replacing the properties of the current PathPlus
+	static Import			= function(file)
+	{
+			if filename_ext(file) != ".pp"	
+	{
+		__pathplus_show_debug("Path wasn't imported (Wrong type provided)")
+		return
+	}
+	
+	if !file_exists(file)
+	{
+		__pathplus_show_debug("System wasn't imported (File not found)")
+		return
+	}
+	
+	var _buffer = buffer_load(file)
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string) 
+		buffer_delete(_buffer)
+
+		if _parsed != ""
+		{
+			cache		=	_parsed.cache
+			_cache_gen  =	_parsed._cache_gen
+			_length_gen	=	_parsed._length_gen
+			_properties =	_parsed._properties
+			bbox_bottom =	_parsed.bbox_bottom
+			bbox_top	=	_parsed.bbox_top
+			bbox_left	=	_parsed.bbox_left
+			bbox_right	=	_parsed.bbox_right
+			polyline	=	_parsed.polyline
+			precision	=	_parsed.precision
+			closed		=	_parsed.closed
+			type		=	_parsed.type
+			l			=	_parsed.l
+			pixel_length=	_parsed.pixel_length
+			BakeToPath()
+		}
+		
+		return
+
+	}
 	#endregion
 
 	static _regen			= function()
@@ -1328,32 +1440,29 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen = false
 	}
 	
+	/// Destroys the path and its components.
 	static Destroy			=function()
 	{
-		path_delete(path)
+		if path_exists(path)
+		{
+			path_delete(path)
+		}
 	}
 	/// Draws either a path, a polyline or its cached version.
 	/// @param {Real}   _x		Drawing offset
 	/// @param {Real}   _y		Drawing offset
-	/// @param {Bool}   _abs	Whether to draw from the absolute or relative position
 	/// @param {Bool}   _points Whether to draw control points or not
 	/// @param {Bool}  _path	Whether to draw the path element or the polyline/cache element
 	/// @param {Bool}  _force_poly	Whether to display the interpolated line(false) or base polyline (true)
-	static DebugDraw		= function(_x=0,_y=0,_abs=true,_points=false,_path=false,_force_poly=false)
+	static DebugDraw		= function(_x=0,_y=0,_points=false,_path=false,_force_poly=false)
 	{
 		if _path
 		{
-			draw_path(path,_x,_y,_abs)
+			draw_path(path,_x,_y,true)
 			return
 		}
 		// If type is linear or we are forcing polyline, assign the polyline array, otherwise draw from cache
 		var _lines =  _force_poly || !_cache_gen ? polyline : cache  
-		
-		if !_abs
-		{
-			_x = _x -_lines[0].x
-			_y = _y -_lines[0].y
-		}
 		
 		var _c1 = draw_get_color()
 		var _len = array_length(_lines)
@@ -1420,6 +1529,12 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	}
 
 	#region Catmull-Rom
+		///Sets the type of the path to CatmullRom. 
+		/// Based off Mika Rantanen implementation
+		/// https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
+		/// @param {Real}   [_alpha]		The alpha of the path. This will change how the path bends. Default: 0.5
+		/// @param {Real}   [_tension]		The tension of the path, from 0 to 1. 0 = straight lines. Default: 0.5
+
 		static SetCatmullRom = function(_alpha=.5,_tension=.5)
 		{
 			if l <=2
@@ -1476,6 +1591,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					else
 					{
 						var _dir = point_direction(polyline[1].x,polyline[1].y,polyline[0].x,polyline[0].y) 
+
 						var _len = 1
 						_p1 =
 						{
@@ -1512,8 +1628,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 				polyline[_i].segment = __catmull_rom_coef(_p1,_p2,_p3,_p4,_alpha,_tension)
 			}
 		}
-			/// Based off Mika Rantanen implementation
-			/// https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
+
 			static	__catmull_rom_coef = function(p0,p1,p2,p3,alpha=1,tension=0)
 		{
 			var
@@ -1569,6 +1684,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	#endregion
 	
 	#region Bezier
+	///Sets the type of the path to Bezier. This will append handles to each point
 	static SetBezier = function()
 		{
 			type = PATHPLUS.BEZIER
@@ -1787,7 +1903,6 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 
 }
 
-
 /**
  * Private function used by PathPlus
   */
@@ -1887,7 +2002,7 @@ function _array_clean(array)
 	
 	for(var _i = 0 ; _i < l ; _i++ )
 	{
-		if array[_i] != 0 
+		if array[_i] != 0
 		{
 			array_push(_new_array,array[_i])	
 		}

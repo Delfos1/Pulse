@@ -1,1 +1,0 @@
-_emitter.pulse(50,x,y)

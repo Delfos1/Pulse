@@ -1,5 +1,7 @@
+#macro _PULSE_VERSION "1.0.0"
+
 /// @description  0: No extra , 1: Warning , 2 : Error , 3: Success
-show_debug_message("█⁂⁂   Welcome to  ⁂PULSE⁂    v1.0.0 ~ by Delfos ⁂⁂█" )
+show_debug_message($"█⁂⁂   Welcome to  ⁂PULSE⁂  v{ _PULSE_VERSION } ~ by Delfos ⁂⁂█" )
 function __pulse_show_debug_message(_message,_type = 0)
 {
 	static prev_messages = ""
