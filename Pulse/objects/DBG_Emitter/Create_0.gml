@@ -93,11 +93,18 @@ dbg_button("Randomize",function(){
 
 		var _focal = choose(true,false)
 
+		if 		emitter.displacement_map	==	undefined
+		{
+			emitter.set_displacement_map(DBG_General.displ_map[emap_frame])
+		}
+		if	emitter.color_map			==	undefined	
+		{
+			emitter.set_color_map(DBG_General.color_map[ecolormap_frame])
+		}
+
 		e_bound = _focal==true ? choose("None","Life","Speed","Focal Life","Focal Speed") : choose("None","Life","Speed")
 		e_radius		= [irandom(300),irandom(300),irandom(300),irandom(300)]
 		e_scale = [random(1),random(1)]
-		/*e_mask_u = [random(1),random(1)]
-		e_mask_v = [random(1),random(1)]*/
 
 		e_stencils = [choose("Triangle","Square","Pentagon","Hexagon"),choose("Triangle","Square","Pentagon","Hexagon")]
 		e_stencils_mode = choose(PULSE_STENCIL.NONE,PULSE_STENCIL.A_TO_B,PULSE_STENCIL.EXTERNAL,PULSE_STENCIL.INTERNAL)

@@ -71,9 +71,6 @@ dbg_button("Create Emitter",function()
 	var _emitter = pulse_store_emitter(_temp_emitter,emitter_name,false)
 	
 	_temp_emitter.destroy()
-	
-	//_emitter.set_displacement_map(displ_map[0])
-	//_emitter.set_color_map(color_map[0])
 
 	var _inst  = instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: systems[s_l] , particle_instance : particles[p_l]})
 	array_push(emitters,_inst)
