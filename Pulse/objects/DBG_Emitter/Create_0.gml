@@ -499,7 +499,7 @@ ecolormap_frame = 0
 ecolormap_frame_ref = ref_create(self,"ecolormap_frame")
 
 dbg_slider(ecolormap_frame_ref,0,2,"Map",1)
-dbg_sprite(e_colormap_ref,0,"Selected Map")
+//dbg_sprite(e_colormap_ref,0,"Selected Map")
 
 dbg_button("Apply", function()
 {
@@ -509,7 +509,7 @@ dbg_button("Apply", function()
 		e_colormap = colormap_nobg
 	} else if ecolormap_frame == 1
 	{
-		e_colormap = s_gradientb
+		e_colormap = s_gradient
 	}else
 	{
 		e_colormap = Smoke_up___200_200__n

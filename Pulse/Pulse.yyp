@@ -43,7 +43,6 @@
     {"$GMIncludedFile":"","%Name":"emitter_slug_path.pp","CopyToMask":-1,"filePath":"datafiles","name":"emitter_slug_path.pp","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"emitter_slug_system.pulses","CopyToMask":-1,"filePath":"datafiles","name":"emitter_slug_system.pulses","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"emitter_slug.pulsee","CopyToMask":-1,"filePath":"datafiles","name":"emitter_slug.pulsee","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
-    {"$GMIncludedFile":"","%Name":"Macaw32.dll","CopyToMask":-1,"filePath":"datafiles","name":"Macaw32.dll","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,
   "LibraryEmitters":[],
