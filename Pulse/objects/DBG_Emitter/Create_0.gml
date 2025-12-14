@@ -62,7 +62,7 @@ dbg_button("Save and swap to Cache",function(){
 	dbg_cache = dbg_section("Cache Export",true)
 	dbg_button("Export Cache",function()
 	{
-		pulse_export_cache(cache,"cache_export","e",true,true,true)
+		pulse_export_cache(cache,true,true,true)
 	})
 	dbg_same_line()
 	dbg_button("Import Cache",function()
@@ -319,10 +319,10 @@ switch(emitter.boundary)
 		e_bound = "Speed";
 	break;
 	case PULSE_BOUNDARY.FOCAL_LIFE: 
-		e_bound = "Focus Life";
+		e_bound = "Focal Life";
 	break;
 	case PULSE_BOUNDARY.FOCAL_SPEED: 
-		e_bound = "Focus Speed";
+		e_bound = "Focal Speed";
 	break;
 	default :
 		e_bound = "None"
@@ -338,10 +338,10 @@ dbg_button("Apply",function(){
 	case "Speed": 
 		emitter.set_boundaries(PULSE_BOUNDARY.SPEED)
 	break
-	case "Focus Life": 
+	case "Focal Life": 
 		emitter.set_boundaries(PULSE_BOUNDARY.FOCAL_LIFE)
 	break
-	case "Focus Speed": 
+	case "Focal Speed": 
 		emitter.set_boundaries(PULSE_BOUNDARY.FOCAL_SPEED)
 	break
 	case "None": 

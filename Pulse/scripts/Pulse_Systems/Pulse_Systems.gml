@@ -11,17 +11,8 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	
 	if layer_exists(_layer)
 	{
-		if is_string(_layer)
-		{
-			layer	=	layer_get_id(_layer)
-			depth	=	layer_get_depth(layer);
-		}
-		else
-		{
-			layer	=	_layer
-			depth	=	layer_get_depth(layer);
-		}
-			index	=	part_system_create_layer(layer,_persistent);
+		depth	=	layer_get_depth(layer);
+		index	=	part_system_create_layer(layer,_persistent);
 	}
 	else 
 	{
@@ -109,11 +100,11 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	#region jsDoc
 		/// @desc    Sets whether the system is updating automatically every step or not. By default this is true.
-		/// @param   {Bool} _bool : Whether the system updates with every step automatically (true) or not (false)
+		/// @param   {Bool} _auto : Whether the system updates with every step automatically (true) or not (false)
 		#endregion
-	static set_update				= function(_bool)
+	static set_update				= function(_auto)
 	{
-		update	=	_bool;
+		update	=	_auto;
 		
 		if index == -1 
 		{
@@ -126,12 +117,12 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 	}
 	#region jsDoc
 		/// @desc    Sets whether the system is drawing automatically every step or not. By default this is true.
-		/// @param   {Bool} _bool : Whether the system draws with every step automatically (true) or not (false)
+		/// @param   {Bool} _auto : Whether the system draws with every step automatically (true) or not (false)
 		#endregion
-	static set_draw					= function(_bool)
+	static set_draw					= function(_auto)
 	{
 		
-		draw	=	_bool;
+		draw	=	_auto;
 		if index == -1 
 		{
 			__pulse_show_debug_message("System is asleep",1)
@@ -253,9 +244,15 @@ function pulse_system				(_name=__PULSE_DEFAULT_SYS_NAME,_layer= -1,_persistent=
 			__pulse_show_debug_message("System is asleep and can't be reset",1)
 			return self
 		}
-		if layer != -1
+		if layer != -1 && layer_exists(layer)
 		{
+			if persistent
+			{
+				part_system_destroy(index)
+				index = part_system_create_layer(true,layer)
+			}else{
 			part_system_layer(index,layer);
+			}
 		}
 		else
 		{

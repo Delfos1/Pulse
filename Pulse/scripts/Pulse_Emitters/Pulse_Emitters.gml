@@ -6,7 +6,7 @@
 function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULSE_DEFAULT_PART_NAME,anim_curve = undefined)  constructor
 {
 	pulse_ver		=	_PULSE_VERSION
-	name			= undefined
+	name			= __PULSE_DEFAULT_EMITTER_NAME
 	part_system		= __pulse_lookup_system(__part_system)
 	part_type		= __pulse_lookup_particle(__part_type)
 	gc_flags		= 0
@@ -155,22 +155,29 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 
 	#region COMPONENTS
 	
-	static set_particle_type		=	function(_particle)
+	/// @desc Manually alters the particle type
+	/// @param /// @param {String , Struct.__pulse_particle_class}	__part_type : A pulse Particle, or the name as a string if the particle has been stored. By default it creates a new particle with the default name.
+	static set_particle_type = function(_particle)
 	{
-		part_type =  __pulse_lookup_particle(_particle)
-		return		
+		part_type		= __pulse_lookup_particle(_particle)
+		return self
 	}
-	
-	static set_system				=	function(_system)
+	/// @desc Manually alters the system
+	/// @param {String , Struct.pulse_system}			__part_system : A pulse System, or the name as a string if the system has been stored. By default it creates a new system with the default name.
+	static set_system = function(_part_system)
 	{
-		part_system =  __pulse_lookup_system(_system)
-		return		
+		part_system		= __pulse_lookup_system(_part_system)
+		return self
 	}
 	
 	#endregion
 
 	#region EMITTER SETTINGS
 	
+	static set_name = function(_name)
+	{
+		name	= string(_name);
+	}
 	/// @description	Sets the default amount of particles requested on each pulse.
 	/// @param {Real}	_amount_request : The default amount of particles requested on each pulse
 	static set_default_amount = function(_amount_request)
@@ -1063,7 +1070,9 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			}
 		}	
 	}
-	
+	/// @description Draws a few useful indicators, such as the radii, the masks, and the direction rang.
+	/// @param {Real} _x X coordinate
+	/// @param {Real} _y Y coordinate
 	static	draw_debug				=	function(x,y)
 	{
 		// draw radiuses
@@ -1156,7 +1165,8 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		
 		return self
 	}
-	
+	/// @description	Removes a collision element from the collision list.
+	/// @param {Any}	_object : Can be an object, instance, tile or anything admitable 
 	static remove_collisions		=	function(_object)
 	{
 		var ind = array_get_index(collisions, _object)
@@ -1207,6 +1217,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 		_p.to_edge	=	0
 		
 		var dir_stencil = (stencil_offset+_p.u_coord)%1;
+		var dir_col = (_p.u_coord)%1;
 		// early exit if there are no stencils
 		if stencil_mode == PULSE_STENCIL.NONE 
 		{			
@@ -1235,7 +1246,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				eval_a	=	clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
 				eval_b	=	clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
-				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_col),0,1);
 				eval	=	lerp(eval_a,eval_b,stencil_tween)
 				
 				_e.ext		= min(eval_a,(eval_c*(edge_external/radius_external)))
@@ -1255,7 +1266,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				eval_a	=	stencil_tween== 1 ? 0 : clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
 				eval_b	=	stencil_tween== 0 ? 0 : clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
-				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,_p.u_coord),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_col),0,1);
 				eval	=	lerp(eval_a,eval_b,stencil_tween)
 				
 				_e.ext		= eval
@@ -1273,7 +1284,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			{
 				eval_a	=	stencil_tween== 1 ? 0 : clamp(animcurve_channel_evaluate(_channel_01,dir_stencil),0,1);
 				eval_b	=	stencil_tween== 0 ? 0 : clamp(animcurve_channel_evaluate(_channel_02,dir_stencil),0,1);
-				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_stencil),0,1);
+				eval_c	=	clamp(animcurve_channel_evaluate(_channel_03,dir_col),0,1);
 				eval	=	lerp(eval_a,eval_b,stencil_tween)
 				
 				_e.ext		= 1
@@ -1517,7 +1528,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		#region size
 		// early exit if there is no range to interpret the property
-		if distr_size != PULSE_DISTRIBUTION.RANDOM || distr_size != PULSE_DISTRIBUTION.NONE
+		if distr_size != PULSE_DISTRIBUTION.RANDOM && distr_size != PULSE_DISTRIBUTION.NONE
 		{
 			if (part_type.size[0]!=part_type.size[2] && part_type.size[1]!=part_type.size[3])
 		{
@@ -1551,7 +1562,7 @@ function	pulse_emitter(__part_system=__PULSE_DEFAULT_SYS_NAME,__part_type=__PULS
 			
 		#region frame
 		// Unless changed, it is not calculated, as it is not necessary for other processes.
-		if (distr_frame != PULSE_DISTRIBUTION.RANDOM || distr_frame != PULSE_DISTRIBUTION.NONE) &&  _p.particle.set_to_sprite
+		if (distr_frame != PULSE_DISTRIBUTION.RANDOM && distr_frame != PULSE_DISTRIBUTION.NONE) &&  _p.particle.set_to_sprite
 		{
 				if distr_frame == PULSE_DISTRIBUTION.LINKED_CURVE || distr_frame == PULSE_DISTRIBUTION.LINKED
 				{

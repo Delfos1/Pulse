@@ -3,9 +3,10 @@ auto_create = true
 if (debug)
 {
 	show_debug_overlay(debug)
-	debug_resources()
+	LookoutResources(debug)
 }
 // Welcome to Pulse!
+
 
 displ_map = array_create(8)
 color_map = 0
@@ -18,7 +19,6 @@ systems			= []
 emitters		= []
 p_l = 0
 s_l = 0
-
 cache = undefined
 path_plus = new PathPlus(ExamplePath,true) 
 cacheing = false
@@ -234,12 +234,25 @@ dbg_button("Import Cache",function(){
 		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Cache,{cache: _cache, system_instance: _sys , particle_instance : _part})
 	}
 })
-e_dbg_check = true
+
+dbg_section("Options")
+e_dbg_check = false
 dbg_checkbox(ref_create(self,"e_dbg_check"),"Draw debug helpers")
+g_dbg_colliders = false
+dbg_checkbox(ref_create(self,"g_dbg_colliders"),"Show Colliders")
+dbg_button("Apply",function()
+{
+	if g_dbg_colliders
+	{
+		instance_activate_object(o_Collider)
+	}else
+	{
+		instance_deactivate_object(o_Collider)
+	}
+}
+)
 
 dbg_section("Stress test")
-
-
 
 dbg_button("Create 100 Particles",function()
 {

@@ -217,7 +217,7 @@ function clamp_wrap(_value, _min, _max) {
 	return _value;
 }
 
-/// @desc Returns the value wrapped. If it's above or below the limit it will wrap around.
+/// @desc Returns the value wrapped. If it's above or below the threshold it will wrap around.
 /// @param {Real} value The value to check.
 /// @param {Real} min The min value.
 /// @param {Real} max The max value.

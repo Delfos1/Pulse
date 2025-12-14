@@ -49,7 +49,7 @@
         {"th0":-0.022675872,"th1":0.01912558,"tv0":-0.45420438,"tv1":-0.44744307,"x":0.666,"y":1.0,},
         {"th0":-0.020827342,"th1":0.021628022,"tv0":0.0017622923,"tv1":-0.0018300414,"x":0.833,"y":0.5,},
         {"th0":-0.01899463,"th1":0.1,"tv0":-0.4496107,"tv1":0.0,"x":1.0,"y":1.0030338,},
-      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":false,},
+      ],"resourceType":"GMAnimCurveChannel","resourceVersion":"2.0","visible":true,},
   ],
   "function":2,
   "name":"ac_Polygons",

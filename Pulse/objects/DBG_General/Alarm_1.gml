@@ -1,6 +1,6 @@
 /// @description Load from Included Files
 
-	var _p = "emitter_slug.pulsee"
+	var _p = "sample.pulsee"
 	
 	if _p != ""
 	{
@@ -47,3 +47,5 @@
 		instance_create_layer(random_range(1300,1600),random_range(300,600),layer,DBG_Emitter,{emitter: _emitter, system_instance: _sys , particle_instance : _part})
 		array_push(emitters,_emitter)
 	}
+	
+	instance_deactivate_object(o_Collider)

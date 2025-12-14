@@ -6,7 +6,7 @@
   "name":"TGM_Math",
   "parent":{
     "name":"Code",
-    "path":"folders/Extensions/KazanGames/TurboGML/Code.yy",
+    "path":"folders/Pulse/Dependencies/TurboGML/Code.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

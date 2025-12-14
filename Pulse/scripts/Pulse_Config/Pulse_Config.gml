@@ -79,6 +79,8 @@ enum PULSE_FORCE
 
 #macro __PULSE_DEFAULT_PART_NAME		"part_type"
 
+#macro __PULSE_DEFAULT_EMITTER_NAME		"emitter"
+
 // Default directory for exporting/importing
 
 #macro __PULSE_DEFAULT_DIRECTORY		working_directory //string_concat(working_directory  + "Pulse")

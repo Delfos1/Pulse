@@ -47,17 +47,61 @@ function	pulse_cache(_emitter , _cache=[] ) constructor
 		
 		part_type = pulse_fetch_particle(cache[0].part_type.name)	
 	}
-	
-		/// @description	Adds a collision element to be checked by the collision function.
+	/// @desc Manually alters the particle type
+	/// @param {String , Struct.__pulse_particle_class}	__part_type : A pulse Particle, or the name as a string if the particle has been stored. By default it creates a new particle with the default name.
+	static set_particle_type = function(_particle)
+	{
+		part_type		= __pulse_lookup_particle(_particle)
+		return self
+	}
+	/// @desc Manually alters the system
+	/// @param {String , Struct.pulse_system}			__part_system : A pulse System, or the name as a string if the system has been stored. By default it creates a new system with the default name.
+	static set_system = function(_part_system)
+	{
+		part_system		= __pulse_lookup_system(_part_system)
+		return self
+	}
+		/// @description	Sets the default amount of particles requested on each pulse.
+	/// @param {Real}	_amount_request : The default amount of particles requested on each pulse
+	static set_default_amount = function(_amount_request)
+	{
+		default_amount = floor(max(0,_amount_request))
+		
+		return self
+	}
+	/// @description	If active, shuffling will mix the particles' order in the array after emitting them all.
+	/// @param {Bool}	_bool : Whether or not the shuffling of the cache is active
+	static set_shuffle = function(_bool)
+	{
+		if is_bool(_bool)
+		{
+			shuffle = _bool
+		}
+		
+		return self
+	}
+	/// @description	Adds a collision element to be checked by the collision function.
 	/// @param {Any}	_object : Can be an object, instance, tile or anything admitable 
-	/// @context pulse_emitter
 	static	add_collisions			=	function(_object)
 	{
 		array_push(collisions,_object)
 		
 		return self
 	}
-		 /**
+	/// @description	Removes a collision element from the collision list.
+	/// @param {Any}	_object : Can be an object, instance, tile or anything admitable 
+	static remove_collisions		=	function(_object)
+	{
+		var ind = array_get_index(collisions, _object)
+		if ind != -1
+		{
+			array_delete(collisions,ind,1)
+		}
+		
+		return self
+	}
+	
+	/**
 	 * @desc Generates a modified stencil which adapts to colliding objects. Returns an array that contains the IDs of all colliding instances 
 	 * @param {Real} _x X coordinate
 	 * @param {Real} _y Y coordinate

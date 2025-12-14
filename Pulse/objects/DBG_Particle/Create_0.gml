@@ -127,7 +127,7 @@ dbg_button("Randomize",function(){
 			particle.set_shape(p_shape)
 		}else{
 			//Sprite
-			p_sprite =choose(flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal)
+			p_sprite =choose(flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal,s_arrow)
 			p_anim =  choose(true,false)
 			p_stretch =  choose(true,false)
 			p_sp_random =  choose(true,false)
@@ -279,7 +279,7 @@ dbg_text_separator("Sprite")
 /// Sprite selection
 p_sprite = flame_01
 p_sprite_ref = ref_create(self,"p_sprite")
-dbg_drop_down(p_sprite_ref,[flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal],["Flame","Hand","Smoke","Arrow"])
+dbg_drop_down(p_sprite_ref,[flame_01,s_hand,Smoke_center___200_200_,p_arrow_normal,s_arrow],["Flame","Hand","Smoke","Arrow-Volume","Arrow"])
 
 /// Sprite Properties
 

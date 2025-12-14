@@ -9,8 +9,8 @@
   "name":"o_particle_example",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/DBG Project/Objects.yy",
+    "name":"Particles",
+    "path":"folders/Pulse/Particles.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -31,8 +31,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"Sprite3",
-    "path":"sprites/Sprite3/Sprite3.yy",
+    "name":"s_arrow",
+    "path":"sprites/s_arrow/s_arrow.yy",
   },
   "spriteMaskId":null,
   "visible":true,

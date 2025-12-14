@@ -805,20 +805,20 @@ function pulse_export_particle	(_particle, file = undefined)
 		return
 	}
 	
-	if file == undefined 
+	var __ext = ".pulsep"
+	if GM_is_sandboxed
 	{
-		file = __PULSE_DEFAULT_DIRECTORY+$"particle_{_particle.name}.pulsep"
-	}
-	else if !directory_exists( filename_dir(file))
+		__pulse_show_debug_message("GM is sandboxed, exporting is not possible",2)
+		return
+	}	
+	if file == undefined  or !directory_exists( filename_dir(file))
 	{
-		file = get_save_filename("*.pulsep", $"{_particle.name}.pulsep");
-	
+		file = get_save_filename_ext($"*{__ext}", $"{_particle.name}{__ext}",__PULSE_DEFAULT_DIRECTORY,"Select where to export the particle");
 		if (file == "") return
 	}
-	
-	if filename_ext(file) != ".pulsep"
+	if filename_ext(file) != __ext
 	{
-		file = filename_change_ext(file,".pulsep")
+		file = filename_change_ext(file, __ext)
 	}
 		
 	var	 _stringy = json_stringify(_particle , true),
@@ -945,26 +945,27 @@ function pulse_import_particle	(_particle_file , _overwrite = false)
 //////// Systems
 
 function pulse_export_system	(_system,file = undefined)
-{
+{		
 	if !is_instanceof(_system,pulse_system) 
 	{
 		__pulse_show_debug_message($"System wasn't exported (Wrong type provided)",2)
 		return
 	}
 	
-	if file == undefined 
+	var __ext = ".pulses"
+	if GM_is_sandboxed
 	{
-		file = __PULSE_DEFAULT_DIRECTORY+$"system_{_system.name}.pulses"
-	}
-	else if !directory_exists( filename_dir(file))
+		__pulse_show_debug_message("GM is sandboxed, exporting is not possible",2)
+		return
+	}	
+	if file == undefined  or !directory_exists( filename_dir(file))
 	{
-		file = get_save_filename("*.pulses", $"{_system.name}.pulses");
+		file = get_save_filename_ext($"*{__ext}", $"{_system.name}{__ext}",__PULSE_DEFAULT_DIRECTORY,"Select where to export the system");
 		if (file == "") return
 	}
-	
-	if filename_ext(file) != ".pulses"
+	if filename_ext(file) != __ext
 	{
-		file = filename_change_ext(file,".pulses")
+		file = filename_change_ext(file, __ext)
 	}
 	
 	var	 _stringy = json_stringify(_system , true),
@@ -1037,26 +1038,35 @@ function pulse_import_system	(_system_file, _overwrite = false)
 
 //////// Emitters
 
-function pulse_export_emitter(_emitter,_export_particle = true,_export_system =true,_export_path = true)
+function pulse_export_emitter(_emitter,_export_particle = true,_export_system =true,_export_path = true,file = undefined)
 {
 	if !is_instanceof(_emitter,pulse_emitter) 
 	{
 		__pulse_show_debug_message($"Emitter wasn't exported (Wrong type provided)",2)
 		return
 	}
-	var file;
-	
+
+	var __ext = ".pulsee"
 	if GM_is_sandboxed
 	{
-		if  !directory_exists(__PULSE_DEFAULT_DIRECTORY) directory_create("Pulse")
-		file =  __PULSE_DEFAULT_DIRECTORY+$"emitter.pulsee"
-	}
-	else
-	{
-		file = get_save_filename("*.pulsee", $"emitter_");
-
-		if (file == "") return
+		__pulse_show_debug_message("GM is sandboxed, exporting is not possible",2)
+		return
 	}	
+	if _emitter.name == undefined
+	{
+		_emitter.name = __PULSE_DEFAULT_EMITTER_NAME
+	}
+	if file == undefined  or !directory_exists( filename_dir(file))
+	{
+		file = get_save_filename_ext($"*{__ext}", $"{_emitter.name}{__ext}",__PULSE_DEFAULT_DIRECTORY,"Select where to export the emitter");
+		if (file == "") return
+	}
+	if filename_ext(file) != __ext
+	{
+		file = filename_change_ext(file, __ext)
+	}
+	
+
 	if _export_particle||_export_system||_export_path
 	{
 		// Export particle and system
@@ -1084,6 +1094,7 @@ function pulse_export_emitter(_emitter,_export_particle = true,_export_system =t
 			{
 				var _tempPath = new PathPlus(_emitter.path,true)
 				_tempPath.Export(_fpath)
+				_tempPath.Destroy()
 			}
 		}
 	}
@@ -1214,30 +1225,29 @@ function pulse_import_emitter	(file, _overwrite = false)
 
 /////// Cache
 
-function pulse_export_cache	(_cache,_cache_name,file = undefined,_export_particle=false,_export_system=false,_export_path=false)
+function pulse_export_cache	(_cache,_export_particle=false,_export_system=false,_export_path=false,file = undefined)
 {
 	if !is_instanceof(_cache,pulse_cache) 
 	{
 		__pulse_show_debug_message($"Cache wasn't exported (Wrong type provided)",2)
 		return
 	}
-	_cache_name = string(_cache_name)
-	
-	if file == undefined 
+
+	var __ext = ".pulsec"
+	if GM_is_sandboxed
 	{
-		file = __PULSE_DEFAULT_DIRECTORY+$"cache_{_cache_name}.pulsec"
-	}
-	else if !directory_exists( filename_dir(file))
+		__pulse_show_debug_message("GM is sandboxed, exporting is not possible",2)
+		return
+	}	
+	if file == undefined  or !directory_exists( filename_dir(file))
 	{
-		file = get_save_filename("*.pulsec", $"{_cache_name}.pulsec")
+		file = get_save_filename_ext($"*{__ext}", $"cache{__ext}",__PULSE_DEFAULT_DIRECTORY,"Select where to export the cache");
 		if (file == "") return
 	}
-	
-	if filename_ext(file) != ".pulsec"
+	if filename_ext(file) != __ext
 	{
-		file = filename_change_ext(file,".pulsec")
+		file = filename_change_ext(file, __ext)
 	}
-	
 		if _export_particle||_export_system||_export_path
 	{
 		// Export particle and system
@@ -1286,7 +1296,7 @@ function pulse_export_cache	(_cache,_cache_name,file = undefined,_export_particl
 	buffer_save(_buff, file);
 	buffer_delete(_buff);
 		
-	__pulse_show_debug_message($"Cache '{_cache_name}' was exported succesfully" ,3)
+	__pulse_show_debug_message($"Cache was exported succesfully" ,3)
 
 	return file
 }
@@ -1352,7 +1362,6 @@ function pulse_import_cache	(_cache_file)
 	{
 		__pulse_show_debug_message($"Cache imported requires a particle named `{_parsed.particle.name}`. Please import particle before importing cache ",2)
 	}
-
 
 	return _new_cache
 }
@@ -1480,7 +1489,7 @@ function pulse_fetch_particle		(_name)
 /// @param {String}			_name : Name for the emitter
 /// @param {Bool}			_override	: Whether to override a emitter by the same name or to change the name of the emitter. Default: False.
 /// @return {Struct}
-function pulse_store_emitter			(_emitter,_name , _override = false)
+function pulse_store_emitter			(_emitter,_name= undefined , _override = false)
 {
 	/// Check if it is a Pulse emitter
 	if !is_instanceof(_emitter,pulse_emitter)
@@ -1489,7 +1498,10 @@ function pulse_store_emitter			(_emitter,_name , _override = false)
 		return
 	}
 	
-	_name = string(_name);
+	if _name!= undefined
+	{
+		_name = string(_name);
+	}
 
 	if			pulse_exists_emitter(_name) > 0 && !_override
 	{
